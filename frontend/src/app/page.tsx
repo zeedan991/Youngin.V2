@@ -388,8 +388,6 @@ export default function LandingPage() {
 
   return (
     <div ref={containerRef} className="relative min-h-screen overflow-x-hidden bg-[#0a0a0a] text-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <Script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js" strategy="afterInteractive" />
-      <Script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.clouds.min.js" strategy="afterInteractive" />
 
       {/* Vanta Canvas Background */}
       <div ref={vantaRef} className="fixed inset-0 z-0 pointer-events-none" />
