@@ -26,9 +26,9 @@ export default function LoadingScreen() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="relative h-16 w-56"
+            className="relative h-24 w-72 md:h-28 md:w-80"
           >
-            <Image src="/logo.png" alt="YOUNGIN" fill className="object-contain" priority />
+            <Image src="/logo.png" alt="YOUNGIN" fill className="object-contain scale-[1.6] origin-center" priority />
           </motion.div>
 
           {/* Progress bar */}
