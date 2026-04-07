@@ -1,0 +1,20 @@
+{
+  "project": "AI Fashion Platform",
+  "theme": "dark-professional",
+  "pages": [
+    "Landing Page",
+    "Login / Signup",
+    "homepage",
+    "AI Measurement Upload",
+    "Measurement Results",
+    "3D Designer Studio",
+    "Virtual Try-On",
+    "Brand Marketplace",
+    "Product Details",
+    "Thrift Subscription",
+    "Style Quiz",
+    "Tailor Marketplace",
+    "Tailor Profile",
+    "User Dashboard"
+  ]
+}
