@@ -17,29 +17,28 @@ function GarmentModel() {
     <Float speed={1.2} rotationIntensity={0.3} floatIntensity={0.5}>
       <group>
         {/* T-Shirt body */}
-        <mesh ref={meshRef} position={[0, 0, 0]} castShadow dispose={null}>
-          <boxGeometry args={[2.2, 2.8, 0.15]} dispose={null} />
+        <mesh ref={meshRef} position={[0, 0, 0]} castShadow>
+          <boxGeometry args={[2.2, 2.8, 0.15]} />
           <meshStandardMaterial
             color={currentColor}
             roughness={roughness}
             metalness={metalness}
-            dispose={null}
           />
         </mesh>
         {/* Left sleeve */}
-        <mesh position={[-1.6, 0.6, 0]} rotation={[0, 0, -0.4]} castShadow dispose={null}>
-          <boxGeometry args={[1, 0.7, 0.12]} dispose={null} />
-          <meshStandardMaterial color={currentColor} roughness={roughness} metalness={metalness} dispose={null} />
+        <mesh position={[-1.6, 0.6, 0]} rotation={[0, 0, -0.4]} castShadow>
+          <boxGeometry args={[1, 0.7, 0.12]} />
+          <meshStandardMaterial color={currentColor} roughness={roughness} metalness={metalness} />
         </mesh>
         {/* Right sleeve */}
-        <mesh position={[1.6, 0.6, 0]} rotation={[0, 0, 0.4]} castShadow dispose={null}>
-          <boxGeometry args={[1, 0.7, 0.12]} dispose={null} />
-          <meshStandardMaterial color={currentColor} roughness={roughness} metalness={metalness} dispose={null} />
+        <mesh position={[1.6, 0.6, 0]} rotation={[0, 0, 0.4]} castShadow>
+          <boxGeometry args={[1, 0.7, 0.12]} />
+          <meshStandardMaterial color={currentColor} roughness={roughness} metalness={metalness} />
         </mesh>
         {/* Collar */}
-        <mesh position={[0, 1.5, 0]} castShadow dispose={null}>
-          <cylinderGeometry args={[0.45, 0.45, 0.18, 32, 1, true]} dispose={null} />
-          <meshStandardMaterial color={currentColor} roughness={roughness} metalness={metalness} side={THREE.DoubleSide} dispose={null} />
+        <mesh position={[0, 1.5, 0]} castShadow>
+          <cylinderGeometry args={[0.45, 0.45, 0.18, 32, 1, true]} />
+          <meshStandardMaterial color={currentColor} roughness={roughness} metalness={metalness} side={THREE.DoubleSide} />
         </mesh>
       </group>
     </Float>
@@ -48,9 +47,9 @@ function GarmentModel() {
 
 function SceneLoader() {
   return (
-    <mesh dispose={null}>
-      <boxGeometry args={[1, 1, 1]} dispose={null} />
-      <meshStandardMaterial color="#1A1A1A" wireframe dispose={null} />
+    <mesh>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="#1A1A1A" wireframe />
     </mesh>
   );
 }
@@ -71,7 +70,6 @@ export function ModelViewer() {
 
         <Suspense fallback={<SceneLoader />}>
           <GarmentModel />
-          <Environment preset="city" />
           <ContactShadows position={[0, -2.5, 0]} opacity={0.4} scale={8} blur={2} far={4} />
         </Suspense>
 

@@ -44,9 +44,9 @@ export default function Sidebar() {
         className="hidden md:flex flex-col h-screen sticky top-0 bg-white text-slate-500 z-50 shrink-0 select-none overflow-hidden"
       >
         {/* ── Brand Mark ── */}
-        <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-          <Link href="/dashboard" className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="relative h-14 w-14 shrink-0 transition-all">
+        <div className={cn("flex items-center", isCollapsed ? "justify-center px-0 pt-6 pb-4" : "px-5 pt-6 pb-4")}>
+          <Link href="/dashboard" className="flex items-center gap-2.5 flex-1 min-w-0">
+            <div className={cn("relative shrink-0 transition-all duration-300", isCollapsed ? "h-9 w-9" : "h-11 w-11")}>
               <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain drop-shadow-sm" priority />
             </div>
             {!isCollapsed && (
@@ -54,7 +54,7 @@ export default function Sidebar() {
                 initial={{ opacity: 0, x: -8 }} 
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-slate-900 text-2xl font-black tracking-[4px] uppercase whitespace-nowrap"
+                className="text-slate-900 text-[19px] font-extrabold tracking-[3px] uppercase truncate"
                 style={{ fontFamily: "var(--font-syne), sans-serif" }}
               >
                 YOUNGIN
