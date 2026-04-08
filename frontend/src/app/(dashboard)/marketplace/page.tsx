@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, type Transition } from "framer-motion";
-import { Filter, Search, ShoppingBag, ExternalLink, ArrowRight } from "lucide-react";
+import { Filter, Search, ShoppingBag, ExternalLink, ArrowRight, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -42,6 +42,10 @@ export default function MarketplacePage() {
           </div>
           <button className="h-10 w-10 rounded-full border border-slate-200 bg-white shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors">
             <Filter className="w-4 h-4 text-slate-600" />
+          </button>
+          <button className="relative h-10 w-10 rounded-full border border-slate-200 bg-white shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors">
+            <ShoppingCart className="w-4 h-4 text-slate-600" />
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF4D94] text-[9px] font-bold text-white shadow-sm ring-2 ring-white">2</span>
           </button>
         </motion.div>
       </header>

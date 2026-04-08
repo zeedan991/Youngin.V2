@@ -46,15 +46,15 @@ export default function Sidebar() {
         {/* ── Brand Mark ── */}
         <div className="flex items-center gap-3 px-4 pt-6 pb-4">
           <Link href="/dashboard" className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="relative h-9 w-9 shrink-0">
-              <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain" priority />
+            <div className="relative h-14 w-14 shrink-0 transition-all">
+              <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain drop-shadow-sm" priority />
             </div>
             {!isCollapsed && (
               <motion.span 
                 initial={{ opacity: 0, x: -8 }} 
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-slate-900 text-[22px] tracking-[6px] uppercase whitespace-nowrap"
+                className="text-slate-900 text-2xl font-black tracking-[4px] uppercase whitespace-nowrap"
                 style={{ fontFamily: "var(--font-syne), sans-serif" }}
               >
                 YOUNGIN

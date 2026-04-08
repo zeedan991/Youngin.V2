@@ -1,5 +1,6 @@
 import Sidebar from "@/components/dashboard/Sidebar";
 import LoadingScreen from "@/components/LoadingScreen";
+import ChatbotWidget from "@/components/dashboard/ChatbotWidget";
 import { ReactNode } from "react";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -17,6 +18,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           {children}
         </div>
       </main>
+
+      {/* Global Chatbot */}
+      <ChatbotWidget />
     </div>
   );
 }
