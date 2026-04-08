@@ -128,9 +128,9 @@ export default function AIStylistPage() {
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold flex items-center gap-2">
+            <h1 className="text-xl font-bold flex items-center gap-2 text-slate-900">
               AI Stylist
-              <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-md text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <span className="px-2 py-0.5 bg-white border border-slate-200 shadow-sm rounded-md text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                 Gemini
               </span>
             </h1>
@@ -141,7 +141,7 @@ export default function AIStylistPage() {
         </div>
         <button
           onClick={clearChat}
-          className="p-2.5 rounded-xl border border-white/10 text-slate-500 hover:text-white hover:bg-white/5 transition-all"
+          className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all shadow-sm"
           title="Clear chat"
         >
           <RotateCcw className="w-4 h-4" />
@@ -151,7 +151,7 @@ export default function AIStylistPage() {
       {/* Chat Area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto rounded-2xl border border-white/10 bg-[#0D0D0D] p-4 md:p-6 space-y-5 mb-4 scrollbar-hide"
+        className="flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-sm p-4 md:p-6 space-y-5 mb-4 scrollbar-hide"
       >
         {messages.map((msg) => (
           <motion.div
@@ -171,18 +171,18 @@ export default function AIStylistPage() {
               {msg.role === "ai" ? (
                 <Bot className="w-4 h-4 text-white" />
               ) : (
-                <User className="w-4 h-4 text-slate-300" />
+                <User className="w-4 h-4 text-slate-600" />
               )}
             </div>
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                 msg.role === "ai"
-                  ? "bg-white/[0.05] border border-white/[0.06]"
-                  : "bg-[#FF4D94]/15 border border-[#FF4D94]/20"
+                  ? "bg-slate-50 border border-slate-200"
+                  : "bg-pink-50 border border-pink-100"
               }`}
             >
-              <p className="text-sm text-slate-200 leading-relaxed">{msg.text}</p>
-              <span className="text-[10px] text-slate-600 mt-2 block">
+              <p className="text-sm text-slate-800 leading-relaxed">{msg.text}</p>
+              <span className="text-[10px] text-slate-400 mt-2 block">
                 {msg.timestamp}
               </span>
             </div>
@@ -199,7 +199,7 @@ export default function AIStylistPage() {
             <div className="h-8 w-8 rounded-full shrink-0 flex items-center justify-center bg-gradient-to-br from-[#FF4D94] to-[#B8005C]">
               <Bot className="w-4 h-4 text-white" />
             </div>
-            <div className="bg-white/[0.05] border border-white/[0.06] rounded-2xl px-4 py-3 flex items-center gap-1">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-1 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-slate-500 animate-bounce [animation-delay:0ms]" />
               <span className="w-2 h-2 rounded-full bg-slate-500 animate-bounce [animation-delay:150ms]" />
               <span className="w-2 h-2 rounded-full bg-slate-500 animate-bounce [animation-delay:300ms]" />
@@ -221,7 +221,7 @@ export default function AIStylistPage() {
                 <button
                   key={s.label}
                   onClick={() => sendMessage(s.label)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/[0.03] text-sm text-slate-300 hover:text-white hover:border-white/20 hover:bg-white/[0.06] transition-all"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 shadow-sm bg-white text-sm text-slate-700 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50 transition-all"
                 >
                   <Icon className="w-3.5 h-3.5 text-[#FF4D94]" />
                   {s.label}
@@ -239,16 +239,16 @@ export default function AIStylistPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about outfits, trends, styling..."
-            className="w-full bg-[#111116] border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white focus:outline-none focus:border-[#FF4D94]/50 transition-colors pr-12"
+            className="w-full bg-white border border-slate-200 shadow-sm rounded-xl px-5 py-3.5 text-sm text-slate-900 focus:outline-none focus:border-[#FF4D94]/50 transition-colors pr-12"
           />
         </div>
         <button
           type="submit"
           disabled={!input.trim() || isTyping}
-          className={`px-5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+          className={`px-5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-sm ${
             input.trim() && !isTyping
-              ? "bg-[#FF4D94] text-black hover:scale-105"
-              : "bg-white/5 text-slate-600 cursor-not-allowed"
+              ? "bg-[#FF4D94] text-white hover:scale-105"
+              : "bg-slate-100 text-slate-400 cursor-not-allowed"
           }`}
         >
           <Send className="w-4 h-4" />

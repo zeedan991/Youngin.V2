@@ -141,7 +141,7 @@ export default function StyleQuizPage() {
                   {currentQ + 1} / {QUESTIONS.length}
                 </span>
               </div>
-              <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+              <div className="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
                 <motion.div
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.5 }}
@@ -152,10 +152,10 @@ export default function StyleQuizPage() {
 
             {/* Question */}
             <div className="mb-10">
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-slate-900">
                 {question.question}
               </h1>
-              <p className="text-slate-400 text-base">{question.subtitle}</p>
+              <p className="text-slate-500 text-base">{question.subtitle}</p>
             </div>
 
             {/* Options Grid */}
@@ -169,18 +169,18 @@ export default function StyleQuizPage() {
                     className={`relative p-5 rounded-2xl border-2 text-left transition-all group ${
                       selected
                         ? "border-[#FF4D94] bg-[#FF4D94]/10"
-                        : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 shadow-sm"
                     }`}
                   >
                     {selected && (
                       <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#FF4D94] flex items-center justify-center">
-                        <Check className="w-3 h-3 text-black" />
+                        <Check className="w-3 h-3 text-white" />
                       </div>
                     )}
                     <span className="text-2xl mb-2 block">{opt.emoji}</span>
                     <span
                       className={`text-sm font-semibold ${
-                        selected ? "text-white" : "text-slate-300"
+                        selected ? "text-slate-900" : "text-slate-700"
                       }`}
                     >
                       {opt.label}
@@ -191,14 +191,14 @@ export default function StyleQuizPage() {
             </div>
 
             {/* Footer Nav */}
-            <div className="mt-10 pt-6 border-t border-white/5 flex items-center justify-between">
+            <div className="mt-10 pt-6 border-t border-slate-200 flex items-center justify-between">
               <button
                 onClick={handleBack}
                 disabled={currentQ === 0}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all ${
                   currentQ === 0
-                    ? "text-slate-600 cursor-not-allowed"
-                    : "text-white hover:bg-white/5"
+                    ? "text-slate-400 cursor-not-allowed"
+                    : "text-slate-900 hover:bg-slate-50"
                 }`}
               >
                 <ArrowLeft className="w-4 h-4" /> Back
@@ -206,10 +206,10 @@ export default function StyleQuizPage() {
               <button
                 onClick={handleNext}
                 disabled={!canAdvance}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all ${
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${
                   canAdvance
-                    ? "bg-[#FF4D94] text-black hover:scale-105"
-                    : "bg-white/5 text-slate-600 cursor-not-allowed"
+                    ? "bg-[#FF4D94] text-white hover:scale-105"
+                    : "bg-slate-100 text-slate-400 cursor-not-allowed"
                 }`}
               >
                 {currentQ === QUESTIONS.length - 1 ? "Finish" : "Next"}{" "}
@@ -229,21 +229,21 @@ export default function StyleQuizPage() {
               <div className="absolute inset-0 rounded-full border-4 border-[#FF4D94] animate-ping opacity-20" />
               <PartyPopper className="w-10 h-10 text-[#FF4D94]" />
             </div>
-            <h2 className="text-4xl font-black tracking-tight mb-4 text-white">
+            <h2 className="text-4xl font-black tracking-tight mb-4 text-slate-900">
               Style Profile Created
             </h2>
-            <p className="text-slate-400 max-w-md mx-auto mb-10 text-lg">
+            <p className="text-slate-500 max-w-md mx-auto mb-10 text-lg">
               Your aesthetic DNA has been mapped. All curations, brand matches,
               and thrift picks will now align to your unique style fingerprint.
             </p>
             <div className="flex gap-4">
               <Link href="/thrift">
-                <button className="px-6 py-2.5 rounded-full border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors flex items-center gap-2">
+                <button className="px-6 py-2.5 rounded-full border border-slate-200 text-slate-900 bg-white font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
                   <Shirt className="w-4 h-4" /> Browse Thrift
                 </button>
               </Link>
               <Link href="/dashboard">
-                <button className="px-6 py-2.5 rounded-full bg-[#FF4D94] text-black font-semibold hover:scale-105 transition-transform flex items-center gap-2">
+                <button className="px-6 py-2.5 rounded-full bg-[#FF4D94] text-white font-semibold hover:scale-105 transition-transform flex items-center gap-2 shadow-sm">
                   Go to Dashboard <ArrowRight className="w-4 h-4" />
                 </button>
               </Link>

@@ -26,11 +26,11 @@ export default function ThriftShopPage() {
     <div className="w-full">
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={SP}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm text-purple-600 text-xs font-bold tracking-widest uppercase mb-4">
             <PackageSearch className="w-4 h-4" /> Curated Vintage
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3">Thrift Shop</h1>
-          <p className="text-slate-400 text-lg max-w-2xl">
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 text-slate-900">Thrift Shop</h1>
+          <p className="text-slate-500 text-lg max-w-2xl">
             High-quality secondhand vintage pieces, curated by AI from your style quiz and body measurements. Every item is verified to fit your exact geometry.
           </p>
         </motion.div>
@@ -41,11 +41,11 @@ export default function ThriftShopPage() {
             <input
               type="text"
               placeholder="Search vintage pieces"
-              className="bg-[#111116] border border-white/10 rounded-full py-2.5 pl-11 pr-4 text-sm text-white focus:outline-none focus:border-[#FF4D94]/50 transition-colors w-full md:w-64"
+              className="bg-white border border-slate-200 shadow-sm rounded-full py-2.5 pl-11 pr-4 text-sm text-slate-900 focus:outline-none focus:border-[#FF4D94]/50 transition-colors w-full md:w-64"
             />
           </div>
-          <button className="h-10 w-10 rounded-full border border-white/10 bg-[#111116] flex items-center justify-center hover:bg-white/10 transition-colors">
-            <Filter className="w-4 h-4 text-slate-300" />
+          <button className="h-10 w-10 rounded-full border border-slate-200 bg-white shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors">
+            <Filter className="w-4 h-4 text-slate-600" />
           </button>
         </motion.div>
       </header>
@@ -53,18 +53,18 @@ export default function ThriftShopPage() {
       {/* Subscription Banner */}
       <motion.div
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SP, delay: 0.05 }}
-        className="rounded-2xl bg-gradient-to-r from-purple-500/10 to-[#FF4D94]/10 border border-white/10 p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4"
+        className="rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 shadow-sm p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4"
       >
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-500/20 shrink-0">
-            <Sparkles className="w-6 h-6 text-purple-400" />
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-100 shrink-0">
+            <Sparkles className="w-6 h-6 text-purple-600" />
           </div>
           <div>
-            <h3 className="font-bold text-white">Monthly Thrift Box — $29/mo</h3>
-            <p className="text-sm text-slate-400">Get 5 hand-picked vintage items delivered monthly, curated from your style quiz and AI sizing.</p>
+            <h3 className="font-bold text-slate-900">Monthly Thrift Box — $29/mo</h3>
+            <p className="text-sm text-slate-600">Get 5 hand-picked vintage items delivered monthly, curated from your style quiz and AI sizing.</p>
           </div>
         </div>
-        <button className="shrink-0 px-6 py-2.5 rounded-full bg-white text-black font-bold text-sm hover:scale-105 transition-transform flex items-center gap-2">
+        <button className="shrink-0 px-6 py-2.5 rounded-full bg-slate-900 text-white shadow-sm font-bold text-sm hover:scale-105 transition-transform flex items-center gap-2">
           Subscribe <ArrowRight className="w-4 h-4" />
         </button>
       </motion.div>
@@ -77,7 +77,7 @@ export default function ThriftShopPage() {
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
-            className={`px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${activeCategory === cat ? "bg-white text-black" : "bg-white/5 text-slate-400 border border-white/10 hover:text-white hover:bg-white/10"}`}
+            className={`px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all shadow-sm ${activeCategory === cat ? "bg-slate-900 text-white" : "bg-white text-slate-600 border border-slate-200 hover:text-slate-900 hover:bg-slate-50"}`}
           >
             {cat}
           </button>
@@ -91,10 +91,10 @@ export default function ThriftShopPage() {
       >
         {THRIFT_ITEMS.map((item) => (
           <Link href={`/product/${item.id}`} key={item.id} className="group cursor-pointer block">
-            <div className="relative aspect-[3/4] rounded-2xl bg-[#111116] border border-white/5 overflow-hidden mb-4">
+            <div className="relative aspect-[3/4] rounded-2xl bg-slate-100 border border-slate-200 shadow-sm overflow-hidden mb-4">
               {/* Hover overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-end p-4">
-                <button className="w-full py-3 bg-white text-black font-bold text-sm rounded-xl flex items-center justify-center gap-2 hover:bg-[#FF4D94] transition-colors shadow-xl">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-end p-4">
+                <button className="w-full py-3 bg-white text-slate-900 font-bold text-sm rounded-xl flex items-center justify-center gap-2 hover:bg-[#FF4D94] hover:text-white shadow-sm border border-slate-200 transition-colors">
                   <ShoppingCart className="w-4 h-4" /> View Details
                 </button>
               </div>
@@ -107,28 +107,28 @@ export default function ThriftShopPage() {
               />
               {/* Badges */}
               <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-                <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-xs font-bold text-[#FF4D94]">
+                <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full border border-slate-200 text-xs font-bold text-[#FF4D94] shadow-sm">
                   {item.size}
                 </span>
-                <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-bold text-slate-300 uppercase tracking-wider">
+                <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full border border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wider shadow-sm">
                   {item.era}
                 </span>
               </div>
               {/* Heart */}
-              <button className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors">
-                <Heart className={`w-4 h-4 ${item.liked ? "fill-red-400 text-red-400" : "text-white"}`} />
+              <button className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 hover:bg-slate-50 transition-colors shadow-sm">
+                <Heart className={`w-4 h-4 ${item.liked ? "fill-red-400 text-red-400" : "text-slate-400"}`} />
               </button>
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <h3 className="font-bold text-white text-lg group-hover:text-[#FF4D94] transition-colors">{item.title}</h3>
-                <span className="font-mono font-bold text-white">{item.price}</span>
+                <h3 className="font-bold text-slate-900 text-lg group-hover:text-pink-600 transition-colors">{item.title}</h3>
+                <span className="font-mono font-bold text-slate-900">{item.price}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Condition: {item.condition}</span>
                 <div className="flex items-center gap-1">
                   <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                  <span className="text-xs text-slate-400 font-medium">Verified</span>
+                  <span className="text-xs text-slate-500 font-medium">Verified</span>
                 </div>
               </div>
             </div>

@@ -17,11 +17,11 @@ export default function TailorsPage() {
     <div className="w-full">
       <header className="mb-10">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={SP}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[#00E5FF] text-xs font-bold tracking-widest uppercase mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm text-cyan-600 text-xs font-bold tracking-widest uppercase mb-4">
             <Scissors className="w-4 h-4" /> Node Network Active
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3">Tailor Network</h1>
-          <p className="text-slate-400 text-lg max-w-2xl">
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 text-slate-900">Tailor Network</h1>
+          <p className="text-slate-500 text-lg max-w-2xl">
             Push your customized 3D Studio designs directly to a verified local tailor physically near you. Your AI measurements are encrypted and injected into their workflow automatically.
           </p>
         </motion.div>
@@ -33,11 +33,11 @@ export default function TailorsPage() {
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
       >
         {TAILORS.map((tailor) => (
-          <div key={tailor.id} className="rounded-3xl border border-white/10 bg-[#111116] overflow-hidden group cursor-pointer hover:border-white/30 transition-colors flex flex-col">
-            <div className="relative h-48 w-full bg-black">
-              <Image src={tailor.img} alt={tailor.name} fill className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" unoptimized />
+          <div key={tailor.id} className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden group cursor-pointer hover:border-slate-300 hover:shadow-md transition-all flex flex-col">
+            <div className="relative h-48 w-full bg-slate-100">
+              <Image src={tailor.img} alt={tailor.name} fill className="object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" unoptimized />
               <div className="absolute top-4 right-4">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md border ${tailor.status === "Available" ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-orange-500/20 text-orange-400 border-orange-500/30"}`}>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md border ${tailor.status === "Available" ? "bg-green-50 text-green-600 border-green-200" : "bg-orange-50 text-orange-600 border-orange-200"}`}>
                   {tailor.status}
                 </span>
               </div>
@@ -45,27 +45,27 @@ export default function TailorsPage() {
             
             <div className="p-6 flex-1 flex flex-col">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="text-xl font-bold text-white group-hover:text-[#00E5FF] transition-colors">{tailor.name}</h3>
-                <div className="flex items-center gap-1 text-yellow-400 font-bold text-sm">
-                   <Star className="w-4 h-4 fill-yellow-400" /> {tailor.rating}
+                <h3 className="text-xl font-bold text-slate-900 group-hover:text-cyan-600 transition-colors">{tailor.name}</h3>
+                <div className="flex items-center gap-1 text-yellow-500 font-bold text-sm">
+                   <Star className="w-4 h-4 fill-yellow-500" /> {tailor.rating}
                 </div>
               </div>
               
-              <div className="flex items-center gap-2 text-slate-400 text-sm mb-4">
+              <div className="flex items-center gap-2 text-slate-500 text-sm mb-4">
                 <MapPin className="w-4 h-4" /> {tailor.location}
               </div>
 
               <div className="flex gap-2 mb-6">
                 {tailor.tags.map(tag => (
-                  <span key={tag} className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300">
+                  <span key={tag} className="px-2 py-1 rounded-md bg-slate-50 border border-slate-200 text-xs text-slate-600">
                     {tag}
                   </span>
                 ))}
               </div>
 
-              <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+              <div className="mt-auto pt-4 border-t border-slate-200 flex items-center justify-between">
                 <span className="text-xs text-slate-500 flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-slate-400" /> {tailor.jobs} successful jobs</span>
-                <button className="text-xs font-bold tracking-widest uppercase text-white hover:text-[#00E5FF] transition-colors">
+                <button className="text-xs font-bold tracking-widest uppercase text-slate-900 hover:text-cyan-600 transition-colors">
                   View Profile
                 </button>
               </div>

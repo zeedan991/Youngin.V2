@@ -18,7 +18,7 @@ export default function LoadingScreen() {
           key="loader"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.6, ease: "easeInOut" } }}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 bg-[#0a0a0a]"
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 bg-white"
         >
           {/* Ambient glow behind logo */}
           <div className="absolute w-[300px] h-[300px] rounded-full bg-[#FF4D94]/10 blur-[100px] pointer-events-none" />
@@ -30,7 +30,7 @@ export default function LoadingScreen() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="relative h-32 w-80 md:h-36 md:w-96"
           >
-            <Image src="/youngin_blackbg.png" alt="YOUNGIN" fill className="object-contain scale-[1.6] origin-center" priority />
+            <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain scale-[1.6] origin-center" priority />
           </motion.div>
 
           {/* Tagline */}
@@ -38,7 +38,7 @@ export default function LoadingScreen() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.5 }}
-            className="text-[11px] font-medium tracking-[4px] uppercase text-white/30"
+            className="text-[11px] font-medium tracking-[4px] uppercase text-slate-500"
           >
             AI-Powered Fashion Infrastructure
           </motion.p>

@@ -41,20 +41,20 @@ export default function Sidebar() {
       <motion.aside 
         animate={{ width: isCollapsed ? "72px" : "240px" }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="hidden md:flex flex-col h-screen sticky top-0 bg-[#0A0A0A] text-slate-400 z-50 shrink-0 select-none overflow-hidden"
+        className="hidden md:flex flex-col h-screen sticky top-0 bg-white text-slate-500 z-50 shrink-0 select-none overflow-hidden"
       >
         {/* ── Brand Mark ── */}
         <div className="flex items-center gap-3 px-4 pt-6 pb-4">
           <Link href="/dashboard" className="flex items-center gap-3 flex-1 min-w-0">
             <div className="relative h-9 w-9 shrink-0">
-              <Image src="/youngin_blackbg.png" alt="YOUNGIN" fill className="object-contain" priority />
+              <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain" priority />
             </div>
             {!isCollapsed && (
               <motion.span 
                 initial={{ opacity: 0, x: -8 }} 
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-white text-[22px] tracking-[6px] uppercase whitespace-nowrap"
+                className="text-slate-900 text-[22px] tracking-[6px] uppercase whitespace-nowrap"
                 style={{ fontFamily: "var(--font-syne), sans-serif" }}
               >
                 YOUNGIN
@@ -64,7 +64,7 @@ export default function Sidebar() {
         </div>
 
         {/* ── Divider ── */}
-        <div className="mx-4 h-px bg-white/[0.06] mb-2" />
+        <div className="mx-4 h-px bg-slate-200 mb-2" />
 
         {/* ── Nav Items ── */}
         <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto">
@@ -76,21 +76,21 @@ export default function Sidebar() {
                 <div className={cn(
                   "relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer group",
                   isActive 
-                    ? "text-white" 
-                    : "hover:text-white"
+                    ? "text-slate-900" 
+                    : "hover:text-slate-900"
                 )}>
                   {/* Active indicator bar */}
                   {isActive && (
                     <motion.div 
                       layoutId="activeNav"
-                      className="absolute inset-0 bg-white/[0.07] rounded-lg"
+                      className="absolute inset-0 bg-slate-100 rounded-lg"
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
                   )}
                   
                   <div className={cn(
                     "relative z-10 p-1.5 rounded-md transition-colors",
-                    isActive ? "text-[#FF4D94]" : "text-slate-500 group-hover:text-slate-200"
+                    isActive ? "text-[#FF4D94]" : "text-slate-500 group-hover:text-slate-600"
                   )}>
                     <Icon className="w-[18px] h-[18px]" />
                   </div>
@@ -98,7 +98,7 @@ export default function Sidebar() {
                   {!isCollapsed && (
                     <span className={cn(
                       "relative z-10 text-[13px] font-medium tracking-wide transition-colors",
-                      isActive ? "text-white" : "text-slate-500 group-hover:text-slate-200"
+                      isActive ? "text-slate-900" : "text-slate-500 group-hover:text-slate-900"
                     )}>
                       {item.label}
                     </span>
@@ -106,7 +106,7 @@ export default function Sidebar() {
 
                   {/* Collapsed tooltip */}
                   {isCollapsed && (
-                    <div className="fixed left-[80px] bg-[#1A1A1A] border border-white/10 text-white px-3 py-1.5 rounded-md text-xs font-semibold opacity-0 group-hover:opacity-100 pointer-events-none z-[100] whitespace-nowrap transition-opacity shadow-xl">
+                    <div className="fixed left-[80px] bg-white border border-slate-200 text-slate-900 px-3 py-1.5 rounded-md text-xs font-semibold opacity-0 group-hover:opacity-100 pointer-events-none z-[100] whitespace-nowrap transition-opacity shadow-xl">
                       {item.label}
                     </div>
                   )}
@@ -121,7 +121,7 @@ export default function Sidebar() {
           {/* Collapse toggle */}
           <button 
             onClick={() => setIsCollapsed(!isCollapsed)} 
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.04] transition-all"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all"
           >
             {isCollapsed 
               ? <ChevronRight className="w-[18px] h-[18px] mx-auto" /> 
@@ -135,23 +135,23 @@ export default function Sidebar() {
           </button>
 
           {/* Divider */}
-          <div className="mx-2 h-px bg-white/[0.06]" />
+          <div className="mx-2 h-px bg-slate-200" />
 
           {/* Profile */}
           <Link href="/profile">
             <div className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer group",
               pathname === "/profile" 
-                ? "bg-white/[0.07] text-white" 
-                : "hover:bg-white/[0.04] text-slate-500 hover:text-white"
+                ? "bg-slate-100 text-slate-900" 
+                : "hover:bg-slate-50 text-slate-500 hover:text-slate-900"
             )}>
               <div className="h-8 w-8 shrink-0 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center shadow-lg">
                 <User className="w-3.5 h-3.5 text-white" />
               </div>
               {!isCollapsed && (
                 <div className="flex flex-col min-w-0">
-                  <span className="text-[13px] font-semibold text-white truncate">Alex R.</span>
-                  <span className="text-[11px] text-slate-600">Lv. 12</span>
+                  <span className="text-[13px] font-semibold text-slate-900 truncate">Alex R.</span>
+                  <span className="text-[11px] text-slate-500">Lv. 12</span>
                 </div>
               )}
             </div>
@@ -160,7 +160,7 @@ export default function Sidebar() {
       </motion.aside>
 
       {/* ════ MOBILE BOTTOM BAR ════ */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] border-t border-white/[0.06] bg-[#0A0A0A]/95 backdrop-blur-xl z-50 flex items-center justify-around px-1">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] border-t border-slate-200 bg-white/95 backdrop-blur-xl z-50 flex items-center justify-around px-1">
         {NAV_ITEMS.slice(0, 5).map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -170,7 +170,7 @@ export default function Sidebar() {
                 <motion.div layoutId="mobileActiveNav" className="absolute -top-px left-3 right-3 h-[2px] bg-[#FF4D94] rounded-full" />
               )}
               <Icon className={cn("w-5 h-5 transition-colors", isActive ? "text-[#FF4D94]" : "text-slate-600 group-hover:text-white")} />
-              <span className={cn("text-[10px] font-medium transition-colors", isActive ? "text-white" : "text-slate-600")}>
+              <span className={cn("text-[10px] font-medium transition-colors", isActive ? "text-slate-900" : "text-slate-500")}>
                 {item.label}
               </span>
             </Link>

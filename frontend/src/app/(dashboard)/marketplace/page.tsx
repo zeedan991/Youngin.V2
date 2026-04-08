@@ -22,11 +22,11 @@ export default function MarketplacePage() {
     <div className="w-full">
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={SP}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300 text-xs font-bold tracking-widest uppercase mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm text-slate-700 text-xs font-bold tracking-widest uppercase mb-4">
             <ShoppingBag className="w-4 h-4" /> Global Feed
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3">Brand Aggregator</h1>
-          <p className="text-slate-400 text-lg max-w-2xl">
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 text-slate-900">Brand Aggregator</h1>
+          <p className="text-slate-500 text-lg max-w-2xl">
             Millions of garments scanned globally. Your AI sizing profile is automatically applied to filter out clothes that won't fit perfectly.
           </p>
         </motion.div>
@@ -37,11 +37,11 @@ export default function MarketplacePage() {
             <input 
               type="text" 
               placeholder="Search global drops"
-              className="bg-[#111116] border border-white/10 rounded-full py-2.5 pl-11 pr-4 text-sm text-white focus:outline-none focus:border-[#FF4D94]/50 transition-colors w-full md:w-64"
+              className="bg-white border border-slate-200 shadow-sm rounded-full py-2.5 pl-11 pr-4 text-sm text-slate-900 focus:outline-none focus:border-[#FF4D94]/50 transition-colors w-full md:w-64"
             />
           </div>
-          <button className="h-10 w-10 rounded-full border border-white/10 bg-[#111116] flex items-center justify-center hover:bg-white/10 transition-colors">
-            <Filter className="w-4 h-4 text-slate-300" />
+          <button className="h-10 w-10 rounded-full border border-slate-200 bg-white shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors">
+            <Filter className="w-4 h-4 text-slate-600" />
           </button>
         </motion.div>
       </header>
@@ -53,9 +53,9 @@ export default function MarketplacePage() {
       >
         {INVENTORY.map((item, i) => (
           <Link href={`/product/${item.id}`} key={item.id} className="group cursor-pointer block">
-            <div className="relative aspect-[3/4] rounded-2xl bg-[#111116] border border-white/5 overflow-hidden mb-4">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-end p-4">
-                <button className="w-full py-3 bg-white text-black font-bold text-sm rounded-xl flex items-center justify-center gap-2 hover:bg-[#FF4D94] transition-colors shadow-xl">
+            <div className="relative aspect-[3/4] rounded-2xl bg-slate-100 border border-slate-200 shadow-sm overflow-hidden mb-4">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-end p-4">
+                <button className="w-full py-3 bg-white text-slate-900 font-bold text-sm rounded-xl flex items-center justify-center gap-2 hover:bg-[#FF4D94] hover:text-white transition-colors shadow-xl border border-slate-200">
                   Shop direct on {item.brand} <ExternalLink className="w-3 h-3" />
                 </button>
               </div>
@@ -67,14 +67,14 @@ export default function MarketplacePage() {
                 unoptimized
               />
               <div className="absolute top-4 left-4 z-10">
-                <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-xs font-bold uppercase tracking-wider text-white">
+                <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full border border-slate-200 shadow-sm text-xs font-bold uppercase tracking-wider text-slate-900">
                   98% Fit Match
                 </span>
               </div>
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <h3 className="font-bold text-white text-lg">{item.title}</h3>
+                <h3 className="font-bold text-slate-900 text-lg">{item.title}</h3>
                 <span className="font-mono font-bold text-[#FF4D94]">{item.price}</span>
               </div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-widest">{item.brand}</p>

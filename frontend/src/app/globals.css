@@ -21,11 +21,7 @@
   --foreground: #0f172a;
 }
 
-/* Dashboard pages override */
-.dark-theme {
-  --background: #0A0A0A;
-  --foreground: #E5E2E1;
-}
+
 
 body {
   background-color: var(--background);
