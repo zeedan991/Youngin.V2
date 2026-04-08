@@ -12,12 +12,34 @@ import {
   Activity
 } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 const SP: Transition = { duration: 0.6, ease: "easeOut" };
 
 export default function DashboardOverviewPage() {
-  // Hardcoded UI demonstration data
-  const user = { name: "Alex R.", level: 12, title: "Rising Icon", xp: 3450, xpNext: 5000 };
+  const [userProfile, setUserProfile] = useState({ name: "Icon", level: 1, title: "Rising Icon", xp: 0, xpNext: 5000 });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        if (data) {
+           setUserProfile({
+             name: data.full_name || user.email?.split('@')[0] || "Icon",
+             level: data.level || 1,
+             title: data.level > 10 ? "Atelier Master" : "Rising Icon",
+             xp: data.xp || 0,
+             xpNext: (data.level || 1) * 5000
+           });
+        }
+      }
+    };
+    fetchProfile();
+  }, []);
+
   const scan = { chest: "98.2", waist: "76.4", hips: "94.1", date: "Today, 10:42 AM" };
   const badges = [
     { title: "Precision Mapped", desc: "Completed 3D scan", icon: Activity, color: "text-[#FF4D94]" },
@@ -29,14 +51,14 @@ export default function DashboardOverviewPage() {
     { title: "Monthly Thrift Box", status: "Being Curated", meta: "Arriving May 12", tag: "Subscription" }
   ];
 
-  const xpPercent = (user.xp / user.xpNext) * 100;
+  const xpPercent = (userProfile.xp / userProfile.xpNext) * 100;
 
   return (
     <div className="w-full">
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={SP}>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2">Welcome back.</h1>
-          <p className="text-slate-500 text-lg">Here is your style command center, {user.name.split(" ")[0]}.</p>
+          <p className="text-slate-500 text-lg">Here is your style command center, {userProfile.name.split(" ")[0]}.</p>
         </motion.div>
         
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={SP} className="flex gap-4">
@@ -62,13 +84,13 @@ export default function DashboardOverviewPage() {
           
           <div className="flex items-center gap-6 mb-8 relative z-10">
             <div className="h-20 w-20 shrink-0 rounded-2xl bg-gradient-to-br from-[#FF4D94] to-[#B8005C] shadow-inner flex items-center justify-center border-4 border-white shadow-sm">
-              <span className="text-white font-extrabold text-2xl tracking-tighter">LV.{user.level}</span>
+              <span className="text-white font-extrabold text-2xl tracking-tighter">LV.{userProfile.level}</span>
             </div>
             <div>
-              <h2 className="text-2xl font-bold tracking-tight mb-1">{user.name}</h2>
+              <h2 className="text-2xl font-bold tracking-tight mb-1">{userProfile.name}</h2>
               <div className="flex items-center gap-2 text-slate-400">
                 <Sparkles className="w-4 h-4 text-yellow-400" />
-                <span className="font-medium text-sm text-yellow-500">{user.title}</span> &bull; 
+                <span className="font-medium text-sm text-yellow-500">{userProfile.title}</span> &bull; 
                 <span className="text-sm border border-slate-200 px-2 py-0.5 rounded-md flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3 text-[#FF4D94]" /> 99.8% Credibility
                 </span>
@@ -83,8 +105,8 @@ export default function DashboardOverviewPage() {
             />
           </div>
           <div className="mt-2 flex justify-between text-xs text-slate-500 font-medium relative z-10">
-            <span>{user.xp} XP</span>
-            <span>{user.xpNext} XP for Next Rank</span>
+            <span>{userProfile.xp} XP</span>
+            <span>{userProfile.xpNext} XP for Next Rank</span>
           </div>
         </motion.div>
 

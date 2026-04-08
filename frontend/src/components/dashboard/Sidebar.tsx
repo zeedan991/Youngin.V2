@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   LayoutDashboard, 
   Scan, 
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { createClient } from "@/utils/supabase/client";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -34,6 +35,24 @@ const NAV_ITEMS = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [profile, setProfile] = useState<{name: string, level: number}>({ name: "Loading...", level: 1 });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase.from('profiles').select('full_name, level').eq('id', user.id).single();
+        if (data && data.full_name) {
+           setProfile({ name: data.full_name, level: data.level });
+        } else if (user.email) {
+           // Fallback to email prefix if full_name is missing
+           setProfile({ name: user.email.split('@')[0], level: 1 });
+        }
+      }
+    };
+    fetchProfile();
+  }, []);
 
   return (
     <>
@@ -150,8 +169,8 @@ export default function Sidebar() {
               </div>
               {!isCollapsed && (
                 <div className="flex flex-col min-w-0">
-                  <span className="text-[13px] font-semibold text-slate-900 truncate">Alex R.</span>
-                  <span className="text-[11px] text-slate-500">Lv. 12</span>
+                  <span className="text-[13px] font-semibold text-slate-900 truncate">{profile.name}</span>
+                  <span className="text-[11px] text-slate-500">Lv. {profile.level}</span>
                 </div>
               )}
             </div>
