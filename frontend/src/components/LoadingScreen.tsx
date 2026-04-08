@@ -7,8 +7,7 @@ export default function LoadingScreen() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Keep the loading screen active for 1.8 seconds to allow fonts and 3D scripts to instantiate
-    const timer = setTimeout(() => setIsLoading(false), 1800);
+    const timer = setTimeout(() => setIsLoading(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -19,25 +18,38 @@ export default function LoadingScreen() {
           key="loader"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.6, ease: "easeInOut" } }}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-8 bg-[#0a0a0a]"
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 bg-[#0a0a0a]"
         >
-          {/* Logo preloads perfectly for the nav bar */}
+          {/* Ambient glow behind logo */}
+          <div className="absolute w-[300px] h-[300px] rounded-full bg-[#FF4D94]/10 blur-[100px] pointer-events-none" />
+          
+          {/* Logo — enlarged and premium */}
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="relative h-24 w-72 md:h-28 md:w-80"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="relative h-32 w-80 md:h-36 md:w-96"
           >
-            <Image src="/logo.png" alt="YOUNGIN" fill className="object-contain scale-[1.6] origin-center" priority />
+            <Image src="/youngin_blackbg.png" alt="YOUNGIN" fill className="object-contain scale-[1.6] origin-center" priority />
           </motion.div>
 
+          {/* Tagline */}
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="text-[11px] font-medium tracking-[4px] uppercase text-white/30"
+          >
+            AI-Powered Fashion Infrastructure
+          </motion.p>
+
           {/* Progress bar */}
-          <div className="h-[2px] w-48 overflow-hidden rounded-full bg-white/10">
+          <div className="h-[2px] w-48 overflow-hidden rounded-full bg-white/10 mt-2">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: "100%" }}
-              transition={{ duration: 1.6, ease: "easeInOut" }}
-              className="h-full bg-white"
+              transition={{ duration: 1.8, ease: "easeInOut" }}
+              className="h-full bg-gradient-to-r from-[#FF4D94] to-white"
             />
           </div>
         </motion.div>

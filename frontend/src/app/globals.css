@@ -13,9 +13,16 @@
   --color-glass-border: rgba(255, 255, 255, 0.08);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+/* Dashboard pages override */
+.dark-theme {
   --background: #0A0A0A;
   --foreground: #E5E2E1;
 }
@@ -24,6 +31,30 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Font utilities */
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid #FF4D94;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent horizontal overflow globally */
+* {
+  box-sizing: border-box;
 }
 
 @utility text-glow {

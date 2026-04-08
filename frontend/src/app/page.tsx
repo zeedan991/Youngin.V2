@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Script from "next/script";
 import {
   motion,
   useScroll,
@@ -18,349 +18,228 @@ const SP = { type: "spring", stiffness: 80, damping: 18 } as const;
 const SP_FAST = { type: "spring", stiffness: 130, damping: 22 } as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface StatCardProps { value: string; label: string; delta?: string; index?: number }
-interface FeatureCardProps { icon: string; title: string; description: string; index?: number }
 
 // ─── Animation Variants ───────────────────────────────────────────────────────
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } } };
 const fadeUp  = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: SP } };
 const fadeIn  = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.6 } } };
 
-// ─── Glow Orb ─────────────────────────────────────────────────────────────────
-function GlowOrb({ className }: { className?: string }) {
-  return <div className={`pointer-events-none absolute rounded-full blur-[140px] opacity-[0.07] ${className}`} />;
-}
-
 // ─── Section Label ────────────────────────────────────────────────────────────
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-3 text-[11px] font-semibold tracking-[4px] uppercase text-white/30">
+    <p className="mb-3 text-[10px] font-bold tracking-[4px] uppercase text-slate-400">
       {children}
     </p>
   );
 }
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-function StatCard({ value, label, delta, index = 0 }: StatCardProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 32 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ ...SP, delay: index * 0.08 }}
-      whileHover={{ y: -5, scale: 1.02 }}
-      className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl cursor-default"
-    >
-      <p className="text-3xl font-bold tracking-tight text-white">{value}</p>
-      <p className="mt-1 text-sm text-slate-400">{label}</p>
-      {delta && (
-        <motion.span
-          initial={{ opacity: 0, x: -8 }}
-          animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ delay: index * 0.08 + 0.3 }}
-          className="mt-3 inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-medium text-white/50"
-        >
-          ▲ {delta}
-        </motion.span>
-      )}
-    </motion.div>
-  );
-}
 
-// ─── Feature Card ─────────────────────────────────────────────────────────────
-function FeatureCard({ icon, title, description, index = 0 }: FeatureCardProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ ...SP, delay: index * 0.07 }}
-      whileHover={{ y: -6, borderColor: "rgba(255,255,255,0.2)" }}
-      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-7 cursor-default"
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-      <motion.div whileHover={{ scale: 1.12 }} transition={SP_FAST} className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-2xl">
-        {icon}
-      </motion.div>
-      <h3 className="mb-2 text-lg font-semibold text-white">{title}</h3>
-      <p className="text-sm leading-relaxed text-slate-400">{description}</p>
-    </motion.div>
-  );
-}
-
-// ─── Step Card ────────────────────────────────────────────────────────────────
-function StepCard({ num, title, desc, detail, index = 0 }: { num: string; title: string; desc: string; detail: string; index?: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
-      animate={inView ? { opacity: 1, x: 0 } : {}}
-      transition={{ ...SP, delay: index * 0.12 }}
-      className="relative flex gap-6 group"
-    >
-      {/* Number */}
-      <div className="flex flex-col items-center">
-        <motion.div
-          whileHover={{ scale: 1.08 }}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.06] text-sm font-bold text-white/60"
-        >
-          {num}
-        </motion.div>
-        {index < 2 && <div className="mt-2 w-px flex-1 bg-gradient-to-b from-white/10 to-transparent" />}
-      </div>
-      {/* Content */}
-      <div className="pb-12">
-        <p className="mb-1 text-[10px] font-semibold tracking-[3px] uppercase text-white/30">{detail}</p>
-        <h3 className="mb-2 text-xl font-bold text-white group-hover:text-white/90 transition-colors">{title}</h3>
-        <p className="text-slate-400 leading-relaxed max-w-md">{desc}</p>
-      </div>
-    </motion.div>
-  );
-}
-
-// ─── Ticker ───────────────────────────────────────────────────────────────────
-function Ticker({ to, prefix = "", suffix = "", decimals = 0 }: { to: number; prefix?: string; suffix?: string; decimals?: number }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const [started, setStarted] = useState(false);
-  useEffect(() => {
-    const observer = new IntersectionObserver(([e]) => { if (e.isIntersecting) setStarted(true); }, { threshold: 0.5 });
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-  useEffect(() => {
-    if (!started) return;
-    let s = 0; const step = to / 60;
-    const t = setInterval(() => {
-      s += step;
-      if (s >= to) { setCount(to); clearInterval(t); }
-      else setCount(parseFloat(s.toFixed(decimals)));
-    }, 16);
-    return () => clearInterval(t);
-  }, [started, to, decimals]);
-  return <span ref={ref}>{prefix}{decimals > 0 ? count.toFixed(decimals) : count.toLocaleString()}{suffix}</span>;
-}
-
-// ─── Sparkline ────────────────────────────────────────────────────────────────
-function AccuracySparkline() {
-  const points = [72, 78, 75, 84, 80, 88, 86, 91, 89, 94, 96, 98];
-  const w = 260, h = 80;
-  const min = Math.min(...points), max = Math.max(...points);
-  const pts = points.map((v, i) => `${(i / (points.length - 1)) * w},${h - ((v - min) / (max - min)) * (h - 10) - 5}`).join(" ");
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full" fill="none">
-      <defs>
-        <linearGradient id="spark-y" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <motion.polyline points={pts} stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"
-        initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ duration: 1.6, ease: "easeInOut", delay: 0.9 }} />
-      <polygon points={`0,${h} ${pts} ${w},${h}`} fill="url(#spark-y)" />
-    </svg>
-  );
-}
-
-// ─── Body Scan Visualization ──────────────────────────────────────────────────
-const LANDMARKS = [
-  { x: 100, y: 28,  label: "nose"           },
-  { x: 87,  y: 26,  label: "left ear"       },
-  { x: 113, y: 26,  label: "right ear"      },
-  { x: 72,  y: 68,  label: "left shoulder"  },
-  { x: 128, y: 68,  label: "right shoulder" },
-  { x: 58,  y: 112, label: "left elbow"     },
-  { x: 142, y: 112, label: "right elbow"    },
-  { x: 52,  y: 154, label: "left wrist"     },
-  { x: 148, y: 154, label: "right wrist"    },
-  { x: 82,  y: 164, label: "left hip"       },
-  { x: 118, y: 164, label: "right hip"      },
-  { x: 80,  y: 218, label: "left knee"      },
-  { x: 120, y: 218, label: "right knee"     },
-  { x: 78,  y: 268, label: "left ankle"     },
-  { x: 122, y: 268, label: "right ankle"    },
+// ─── Full 33-point MediaPipe Pose Landmarks ───────────────────────────────────
+const LM: [number, number][] = [
+  [100,22],[94,17],[88,14],[82,16],[106,17],[112,14],[118,16],[77,24],[123,24],
+  [95,28],[105,28],
+  [62,70],[138,70],
+  [44,132],[156,132],
+  [34,196],[166,196],
+  [27,213],[173,213],[26,206],[174,206],[29,209],[171,209],
+  [78,212],[122,212],
+  [68,302],[132,302],
+  [63,382],[137,382],[59,394],[141,394],[54,405],[146,405],
 ];
-const EDGES = [
-  [3,4],[0,3],[0,4],[3,5],[5,7],[4,6],[6,8],[3,9],[4,10],[9,10],[9,11],[11,13],[10,12],[12,14],
+const BONES: [number,number][] = [
+  [0,1],[1,2],[2,3],[3,7],[0,4],[4,5],[5,6],[6,8],[9,10],
+  [11,12],
+  [11,13],[13,15],[15,17],[15,19],[17,19],
+  [12,14],[14,16],[16,18],[16,20],[18,20],
+  [11,23],[12,24],[23,24],
+  [23,25],[25,27],[27,29],[27,31],
+  [24,26],[26,28],[28,30],[28,32],
 ];
 
 function BodyScanViz() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true });
   const measurements = [
-    { key: "Chest",    val: "96.2 cm" },
-    { key: "Waist",    val: "78.1 cm" },
-    { key: "Inseam",   val: "82.4 cm" },
-    { key: "Shoulder", val: "44.7 cm" },
-    { key: "Neck",     val: "37.5 cm" },
-    { key: "Hip",      val: "94.8 cm" },
+    { key: "Chest",    val: "96.2 cm", pct: 98 },
+    { key: "Waist",    val: "78.1 cm", pct: 99 },
+    { key: "Inseam",   val: "82.4 cm", pct: 97 },
+    { key: "Shoulder", val: "44.7 cm", pct: 99 },
+    { key: "Neck",     val: "37.5 cm", pct: 96 },
+    { key: "Hip",      val: "94.8 cm", pct: 98 },
   ];
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 60, scale: 0.94 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ ...SP, delay: 0.65 }}
-      className="relative mx-auto mt-20 max-w-4xl"
-    >
-      <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}>
-        <div className="absolute inset-x-10 -top-12 h-36 rounded-full bg-white/[0.04] blur-3xl" />
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0c0c14]/95 shadow-2xl backdrop-blur-2xl">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
-            <div className="flex items-center gap-3">
-              <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
-              <span className="text-xs font-semibold tracking-[3px] uppercase text-white/40">Live Body Scan</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {inView && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5 }}
-                className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-white">33 / 33 landmarks</motion.span>}
-              <span className="rounded-full border border-white/10 px-3 py-1 text-[11px] text-white/30">2.3s</span>
-            </div>
+    <motion.div ref={ref} initial={{ opacity: 0, y: 50, scale: 0.96 }} animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}} transition={{ ...SP, delay: 0.3 }} className="relative mx-auto mt-12 max-w-3xl">
+      <div className="absolute inset-x-20 -top-8 h-24 rounded-full bg-[#FF4D94]/8 blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl shadow-2xl border border-slate-800">
+        <div className="flex items-center justify-between px-6 py-4 bg-[#0f0f14] border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <motion.span animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }} transition={{ repeat: Infinity, duration: 1.4 }} className="h-2.5 w-2.5 rounded-full bg-[#FF4D94]" />
+            <span className="text-xs font-bold tracking-[3px] uppercase text-slate-400">Live Body Scan · AI Active</span>
           </div>
-          {/* Main content */}
-          <div className="flex flex-col md:grid md:grid-cols-2">
-            {/* SVG body */}
-            <div className="relative flex items-center justify-center py-10 md:border-r border-b border-white/[0.06] md:border-b-0">
-              <svg viewBox="0 0 200 310" width="180" height="310" fill="none" className="overflow-visible">
-                <defs>
-                  <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                  </filter>
-                  <linearGradient id="scan-grad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="transparent" />
-                    <stop offset="50%" stopColor="rgba(255,255,255,0.8)" />
-                    <stop offset="100%" stopColor="transparent" />
-                  </linearGradient>
-                </defs>
-                {/* Skeleton edges */}
-                {EDGES.map(([a, b], i) => (
-                  <motion.line
-                    key={i}
-                    x1={LANDMARKS[a].x} y1={LANDMARKS[a].y}
-                    x2={LANDMARKS[b].x} y2={LANDMARKS[b].y}
-                    stroke="rgba(255,255,255,0.25)"
-                    strokeWidth="2"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={inView ? { pathLength: 1, opacity: 1 } : {}}
-                    transition={{ delay: 0.5 + i * 0.05, duration: 0.8, ease: "easeInOut" }}
-                  />
-                ))}
-                {/* Landmark dots */}
-                {LANDMARKS.map((lm, i) => (
-                  <motion.circle
-                    key={i}
-                    cx={lm.x} cy={lm.y} r="4"
-                    fill="white"
-                    filter="url(#glow)"
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={inView ? { scale: 1, opacity: 1 } : {}}
-                    transition={{ delay: 1.2 + i * 0.08, type: "spring", stiffness: 200, damping: 10 }}
-                  />
-                ))}
-                {/* Continuous scanning line */}
-                {inView && (
-                  <motion.line
-                    x1="20" x2="180"
-                    stroke="url(#scan-grad)"
-                    strokeWidth="1.5"
-                    initial={{ y1: 10, y2: 10, opacity: 0 }}
-                    animate={{ y1: [10, 300, 10], y2: [10, 300, 10], opacity: [0, 1, 1, 0, 0] }}
-                    transition={{ duration: 3, ease: "linear", repeat: Infinity, opacity: { duration: 3, repeat: Infinity, times: [0, 0.1, 0.9, 1] } }}
-                  />
-                )}
-                {/* Chest measurement line */}
-                {inView && (
-                  <>
-                    <motion.line x1="66" y1="80" x2="134" y2="80" stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="3,3"
-                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.2 }} />
-                    <motion.line x1="78" y1="177" x2="122" y2="177" stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="3,3"
-                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.4 }} />
-                  </>
-                )}
-              </svg>
-            </div>
-            {/* Measurements */}
-            <div className="flex flex-col justify-center gap-0 py-6">
-              {measurements.map((m, i) => (
-                <motion.div key={m.key}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={inView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ ...SP, delay: 1.2 + i * 0.15 }}
-                  className="flex items-center justify-between border-b border-white/[0.05] px-6 py-3 last:border-0 group hover:bg-white/[0.02] transition-colors"
-                >
-                  <span className="text-xs font-medium uppercase tracking-[2px] text-white/30">{m.key}</span>
-                  <motion.span
-                    className="font-display text-lg font-bold text-white"
-                    initial={{ opacity: 0 }}
-                    animate={inView ? { opacity: 1 } : {}}
-                    transition={{ delay: 1.6 + i * 0.15 }}
-                  >{m.val}</motion.span>
-                </motion.div>
+          <div className="flex items-center gap-3">
+            {inView && (<motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 2.8 }} className="rounded-full bg-[#FF4D94]/15 px-3 py-1 text-[11px] font-extrabold text-[#FF4D94]">33 / 33 Landmarks ✓</motion.span>)}
+            <span className="rounded-full border border-slate-700 px-3 py-1 text-[11px] font-bold text-slate-500">2.3s</span>
+          </div>
+        </div>
+        <div className="grid md:grid-cols-[1fr_1fr] min-h-[300px]">
+          <div className="relative flex items-center justify-center py-6 bg-[#0f0f14] border-r border-slate-800">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><div className="w-24 h-64 rounded-full bg-[#FF4D94]/6 blur-[60px]" /></div>
+            <svg viewBox="0 0 200 420" className="relative z-10 h-[220px] w-auto overflow-visible" fill="none">
+              <defs>
+                <filter id="lm-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <linearGradient id="scan-sweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="transparent"/><stop offset="35%" stopColor="#FF4D94" stopOpacity="0.9"/><stop offset="65%" stopColor="#FF4D94" stopOpacity="0.9"/><stop offset="100%" stopColor="transparent"/></linearGradient>
+              </defs>
+              <circle cx="100" cy="25" r="19" fill="rgba(255,255,255,0.04)" stroke="rgba(255,77,148,0.18)" strokeWidth="1"/>
+              <rect x="93" y="44" width="14" height="17" rx="4" fill="rgba(255,255,255,0.03)"/>
+              <path d="M58,61 C52,68 48,85 50,108 L50,152 C50,164 64,172 75,177 L75,215 L125,215 L125,177 C136,172 150,164 150,152 L150,108 C152,85 148,68 142,61 C134,56 118,54 100,54 C82,54 66,56 58,61 Z" fill="rgba(255,255,255,0.035)" stroke="rgba(255,77,148,0.1)" strokeWidth="1"/>
+              <ellipse cx="100" cy="116" rx="35" ry="44" fill="none" stroke="rgba(255,77,148,0.18)" strokeWidth="1" strokeDasharray="3,3"/>
+              <ellipse cx="100" cy="210" rx="26" ry="13" fill="none" stroke="rgba(255,77,148,0.14)" strokeWidth="1" strokeDasharray="3,3"/>
+              <line x1="100" y1="61" x2="100" y2="212" stroke="rgba(255,77,148,0.25)" strokeWidth="1.5" strokeDasharray="5,4"/>
+              <path d="M100,62 C89,60 76,64 62,70" stroke="rgba(160,160,200,0.35)" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M100,62 C111,60 124,64 138,70" stroke="rgba(160,160,200,0.35)" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M62,70 C53,98 46,120 44,132 C42,148 37,172 34,196" stroke="rgba(255,255,255,0.04)" strokeWidth="16" strokeLinecap="round"/>
+              <path d="M138,70 C147,98 154,120 156,132 C158,148 163,172 166,196" stroke="rgba(255,255,255,0.04)" strokeWidth="16" strokeLinecap="round"/>
+              <path d="M78,212 C74,244 70,272 68,302 C66,332 64,358 63,382" stroke="rgba(255,255,255,0.05)" strokeWidth="22" strokeLinecap="round"/>
+              <path d="M122,212 C126,244 130,272 132,302 C134,332 136,358 137,382" stroke="rgba(255,255,255,0.05)" strokeWidth="22" strokeLinecap="round"/>
+              {BONES.map(([a, b], i) => (
+                <motion.line key={i} x1={LM[a][0]} y1={LM[a][1]} x2={LM[b][0]} y2={LM[b][1]} stroke="rgba(255,77,148,0.55)" strokeWidth="1.8" strokeLinecap="round" initial={{ pathLength: 0, opacity: 0 }} animate={inView ? { pathLength: 1, opacity: 1 } : {}} transition={{ delay: 0.5 + i * 0.04, duration: 0.5, ease: "easeOut" }} />
               ))}
-              {/* Fit score */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={inView ? { opacity: 1 } : {}}
-                transition={{ delay: 2.8 }}
-                className="mx-6 mt-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] p-4 text-center"
-              >
-                <p className="text-[10px] tracking-[3px] uppercase text-white/30 mb-1">Overall fit confidence</p>
-                <p className="font-display text-3xl font-bold text-white">98.4%</p>
+              {LM.map(([cx, cy], i) => (
+                <motion.circle key={i} cx={cx} cy={cy} r={i < 11 ? 2.5 : 3.8} fill={i < 11 ? "rgba(255,180,210,0.9)" : "#FF4D94"} filter="url(#lm-glow)" initial={{ scale: 0, opacity: 0 }} animate={inView ? { scale: 1, opacity: 1 } : {}} transition={{ delay: 1.3 + i * 0.06, type: "spring", stiffness: 300, damping: 12 }} />
+              ))}
+              {inView && (<motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.6 }}><line x1="62" y1="54" x2="138" y2="54" stroke="rgba(255,77,148,0.7)" strokeWidth="1" strokeDasharray="2,2"/><line x1="62" y1="50" x2="62" y2="58" stroke="rgba(255,77,148,0.9)" strokeWidth="1.5"/><line x1="138" y1="50" x2="138" y2="58" stroke="rgba(255,77,148,0.9)" strokeWidth="1.5"/><rect x="80" y="44" width="40" height="14" rx="4" fill="rgba(255,77,148,0.2)"/><text x="100" y="54.5" textAnchor="middle" fill="#FF4D94" fontSize="7.5" fontWeight="bold">44.7 cm</text></motion.g>)}
+              {inView && (<motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.9 }}><line x1="10" y1="152" x2="51" y2="152" stroke="rgba(255,77,148,0.5)" strokeWidth="1" strokeDasharray="2,2"/><rect x="-16" y="144" width="26" height="14" rx="4" fill="rgba(255,77,148,0.2)"/><text x="-3" y="154" textAnchor="middle" fill="#FF4D94" fontSize="6.5" fontWeight="bold">78.1</text></motion.g>)}
+              {inView && (<motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.1 }}><line x1="150" y1="212" x2="150" y2="382" stroke="rgba(255,77,148,0.4)" strokeWidth="1" strokeDasharray="2,2"/><line x1="146" y1="212" x2="154" y2="212" stroke="rgba(255,77,148,0.7)" strokeWidth="1.5"/><line x1="146" y1="382" x2="154" y2="382" stroke="rgba(255,77,148,0.7)" strokeWidth="1.5"/><rect x="152" y="282" width="34" height="14" rx="4" fill="rgba(255,77,148,0.2)"/><text x="169" y="292" textAnchor="middle" fill="#FF4D94" fontSize="6.5" fontWeight="bold">82.4 cm</text></motion.g>)}
+              {inView && (<motion.rect x="15" width="170" height="3" rx="1.5" fill="url(#scan-sweep)" filter="url(#lm-glow)" initial={{ y: 10, opacity: 0 }} animate={{ y: [10, 408, 10], opacity: [0, 1, 1, 1, 0] }} transition={{ duration: 3.5, ease: "easeInOut", repeat: Infinity, repeatDelay: 0.8, opacity: { duration: 3.5, times: [0, 0.05, 0.5, 0.95, 1], repeat: Infinity, repeatDelay: 0.8 } }} />)}
+            </svg>
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+              <motion.div animate={{ opacity: [0.7, 1, 0.7] }} transition={{ repeat: Infinity, duration: 2 }} className="flex items-center gap-2 rounded-full bg-[#1a1a22] border border-slate-700 px-4 py-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#FF4D94] animate-pulse"/>
+                <span className="text-[10px] font-bold tracking-[2px] uppercase text-slate-400">Mapping Geometry...</span>
               </motion.div>
             </div>
           </div>
+          <div className="flex flex-col bg-white">
+            <div className="flex-1 divide-y divide-slate-100">
+              {measurements.map((m, i) => (
+                <motion.div key={m.key} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors" initial={{ opacity: 0, x: 24 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ ...SP, delay: 1.5 + i * 0.15 }}>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[9px] font-bold uppercase tracking-[2.5px] text-slate-400">{m.key}</span>
+                    <div className="mt-1.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <motion.div className="h-full bg-gradient-to-r from-[#FF4D94] to-[#ff79b0] rounded-full" initial={{ width: 0 }} animate={inView ? { width: `${m.pct}%` } : {}} transition={{ delay: 2.0 + i * 0.15, duration: 1.2, ease: "easeOut" }} />
+                    </div>
+                  </div>
+                  <motion.span className="font-display text-xl font-black text-slate-900 tabular-nums" initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}} transition={{ delay: 2.2 + i * 0.15 }}>{m.val}</motion.span>
+                </motion.div>
+              ))}
+            </div>
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 3.2, ...SP }} className="m-5 rounded-2xl bg-gradient-to-br from-[#FF4D94] to-[#e0307a] p-5 text-white shadow-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div><p className="text-[9px] font-bold tracking-[3px] uppercase mb-1 text-white/70">Fit Confidence</p><p className="font-display text-4xl font-black">98.4%</p></div>
+                <div className="text-right"><p className="text-[9px] font-bold tracking-wider text-white/70 mb-1">LANDMARKS</p><p className="text-2xl font-black">33/33</p><p className="text-[9px] text-white/60 font-bold mt-0.5">±1mm accuracy</p></div>
+              </div>
+              <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
+                <motion.div className="h-full bg-white rounded-full" initial={{ width: 0 }} animate={inView ? { width: "98.4%" } : {}} transition={{ delay: 3.5, duration: 1.4, ease: "easeOut" }} />
+              </div>
+            </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </motion.div>
+  );
+}
+
+// ─── Marquee Strip ────────────────────────────────────────────────────────────
+function MarqueeStrip() {
+  const tags = ["±1mm Accuracy", "33 Landmarks", "2.3s Scan", "Zero Equipment", "98.4% Confidence", "AI-Powered", "3D Body Map", "Global Tailors", "Zero Returns", "Your Exact Fit"];
+  return (
+    <div className="relative z-10 overflow-hidden border-y border-slate-200 bg-transparent py-5">
+      <motion.div
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ duration: 28, ease: "linear", repeat: Infinity }}
+        className="flex gap-10 whitespace-nowrap w-max"
+      >
+        {[...tags, ...tags].map((tag, i) => (
+          <span key={i} className="inline-flex items-center gap-3 text-sm font-bold tracking-[2px] uppercase text-slate-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#FF4D94]" />
+            {tag}
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Bold Statement Banner ────────────────────────────────────────────────────
+function StatementBanner() {
+  return (
+    <section className="relative z-10 overflow-hidden bg-transparent py-28 sm:py-40 border-t border-slate-200">
+      {/* Glow orbs */}
+      <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#FF4D94]/12 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-violet-500/8 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="relative mx-auto max-w-7xl px-6 text-center">
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={SP} viewport={{ once: true }}>
+          <p className="text-[10px] font-bold uppercase tracking-[4px] text-[#FF4D94] mb-8">The New Standard</p>
+          <h2 className="font-display text-4xl sm:text-6xl md:text-7xl font-black text-slate-900 leading-[1.05] tracking-tight">
+            Size&nbsp;S, M, L, XL<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D94] to-violet-400">were&nbsp;a&nbsp;lie.</span>
+          </h2>
+          <p className="mt-8 text-lg sm:text-xl text-slate-500 font-medium max-w-xl mx-auto">
+            Invented for factories. Not for bodies. We map your exact geometry.
+          </p>
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, ...SP }} viewport={{ once: true }} className="mt-12 flex flex-wrap items-center justify-center gap-4">
+            <Link href="/login">
+              <motion.button whileHover={{ scale: 1.05, boxShadow: "0 12px 32px rgba(255,77,148,0.35)" }} whileTap={{ scale: 0.97 }} transition={SP_FAST} className="rounded-full bg-[#FF4D94] px-10 py-4 text-sm font-bold text-white hover:bg-[#ff3382] transition-colors">
+                Start Your Scan →
+              </motion.button>
+            </Link>
+            <div className="flex items-center gap-3 text-slate-500 text-sm font-medium">
+              <span className="h-px w-8 bg-slate-300" />
+              No credit card required
+              <span className="h-px w-8 bg-slate-300" />
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Floating data pills */}
+        <div className="mt-20 flex flex-wrap justify-center gap-4">
+          {[
+            { val: "70+", label: "Micro-measurements" },
+            { val: "2.3s", label: "Scan time" },
+            { val: "±1mm", label: "Accuracy" },
+            { val: "98%", label: "Fewer returns" },
+          ].map((d, i) => (
+            <motion.div key={d.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i, ...SP }} viewport={{ once: true }}
+              className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.03)] backdrop-blur-sm px-6 py-4">
+              <span className="font-display text-3xl font-black text-slate-900">{d.val}</span>
+              <span className="text-sm text-slate-500 font-medium max-w-[80px] leading-snug">{d.label}</span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const vantaRef = useRef<HTMLDivElement>(null);
-  const [vantaEffect, setVantaEffect] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
-    const initVanta = () => {
-      // Safely initialize Vanta once scripts are loaded onto the window
-      if (!vantaEffect && typeof window !== "undefined" && (window as any).VANTA && (window as any).VANTA.CLOUDS) {
-        setVantaEffect(
-          (window as any).VANTA.CLOUDS({
-            el: vantaRef.current,
-            mouseControls: true,
-            touchControls: true,
-            gyroControls: false,
-            minHeight: 200.00,
-            minWidth: 200.00,
-            backgroundColor: 0x0a0a0a,
-            skyColor: 0x1a1a2e,
-            cloudColor: 0x1e1e3f,
-            cloudShadowColor: 0x050510,
-            sunColor: 0xc8f064,
-            sunGlareColor: 0x9ab840,
-            sunlightColor: 0x8aaa30,
-            speed: 0.8
-          })
-        );
-      }
-    };
-    initVanta();
-    const intervalId = setInterval(initVanta, 500);
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
-    return () => {
-      clearInterval(intervalId);
-      if (vantaEffect) vantaEffect.destroy();
-    };
-  }, [vantaEffect]);
+  function handleSubscribe(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!email || !email.includes("@")) return;
+    setSubscribed(true);
+    setEmail("");
+  }
 
   const { scrollYProgress } = useScroll({ target: containerRef });
   const rawY = useTransform(scrollYProgress, [0, 0.25], [0, -50]);
@@ -368,396 +247,374 @@ export default function LandingPage() {
   const heroY = useSpring(rawY, { stiffness: 60, damping: 20 });
   const heroO = useSpring(rawO, { stiffness: 60, damping: 20 });
 
-  const [activeTab, setActiveTab] = useState<"scan" | "fit" | "wardrobe">("scan");
   const navLinks = ["3D Studio", "Marketplace", "Tailors", "Brands"];
 
-  const features: FeatureCardProps[] = [
-    { icon: "🔬", title: "AI Body Scanning",        description: "Two photos. 33 skeletal landmarks mapped in 2.3 seconds with ±1mm accuracy. No measuring tape, no appointments.",  index: 0 },
-    { icon: "🧱", title: "3D Design Studio",         description: "Build garments on your parametric avatar in real time. Adjust cut, drape, and fabric weight before anything is made.", index: 1 },
-    { icon: "🛍️", title: "Fit Marketplace",          description: "Browse 200+ partner brands with every listing pre-filtered to your exact proportions. No returns. No guessing.",        index: 2 },
-    { icon: "📦", title: "Curated Thrift Box",       description: "Monthly vintage curation sourced by AI to match your body shape, style fingerprint, and sustainability preferences.",   index: 3 },
-    { icon: "✂️", title: "Verified Tailor Network",  description: "Commission any design through our vetted global tailor network. Your 33-point measurement spec ships with every order.", index: 4 },
-    { icon: "🪪", title: "Measurement Passport",     description: "One permanent profile synced across every brand, studio, and tailor on the platform. Your measurements travel with you.", index: 5 },
-  ];
 
-  const tabData = {
-    scan:     { label: "Last scan",      value: "33 landmarks", change: "2.3s",            sub: "Scan duration" },
-    fit:      { label: "Fit confidence", value: "98.4%",        change: "+4.2%",            sub: "vs. last session" },
-    wardrobe: { label: "Matched items",  value: "847 items",    change: "from 200+ brands", sub: "fit your body today" },
-  };
 
   return (
-    <div ref={containerRef} className="relative min-h-screen overflow-x-hidden bg-[#0a0a0a] text-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div ref={containerRef} className="relative min-h-screen overflow-x-hidden bg-white text-slate-900">
 
-      {/* Vanta Canvas Background */}
-      <div ref={vantaRef} className="fixed inset-0 z-0 pointer-events-none" />
+      {/* ════ LOADING ════ */}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white">
+            <div className="relative h-[250px] w-[600px] sm:h-[300px] sm:w-[800px] mb-12 flex justify-center">
+              <Image src="/youngin_whitebg.png?v=6" unoptimized={true} alt="YOUNGIN" fill className="object-contain" priority />
+            </div>
+            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+              className="h-10 w-10 rounded-full border-[3px] border-slate-200 border-t-[#FF4D94]" />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=Syne:wght@700;800&display=swap');
-        .font-display { font-family: 'Syne', sans-serif; }
-        * { box-sizing: border-box; }
-      `}</style>
+      {/* Grid Background */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.025] z-0"
+        style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-      {/* Overlay noise filter to make Vanta look premium and textured */}
-      <div className="pointer-events-none fixed inset-0 z-[1] opacity-[0.025]"
-        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundRepeat: "repeat", backgroundSize: "128px 128px" }} />
-
-      {/* ════ FLOATING NAV ════ */}
-      <div className="fixed top-6 left-0 right-0 z-50 px-6 flex justify-center pointer-events-none">
+      {/* ════ FLOATING NAV — wider + bigger logo ════ */}
+      <div className="fixed top-5 left-0 right-0 z-50 px-4 sm:px-8 flex justify-center pointer-events-none">
         <motion.nav initial={{ opacity: 0, y: -24 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SP, delay: 0.05 }}
-          className="pointer-events-auto flex w-full max-w-5xl items-center justify-between rounded-full border border-white/[0.08] bg-[#0c0c14]/70 px-6 py-2.5 backdrop-blur-xl shadow-2xl">
-          <Link href="/" className="flex items-center pl-2">
-            <motion.div whileHover={{ scale: 1.02 }} transition={SP_FAST} className="relative h-12 w-48 md:h-14 md:w-56">
-              <Image src="/logo.png" alt="YOUNGIN" fill className="object-contain object-left scale-[1.8] md:scale-[2] origin-left" priority />
-            </motion.div>
+          className="pointer-events-auto flex w-full max-w-[1260px] items-center justify-between rounded-full border border-slate-700/60 bg-[#1a1a22]/95 px-6 py-3 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
+
+          {/* Logo — bare text */}
+          <Link href="/" className="flex items-center shrink-0 relative">
+            <span className="font-display text-xl sm:text-2xl font-black tracking-[8px] text-white uppercase mt-0.5 relative z-10 pointer-events-auto">YOUNGIN</span>
           </Link>
+
+          {/* Nav links */}
           <div className="hidden items-center gap-8 md:flex">
             {navLinks.map((link, i) => (
               <motion.a key={link} href="#" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SP, delay: 0.1 + i * 0.05 }}
-                className="text-sm font-medium tracking-wide text-slate-400 transition-colors hover:text-white">{link}</motion.a>
+                className="text-[13px] font-semibold tracking-wide text-white/80 transition-colors hover:text-[#FF4D94]">{link}</motion.a>
             ))}
           </div>
-          <button className="flex flex-col items-end justify-center gap-1.5 p-2 md:hidden">
+
+          {/* Hamburger */}
+          <button className="flex flex-col items-end justify-center gap-1.5 p-2 md:hidden" aria-label="Open menu">
             <span className="h-0.5 w-6 rounded-full bg-white block" />
             <span className="h-0.5 w-6 rounded-full bg-white block" />
-            <span className="h-0.5 w-4 rounded-full bg-white/60 block" />
+            <span className="h-0.5 w-4 rounded-full bg-white block" />
           </button>
-          <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ ...SP, delay: 0.3 }} className="hidden items-center gap-4 md:flex">
-            <Link href="/login" className="text-sm font-medium tracking-wide text-slate-400 hover:text-white transition-colors">Log in</Link>
+
+          {/* CTA cluster */}
+          <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ ...SP, delay: 0.3 }} className="hidden items-center gap-5 md:flex">
+            <Link href="/login" className="text-[13px] font-semibold tracking-wide text-white/80 hover:text-[#FF4D94] transition-colors">Sign In</Link>
             <Link href="/login">
-              <motion.button whileHover={{ scale: 1.05, boxShadow: "0 0 24px rgba(255,255,255,0.12)" }} whileTap={{ scale: 0.96 }} transition={SP_FAST}
-                className="rounded-full bg-white px-5 py-2 text-sm font-bold text-black hover:bg-white/90">Get Started</motion.button>
+              <motion.button whileHover={{ scale: 1.05, boxShadow: "0 4px 24px rgba(255,77,148,0.25)" }} whileTap={{ scale: 0.96 }} transition={SP_FAST}
+                className="rounded-full bg-[#FF4D94] px-7 py-2.5 text-[13px] font-bold text-white hover:bg-white hover:text-black transition-colors">
+                Get Started
+              </motion.button>
             </Link>
           </motion.div>
         </motion.nav>
       </div>
 
       {/* ════ HERO ════ */}
-      <motion.section style={{ y: heroY, opacity: heroO }} className="relative z-10 mx-auto max-w-6xl px-6 pb-20 pt-32 md:pt-40 text-center">
-        <motion.div initial={{ opacity: 0, y: -12, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ ...SP, delay: 0.2 }}
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-4 py-1.5 text-xs font-medium text-white/60">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-          Now in private beta — join the waitlist
-        </motion.div>
+      <motion.section aria-label="Hero section" style={{ y: heroY, opacity: heroO }}
+        className="relative z-10 mx-auto max-w-[1300px] px-4 sm:px-6 pb-12 pt-28 sm:pt-32 md:pt-36 flex flex-col lg:flex-row items-center gap-8 lg:gap-12 min-h-screen">
 
-        <motion.h1 variants={stagger} initial="hidden" animate="show" className="font-display mx-auto max-w-4xl text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-[68px]">
-          <motion.span variants={fadeUp} className="inline-block">Your body.</motion.span>
-          <br />
-          <motion.span variants={fadeUp} className="inline-block text-white/50 italic">Mapped exactly.</motion.span>
-          <br />
-          <motion.span variants={fadeUp} className="inline-block">Dressed perfectly.</motion.span>
-        </motion.h1>
+        {/* Left Text */}
+        <div className="flex-1 text-left">
+          <motion.div initial={{ opacity: 0, y: -12, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ ...SP, delay: 0.2 }}
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#FF4D94]/20 bg-[#FF4D94]/5 px-4 py-1.5 text-xs font-bold text-[#FF4D94]">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#FF4D94]" />
+            Now in private beta
+          </motion.div>
 
-        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SP, delay: 0.55 }}
-          className="mx-auto mt-7 max-w-xl text-base leading-relaxed text-slate-400 md:text-lg">
-          Every size M was designed for a body that doesn&apos;t exist. YOUNGIN maps your exact geometry — 33 landmarks, ±1mm precision — and builds a wardrobe that fits the body you actually have.
-        </motion.p>
+          <motion.h1 variants={stagger} initial="hidden" animate="show"
+            className="font-display text-[52px] sm:text-[60px] md:text-[68px] font-black leading-[1.03] tracking-tight text-slate-900">
+            <motion.span variants={fadeUp} className="inline-block">Your body.</motion.span>
+            <br />
+            <motion.span variants={fadeUp} className="inline-block text-slate-400 italic font-medium">Mapped exactly.</motion.span>
+            <br />
+            <motion.span variants={fadeUp} className="inline-block">Dressed perfectly.</motion.span>
+          </motion.h1>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SP, delay: 0.7 }}
-          className="mt-10 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center">
-          <Link href="/login" className="w-full sm:w-auto">
-            <motion.button whileHover={{ scale: 1.05, boxShadow: "0 0 36px rgba(255,255,255,0.18)" }} whileTap={{ scale: 0.96 }} transition={SP_FAST}
-              className="w-full sm:w-auto rounded-full bg-white px-8 py-3.5 text-base font-semibold text-black hover:bg-white/90">
-              Scan your body free
-            </motion.button>
-          </Link>
-          <Link href="/studio" className="w-full sm:w-auto">
-            <motion.button whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.08)" }} whileTap={{ scale: 0.97 }} transition={SP_FAST}
-              className="flex w-full justify-center sm:w-auto items-center gap-2 rounded-full border border-white/10 bg-white/5 px-8 py-3.5 text-base font-medium text-white backdrop-blur">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-xs">▶</span>
-              See the 3D Studio
-            </motion.button>
-          </Link>
-        </motion.div>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 1 }}
+            className="mt-6 max-w-lg text-base md:text-lg text-slate-500 font-medium leading-relaxed">
+            Every size M was designed for a body that doesn&apos;t exist. YOUNGIN maps your exact geometry — 33 landmarks, ±1mm precision — and builds a wardrobe that fits the body you actually have.
+          </motion.p>
 
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0, duration: 0.6 }} className="mt-5 text-xs text-slate-600">
-          No credit card required · Two photos · 30 seconds
-        </motion.p>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, ...SP }}
+            className="mt-8 flex flex-wrap gap-4">
+            <Link href="/login">
+              <motion.button whileHover={{ scale: 1.04, boxShadow: "0 8px 24px rgba(255,77,148,0.25)" }} whileTap={{ scale: 0.97 }} transition={SP_FAST}
+                className="rounded-full bg-[#FF4D94] px-8 py-3.5 text-sm font-bold text-white hover:bg-[#ff3382] transition-colors">
+                Start Free Scan →
+              </motion.button>
+            </Link>
+            <Link href="/login">
+              <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} transition={SP_FAST}
+                className="rounded-full border-2 border-slate-200 px-8 py-3.5 text-sm font-bold text-slate-700 hover:border-[#FF4D94] hover:text-[#FF4D94] transition-colors">
+                See How It Works
+              </motion.button>
+            </Link>
+          </motion.div>
 
-        {/* Body Scan Visualization */}
-        <BodyScanViz />
-      </motion.section>
-
-      {/* ════ SOCIAL PROOF ════ */}
-      <motion.section initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeIn}
-        className="relative z-10 border-y border-white/5 bg-white/[0.02] py-8">
-        <div className="mx-auto max-w-6xl px-6">
-          <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true }}
-            className="flex flex-wrap items-center justify-center gap-6 md:gap-12">
-            <motion.p variants={fadeUp} className="text-sm text-slate-600">Partner brands</motion.p>
-            {["Nike", "Zara", "H&M", "Levi's", "Uniqlo", "ASOS"].map((b) => (
-              <motion.span key={b} variants={fadeUp} whileHover={{ opacity: 1, y: -2 }}
-                className="text-sm font-semibold text-slate-500 opacity-50 cursor-default">{b}</motion.span>
+          {/* Trust indicators */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1 }}
+            className="mt-10 flex items-center gap-6 text-xs font-medium text-slate-400">
+            {["±1mm precision", "33 landmarks", "2.3s scan"].map((t, i) => (
+              <span key={i} className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#FF4D94]/60" />{t}</span>
             ))}
           </motion.div>
         </div>
-      </motion.section>
 
-      {/* ════ THE PROBLEM ════ */}
-      <section className="relative z-10 mx-auto max-w-6xl px-6 py-32">
-        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={SP} className="max-w-3xl">
-          <SectionLabel>The Problem</SectionLabel>
-          <h2 className="font-display text-4xl font-bold leading-tight md:text-5xl mb-6">
-            Clothing sizes were invented in the 1940s.<br />
-            <span className="text-white/50 italic">Nothing has changed.</span>
-          </h2>
-          <p className="text-lg text-slate-400 leading-relaxed mb-8">
-            The average person wears a size that fits them in zero out of five key dimensions. Shoulders, chest, waist, inseam, and torso length are all different ratios — and &quot;size M&quot; satisfies none of them perfectly. The result? Billions of returns every year, tonnes of wasted fabric, and people who simply stop shopping because nothing fits.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
-          {[
-            { stat: "68%", label: "of online clothing is returned due to poor fit", icon: "↩" },
-            { stat: "$760B", label: "in fashion returns annually, globally", icon: "💸" },
-            { stat: "40%", label: "of returned items end up in landfill", icon: "🌍" },
-          ].map((item, i) => (
-            <motion.div key={item.stat} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...SP, delay: i * 0.1 }}
-              whileHover={{ y: -4 }}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-7 text-center backdrop-blur cursor-default">
-              <p className="text-5xl mb-3">{item.icon}</p>
-              <p className="text-3xl font-bold text-white mb-2">{item.stat}</p>
-              <p className="text-sm text-slate-400 leading-snug">{item.label}</p>
+        {/* Right — hero image */}
+        <div className="flex-1 w-full relative flex items-center justify-center">
+          <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ ...SP, delay: 0.4 }}
+            className="relative w-full max-w-[380px] h-[540px] rounded-3xl overflow-hidden shadow-2xl">
+            <Image src="/try-on-phone.png" alt="AI-powered virtual try-on showing perfect fit detection" fill sizes="(max-width: 768px) 90vw, 380px" className="object-cover object-center" priority />
+            <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.0, type: "spring" }}
+              className="absolute top-[30%] right-4 bg-white px-3 py-2 rounded-xl shadow-lg flex items-center gap-2 text-sm border border-slate-100">
+              <span className="w-2 h-2 rounded-full bg-[#FF4D94] animate-pulse" />
+              <span className="font-bold text-slate-900 text-xs">Fits like M</span>
             </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* ════ STATS ════ */}
-      <section className="relative z-10 mx-auto max-w-6xl px-6 pb-20">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <StatCard value="33"    label="Body landmarks mapped"  delta="±1mm accuracy"    index={0} />
-          <StatCard value="2.3s"  label="Full body scan time"    delta="Industry fastest"  index={1} />
-          <StatCard value="200+"  label="Partner brands"         delta="Growing monthly"   index={2} />
-          <StatCard value="98.4%" label="Average fit confidence" delta="+4.2% this month"  index={3} />
-        </div>
-      </section>
-
-      {/* ════ HOW IT WORKS ════ */}
-      <section className="relative z-10 border-t border-white/5 mx-auto max-w-6xl px-6 py-32">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
-          <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={SP} className="sticky top-24">
-            <SectionLabel>How it Works</SectionLabel>
-            <h2 className="font-display text-4xl font-bold md:text-5xl mb-4">Three steps to a wardrobe that fits</h2>
-            <p className="text-slate-400 leading-relaxed text-lg">
-              From two photos to a perfectly fitted, custom-made garment in your hands — YOUNGIN makes precision fit accessible to everyone, not just people with a personal tailor.
-            </p>
+            <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.2, type: "spring" }}
+              className="absolute top-[44%] left-4 bg-white px-3 py-2 rounded-xl shadow-lg flex items-center gap-2 text-sm border border-slate-100">
+              <span className="w-2 h-2 rounded-full bg-slate-800 animate-pulse" />
+              <span className="font-bold text-slate-900 text-xs">Waist: 31&quot;</span>
+            </motion.div>
+            {/* Gradient overlay bottom */}
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/30 to-transparent" />
           </motion.div>
 
-          <div className="mt-4">
-            <StepCard num="01" title="Scan — your body in 2.3 seconds"
-              desc="Upload two photos: one from the front, one from the side. Our AI model built on MediaPipe maps 33 skeletal landmarks and derives your complete parametric measurement profile without a tape measure."
-              detail="AI Body Scanning" index={0} />
-            <StepCard num="02" title="Design or Discover"
-              desc="Jump into the 3D Studio and build any garment on your avatar — or browse our Fit Marketplace where every item from 200+ brands is pre-filtered to only show pieces that match your exact shape. You see only clothes that actually fit."
-              detail="3D Studio · Fit Marketplace" index={1} />
-            <StepCard num="03" title="Source — tailor or brand"
-              desc="Send your design to a verified tailor anywhere in the world with your full 33-point measurement spec attached automatically. Or order directly from a partner brand knowing every dimension is matched. No returns. No uncertainty."
-              detail="Tailor Network · Direct Orders" index={2} />
+          {/* Side measurement pills */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-30 hidden xl:flex">
+            {[{ name: "Shoulder", val: "44.7 cm" }, { name: "Inseam", val: "82.4 cm" }].map((item, i) => (
+              <motion.div key={item.name} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.4 + i * 0.1 }}
+                className="bg-white p-3 rounded-xl shadow-lg border border-slate-100 w-36">
+                <p className="text-[9px] font-bold text-[#FF4D94] uppercase tracking-wider mb-1">{item.name}</p>
+                <p className="font-display font-black text-base text-slate-900">{item.val}</p>
+                <p className="text-slate-400 text-[9px] font-medium">AI Verified</p>
+              </motion.div>
+            ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* ════ TAILOR NETWORK ════ */}
-      <section className="relative z-10 border-t border-b border-white/5 bg-white/[0.015] py-32">
-        <GlowOrb className="h-[600px] w-[600px] bg-white right-0 top-0" />
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={SP}>
-              <SectionLabel>The Tailor Network</SectionLabel>
-              <h2 className="font-display text-4xl font-bold md:text-5xl mb-6">
-                500+ verified tailors.<br />
-                <span className="text-white/50 italic">Global reach. Local craft.</span>
-              </h2>
-              <p className="text-slate-400 leading-relaxed text-lg mb-8">
-                We built YOUNGIN with independent tailors at the center — not as an afterthought. Every tailor on our platform is vetted for quality, speed, and reliability. When you commission a garment, your 33-point measurement brief is delivered to them instantly — no fitting appointments, no back-and-forth.
-              </p>
-              <p className="text-slate-400 leading-relaxed text-lg">
-                Tailors get access to a global customer base they could never reach alone. Customers get bespoke quality without boutique prices. Everyone wins.
-              </p>
-            </motion.div>
+      {/* ════ MARQUEE STRIP ════ */}
+      <MarqueeStrip />
 
-            <div className="grid grid-cols-1 gap-4">
-              {[
-                { icon: "📐", title: "Measurement brief delivered instantly", desc: "Every order arrives with a complete 33-point spec sheet. No guesswork, no measuring appointments required." },
-                { icon: "🌍", title: "Global customer base", desc: "Tailors in Lagos, Lahore, Lisbon, and everywhere in between reach customers they could never find on their own." },
-                { icon: "⭐", title: "Quality-reviewed system", desc: "Every completed order is reviewed. Tailors build reputation. Customers get accountability. The network gets better over time." },
-                { icon: "💰", title: "Fair, transparent pricing", desc: "Tailors set their own rates. We take a small platform fee. No hidden charges, no race to the bottom on price." },
-              ].map((item, i) => (
-                <motion.div key={item.title} initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ ...SP, delay: i * 0.09 }}
-                  whileHover={{ x: 4, borderColor: "rgba(255,255,255,0.2)" }}
-                  className="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 cursor-default group">
-                  <span className="text-2xl mt-0.5">{item.icon}</span>
-                  <div>
-                    <p className="font-semibold text-white mb-1 group-hover:text-white/90 transition-colors">{item.title}</p>
-                    <p className="text-sm text-slate-400 leading-relaxed">{item.desc}</p>
+      {/* ════ MEASURING SECTION ════ */}
+      <section aria-label="AI measurement technology" className="relative z-10 py-20 sm:py-28 lg:py-36 bg-transparent overflow-hidden border-t border-slate-200">
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/3 w-[700px] h-[700px] bg-[#FF4D94]/5 rounded-full blur-[80px] pointer-events-none" />
+        <div className="mx-auto max-w-[1400px] px-6 relative z-10">
+          <div className="grid lg:grid-cols-[1fr_1.1fr] items-center gap-12 lg:gap-20">
+
+            {/* Left — image unchanged */}
+            <div className="relative order-2 lg:order-1">
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ ...SP }} viewport={{ once: true }}
+                className="w-full aspect-[4/3] bg-[#f8f9fa] rounded-[2.5rem] p-6 sm:p-8 shadow-inner border border-slate-100 relative group overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#FF4D94]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <Image src="/measuring.png" alt="AI-powered tailor measurement with millimeter precision" fill sizes="(max-width: 768px) 90vw, 50vw" className="object-contain p-8 sm:p-12 relative z-10 drop-shadow-2xl transition-transform duration-700 group-hover:scale-105" />
+                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} viewport={{ once: true }}
+                  className="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-white/60 z-20">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF4D94] opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#FF4D94]"></span>
+                    </span>
+                    <p className="font-bold text-slate-500 uppercase tracking-widest text-[9px]">Live Calibration</p>
                   </div>
+                  <p className="text-3xl font-black font-display text-slate-900 tracking-tight">±1mm</p>
                 </motion.div>
-              ))}
+              </motion.div>
+            </div>
+
+            {/* Right text — reduced */}
+            <div className="order-1 lg:order-2">
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-[9px] font-bold uppercase tracking-[3px] text-slate-500 mb-5 shadow-sm">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#FF4D94]" /> Frictionless Sizing
+                </span>
+                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.05] text-slate-900 mb-5">
+                  Ditch the tape.<br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D94] to-[#ff79b0]">Know your exact fit.</span>
+                </h2>
+                <p className="text-base font-medium leading-relaxed text-slate-500 mb-8 max-w-md">
+                  Two photos. 2.3 seconds. Your complete body blueprint — accurate to one millimeter.
+                </p>
+              </motion.div>
+              <div className="space-y-3">
+                {[
+                  { icon: "📸", title: "Just two photos.", desc: "No gear. No tape. We do the math." },
+                  { icon: "🧠", title: "33 landmarks mapped.", desc: "Every major measurement captured at ±1mm." },
+                  { icon: "✅", title: "Shop everywhere.", desc: "One profile. Every brand on YOUNGIN." },
+                ].map((item, i) => (
+                  <motion.div key={item.title} initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.1, ...SP }} viewport={{ once: true }}
+                    className="group bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-[#FF4D94]/30 hover:shadow-md transition-all flex items-center gap-4">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 group-hover:bg-[#FF4D94]/10 group-hover:border-[#FF4D94]/20 transition-colors text-lg">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-sm">{item.title}</h4>
+                      <p className="text-slate-500 text-xs font-medium mt-0.5">{item.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ════ FEATURES ════ */}
-      <section className="relative z-10 mx-auto max-w-6xl px-6 py-32">
-        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={SP} className="mb-14 text-center">
-          <SectionLabel>Platform</SectionLabel>
-          <h2 className="font-display text-4xl font-bold md:text-5xl">
-            One platform.{" "}
-            <span className="text-white/50 italic">Every dimension of fit.</span>
-          </h2>
-          <p className="mx-auto mt-4 max-w-lg text-slate-400">
-            YOUNGIN gives you the complete infrastructure to find, design, and commission clothing that fits your exact body — not a standardised size.
-          </p>
-        </motion.div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((f) => <FeatureCard key={f.title} {...f} />)}
+      {/* ════ SCAN VIZ SECTION ════ */}
+      <section aria-label="AI body scan engine" className="relative z-10 border-t border-slate-200 bg-transparent py-16 sm:py-24 lg:py-32 overflow-hidden">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="mb-16 grid gap-10 md:grid-cols-2 md:items-end">
+            <div className="max-w-xl">
+              <SectionLabel>AI Mapping Technology</SectionLabel>
+              <h2 className="font-display text-3xl font-extrabold tracking-tight text-slate-900 lg:text-4xl">Built for your unique proportions.</h2>
+            </div>
+            <div>
+              <p className="border-l-[3px] border-[#FF4D94] pl-6 text-base font-medium leading-relaxed text-slate-500">
+                Powered by a dual-model computer vision pipeline, our engine extracts <strong className="text-slate-700">33 distinct 3D landmarks</strong> and calculates your exact elliptical circumference geometry—eliminating sizing errors entirely.
+              </p>
+            </div>
+          </div>
+          <BodyScanViz />
         </div>
       </section>
 
-      {/* ════ FOR TAILORS CTA ════ */}
-      <section className="relative z-10 mx-auto max-w-6xl px-6 pb-24">
-        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={SP}
-          className="rounded-3xl border border-white/10 bg-white/[0.03] p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div>
-            <SectionLabel>Are you a tailor?</SectionLabel>
-            <h3 className="font-display text-3xl font-bold mb-3">Join as a verified tailor</h3>
-            <p className="text-slate-400 max-w-lg leading-relaxed">
-              Get access to a global client base with orders that arrive with complete measurement specs attached. No chasing customers for measurements — just craft the garment and ship.
-            </p>
-          </div>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} transition={SP_FAST} className="shrink-0">
-            <Link href="/login">
-              <button className="rounded-full border border-white/25 bg-white/[0.06] px-8 py-4 text-base font-semibold text-white hover:bg-white/[0.1] transition-colors whitespace-nowrap">
-                Apply as a tailor →
-              </button>
-            </Link>
+      {/* ════ BOLD STATEMENT BANNER ════ */}
+      <StatementBanner />
+
+      {/* ════ TAILOR CTA ════ */}
+      <section aria-label="Tailor CTA" className="relative z-10 py-24 sm:py-32 lg:py-40 bg-transparent border-t border-slate-200">
+        <div className="mx-auto max-w-[1100px] px-6">
+          <motion.div initial={{ opacity: 0, scale: 0.98, y: 20 }} whileInView={{ opacity: 1, scale: 1, y: 0 }} transition={SP} viewport={{ once: true }}
+            className="group relative overflow-hidden rounded-[2.5rem] bg-white border border-slate-200 p-8 sm:p-14 lg:p-20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] hover:border-[#FF4D94]/30 transition-all duration-500 flex flex-col md:flex-row md:items-center justify-between gap-12">
+            
+            {/* Soft inner glow */}
+            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/3 w-[500px] h-[500px] bg-[#FF4D94]/5 rounded-full blur-[80px] pointer-events-none group-hover:bg-[#FF4D94]/10 transition-colors duration-700" />
+            
+            <div className="max-w-2xl relative z-10 flex flex-col items-start text-left">
+              <p className="text-[11px] font-bold uppercase tracking-[4px] text-slate-400 mb-6 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#FF4D94] animate-pulse" /> Are you a tailor?
+              </p>
+              <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 mb-6 tracking-tight leading-[1.05]">
+                Join as a verified tailor
+              </h2>
+              <p className="text-slate-500 font-medium leading-relaxed text-base sm:text-lg mb-8 max-w-xl">
+                Get access to a global client base with orders that arrive with complete measurement specs attached. No chasing customers for measurements — just craft the garment and ship.
+              </p>
+            </div>
+            
+            <div className="relative z-10 shrink-0 self-start md:self-auto">
+              <Link href="/login">
+                <motion.button whileHover={{ scale: 1.05, boxShadow: "0 12px 32px rgba(255,77,148,0.3)" }} whileTap={{ scale: 0.97 }} transition={SP_FAST}
+                  className="rounded-full bg-slate-900 px-10 py-5 text-sm font-bold text-white hover:bg-[#FF4D94] transition-all shadow-xl whitespace-nowrap flex items-center justify-center gap-2">
+                  Apply as a tailor <span className="text-lg leading-none">→</span>
+                </motion.button>
+              </Link>
+            </div>
           </motion.div>
-        </motion.div>
+        </div>
       </section>
 
-      {/* ════ FINAL CTA ════ */}
-      <section className="relative z-10 mx-auto max-w-6xl px-6 py-24">
-        <motion.div initial={{ opacity: 0, y: 40, scale: 0.97 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={SP}
-          className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0f0f1a] p-12 text-center shadow-2xl backdrop-blur">
-          <GlowOrb className="h-80 w-80 bg-white -top-20 left-1/2 -translate-x-1/2 opacity-[0.05]" />
-          <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...SP, delay: 0.1 }}
-            className="font-display relative text-4xl font-bold md:text-5xl">
-            Your body is the brief.<br />
-            <span className="text-slate-400 text-3xl font-semibold">We build around it.</span>
-          </motion.h2>
-          <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...SP, delay: 0.2 }}
-            className="relative mx-auto mt-5 max-w-md text-slate-400">
-            Join thousands of people who stopped compromising on fit. Two photos. 33 measurements. A wardrobe that actually works.
-          </motion.p>
-          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...SP, delay: 0.3 }}>
-            <Link href="/login">
-              <motion.button whileHover={{ scale: 1.06, boxShadow: "0 0 40px rgba(255,255,255,0.18)" }} whileTap={{ scale: 0.96 }} transition={SP_FAST}
-                className="relative mt-8 rounded-full bg-white px-10 py-4 text-base font-bold text-black hover:bg-white/90">
-                Start your body scan →
-              </motion.button>
-            </Link>
-          </motion.div>
-          <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.5 }}
-            className="relative mt-4 text-xs text-slate-600">
-            No credit card required · Private beta access · Invite-only
-          </motion.p>
-        </motion.div>
-      </section>
-
-      {/* ════ CONNECT ════ */}
-      <section className="relative z-10 border-t border-white/5 mx-auto max-w-6xl px-6 py-24">
-        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={SP} className="mb-14">
-          <SectionLabel>Get in Touch</SectionLabel>
-          <h2 className="font-display text-4xl font-bold md:text-5xl">
-            Let&apos;s build something<br />
-            <span className="text-white/50 italic">worth wearing.</span>
-          </h2>
-          <p className="mt-4 max-w-lg text-slate-400 leading-relaxed">
-            Whether you&apos;re a brand, a tailor, an investor, or just someone who&apos;s sick of clothes that don&apos;t fit — we&apos;d love to hear from you.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { icon: "✉️", label: "Email us", value: "team@youngin.co", sub: "We reply within 24h", href: "mailto:team@youngin.co" },
-            { icon: "📄", label: "Read the docs", value: "docs.youngin.co", sub: "API, SDK & guides", href: "#" },
-            { icon: "𝕏", label: "Follow on X", value: "@younginapp", sub: "Updates & announcements", href: "#" },
-            { icon: "💼", label: "Investor deck", value: "youngin.co/deck", sub: "Seed round open", href: "#" },
-          ].map((item, i) => (
-            <motion.a
-              key={item.label}
-              href={item.href}
-              target={item.href.startsWith("mailto") ? undefined : "_blank"}
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ ...SP, delay: i * 0.09 }}
-              whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.2)" }}
-              className="group flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur cursor-pointer no-underline"
-            >
-              <span className="text-2xl">{item.icon}</span>
-              <div>
-                <p className="text-[10px] font-semibold tracking-[3px] uppercase text-white/30 mb-1">{item.label}</p>
-                <p className="text-white font-semibold group-hover:text-white/90 transition-colors">{item.value}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{item.sub}</p>
+      {/* ════ TAILOR NETWORK ════ */}
+      <section aria-label="The Tailor Network" className="relative z-10 py-24 sm:py-32 lg:py-40 bg-transparent overflow-hidden text-slate-900 border-y border-slate-200">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-[#FF4D94]/5 blur-[120px] opacity-40 mix-blend-overlay pointer-events-none"></div>
+          <div className="absolute left-0 top-1/4 w-[500px] h-[500px] bg-[#FF4D94]/4 blur-[100px] rounded-full pointer-events-none"></div>
+        </div>
+        
+        <div className="relative mx-auto max-w-[1300px] px-6 z-10">
+          <div className="grid lg:grid-cols-[1fr_1fr] gap-16 lg:gap-20 items-start">
+            
+            {/* Left Content */}
+            <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} transition={SP} viewport={{ once: true }}>
+              <p className="text-[10px] font-bold uppercase tracking-[4px] text-slate-500 mb-6">The Tailor Network</p>
+              <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05] text-slate-900 mb-8">
+                500+ verified<br />tailors.<br />
+                <span className="text-slate-500 italic">Global reach. Local craft.</span>
+              </h2>
+              
+              <div className="space-y-6 text-base md:text-lg text-slate-600 font-medium leading-relaxed max-w-xl">
+                <p>
+                  We built YOUNGIN with independent tailors at the center — not as an afterthought. Every tailor on our platform is vetted for quality, speed, and reliability. When you commission a garment, your 33-point measurement brief is delivered to them instantly — no fitting appointments, no back-and-forth.
+                </p>
+                <p>
+                  Tailors get access to a global customer base they could never reach alone. Customers get bespoke quality without boutique prices. Everyone wins.
+                </p>
               </div>
-            </motion.a>
-          ))}
+            </motion.div>
+
+            {/* Right Cards */}
+            <div className="space-y-5">
+              {[
+                { icon: "📐", title: "Measurement brief delivered instantly", desc: "Every order arrives with a complete 33-point spec sheet. No guesswork, no measuring appointments required." },
+                { icon: "🌍", title: "Global customer base", desc: "Tailors in Lagos, Lahore, Lisbon, and everywhere in between reach customers they could never find on their own." },
+                { icon: "⭐", title: "Quality-reviewed system", desc: "Every completed order is reviewed. Tailors build reputation. Customers get accountability. The network gets better over time." },
+                { icon: "💰", title: "Fair, transparent pricing", desc: "Tailors set their own rates. We take a small platform fee. No hidden charges, no race to the bottom on price." }
+              ].map((card, i) => (
+                <motion.div key={card.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ ...SP, delay: i * 0.1 }} viewport={{ once: true }}
+                  className="group relative overflow-hidden rounded-2xl bg-white border border-slate-200 p-6 sm:p-8 hover:border-[#FF4D94]/30 shadow-sm transition-all duration-300">
+                  <div className="flex items-start gap-5">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-50 border border-slate-100 text-xl shadow-inner text-slate-900 group-hover:scale-110 group-hover:bg-[#FF4D94]/10 group-hover:border-[#FF4D94]/20 group-hover:text-[#FF4D94] transition-all duration-300">
+                      {card.icon}
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-slate-900 mb-2">{card.title}</h4>
+                      <p className="text-sm text-slate-500 leading-relaxed font-medium">{card.desc}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
+          </div>
         </div>
       </section>
 
       {/* ════ FOOTER ════ */}
       <motion.footer initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeIn}
-        className="relative z-10 border-t border-white/[0.06] bg-[#060608]">
-        {/* Main footer row */}
-        <div className="mx-auto max-w-6xl px-6 py-10">
-          <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-            {/* Brand */}
-            <div className="flex flex-col gap-2 shrink-0">
-              <div className="relative h-16 w-48 md:h-20 md:w-60">
-                <Image src="/logo.png" alt="YOUNGIN" fill className="object-contain object-left scale-[1.5] origin-left" />
+        aria-label="Site footer" className="relative z-10 bg-slate-950 py-16 sm:py-20 px-4 sm:px-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col gap-12 md:flex-row md:items-start md:justify-between mb-16">
+            <div className="flex flex-col gap-4 max-w-xs">
+              {/* Bigger footer logo */}
+              <div className="relative h-[160px] w-[350px] -my-4 -ml-4">
+                <Image src="/youngin_blackbg.png?v=7" unoptimized={true} alt="YOUNGIN logo" fill sizes="400px" className="object-contain object-left" />
               </div>
-              <p className="text-xs text-slate-600 mt-2 md:mt-3">Design. Fit. Wear.</p>
+              <p className="text-sm font-medium text-white/40 max-w-[240px] leading-relaxed">
+                AI-powered fashion infrastructure. Design it. Scan it. Own it.
+              </p>
+              {subscribed ? (
+                <p className="mt-2 text-sm font-bold text-[#FF4D94]">✓ You&apos;re on the list!</p>
+              ) : (
+                <form onSubmit={handleSubscribe} className="flex bg-white/5 rounded-full border border-white/10 mt-2 overflow-hidden max-w-xs" aria-label="Email subscription form">
+                  <label htmlFor="footer-email" className="sr-only">Email address</label>
+                  <input id="footer-email" type="email" name="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email" required autoComplete="email"
+                    className="bg-transparent border-none outline-none px-4 py-3 flex-1 text-xs font-medium text-white placeholder:text-white/30" />
+                  <button type="submit" className="px-5 bg-white text-black font-bold text-xs hover:bg-[#FF4D94] hover:text-white transition-all">Join</button>
+                </form>
+              )}
             </div>
-            {/* Link columns */}
-            <div className="grid grid-cols-2 gap-8 md:grid-cols-4 text-sm">
+            <div className="grid grid-cols-2 gap-6 sm:gap-10 md:grid-cols-4 text-sm">
               {[
-                { heading: "Platform",  links: ["Features", "How it Works", "3D Studio", "Fit Marketplace"] },
-                { heading: "For Tailors", links: ["Join Network", "How it Works", "Pricing", "Verification"] },
-                { heading: "Company",   links: ["About", "Blog", "Careers", "Press"] },
-                { heading: "Legal",     links: ["Privacy", "Terms", "Cookies", "Security"] },
+                { heading: "Product",   links: ["Virtual Fitting Room", "Automatic Sizing", "Personalization", "Extension"] },
+                { heading: "Solutions", links: ["In-Store Experience", "Enterprise Plans", "Partners", "Developer API"] },
+                { heading: "Company",   links: ["About Us", "Our Team", "Careers", "Contact Us"] },
+                { heading: "Resources", links: ["FAQ", "Privacy", "Measurements Map", "Terms"] },
               ].map(({ heading, links }) => (
                 <div key={heading}>
-                  <p className="mb-3 text-[10px] font-semibold tracking-[3px] uppercase text-white/30">{heading}</p>
-                  <ul className="space-y-2">
-                    {links.map((l) => (
-                      <li key={l}>
-                        <motion.a href="#" whileHover={{ color: "#ffffff", x: 2 }} transition={{ duration: 0.15 }}
-                          className="text-slate-500 hover:text-white transition-colors">{l}</motion.a>
-                      </li>
-                    ))}
+                  <p className="mb-4 text-[10px] font-bold uppercase tracking-[3px] text-white">{heading}</p>
+                  <ul className="space-y-3 font-medium text-white/40">
+                    {links.map((l) => (<li key={l}><a href="#" aria-label={l} className="hover:text-[#FF4D94] transition-colors text-sm">{l}</a></li>))}
                   </ul>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-        {/* Bottom bar */}
-        <div className="border-t border-white/[0.04] px-6 py-5">
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 md:flex-row">
-            <p className="text-xs text-slate-600">© 2026 Youngin Technologies Pvt. Ltd. All rights reserved.</p>
-            <div className="flex items-center gap-5 text-xs text-slate-600">
-              {[
-                { label: "X (Twitter)", href: "#" },
-                { label: "Instagram",   href: "#" },
-                { label: "LinkedIn",    href: "#" },
-                { label: "team@youngin.co", href: "mailto:team@youngin.co" },
-              ].map((s) => (
-                <motion.a key={s.label} href={s.href} whileHover={{ color: "#ffffff" }} transition={{ duration: 0.15 }}
-                  className="hover:text-white transition-colors">{s.label}</motion.a>
-              ))}
+          <div className="flex flex-col md:flex-row items-center justify-between border-t border-white/10 pt-8 text-xs font-medium text-white/30">
+            <p>© 2026 Youngin Inc. All rights reserved.</p>
+            <div className="flex gap-6 mt-4 md:mt-0">
+              <a href="#" className="hover:text-white transition-colors">Instagram</a>
+              <a href="#" className="hover:text-white transition-colors">LinkedIn</a>
+              <a href="#" className="hover:text-white transition-colors">Contact</a>
             </div>
           </div>
         </div>

@@ -1,6 +1,5 @@
 "use client";
 import dynamic from "next/dynamic";
-import { TopNav } from "@/components/layout/TopNav";
 import { StudioSidebar } from "@/components/studio/StudioSidebar";
 import { Shirt, ZoomIn, ZoomOut, RotateCcw, Maximize2 } from "lucide-react";
 
@@ -22,11 +21,9 @@ const ModelViewer = dynamic(
 
 export default function StudioPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#0A0A0A]">
-      <TopNav />
-
+    <div className="flex flex-col h-[85vh] bg-[#0A0A0A] rounded-3xl overflow-hidden border border-white/10 relative">
       {/* Studio toolbar */}
-      <div className="fixed top-16 inset-x-0 z-40 bg-[#111111]/95 backdrop-blur-md border-b border-white/5 px-6 py-2.5 flex items-center justify-between">
+      <div className="absolute top-0 inset-x-0 z-40 bg-[#111111]/95 backdrop-blur-md border-b border-white/5 px-6 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-white">
             <Shirt className="w-4 h-4 text-[#00E5FF]" />
@@ -54,7 +51,7 @@ export default function StudioPage() {
       </div>
 
       {/* Studio split layout */}
-      <div className="flex flex-1 pt-28">
+      <div className="flex flex-1 pt-12 overflow-hidden">
         {/* 3D Canvas */}
         <div className="flex-1 relative bg-[#0D0D0D] overflow-hidden">
           {/* Subtle grid floor */}
