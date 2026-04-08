@@ -2,13 +2,29 @@
 
 import { motion, type Transition } from "framer-motion";
 import { Settings, CreditCard, Clock, Shirt, Edit3, LogOut, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { createClient } from "@/utils/supabase/client";
 
 const SP: Transition = { duration: 0.6, ease: "easeOut" };
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<"settings" | "history" | "payments" | "designs">("settings");
+  const [designs, setDesigns] = useState<any[]>([]);
+  const [loadingDesigns, setLoadingDesigns] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "designs") {
+      const fetchDesigns = async () => {
+        setLoadingDesigns(true);
+        const supabase = createClient();
+        const { data } = await supabase.from("designs").select("*").order("created_at", { ascending: false });
+        if (data) setDesigns(data);
+        setLoadingDesigns(false);
+      };
+      fetchDesigns();
+    }
+  }, [activeTab]);
 
   const tabs = [
     { id: "settings", label: "Account Settings", icon: Settings },
@@ -120,9 +136,61 @@ export default function ProfilePage() {
             </div>
           )}
           
-          {(activeTab === "payments" || activeTab === "designs") && (
+          {(activeTab === "payments") && (
             <div className="flex-1 min-h-[300px] flex items-center justify-center text-slate-500 animate-in fade-in duration-500">
-              Feature vault unlocking soon in v2.1
+              Payment integrations unlocking soon 
+            </div>
+          )}
+
+          {activeTab === "designs" && (
+            <div className="space-y-6 animate-in fade-in duration-500">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-slate-900">Your Design Locker</h2>
+                <button className="text-sm font-semibold text-[#FF4D94] hover:text-pink-600 transition-colors">Start New Design</button>
+              </div>
+
+              {loadingDesigns ? (
+                <div className="flex items-center justify-center py-12">
+                   <div className="w-8 h-8 rounded-full border-4 border-[#FF4D94] border-t-transparent animate-spin" />
+                </div>
+              ) : designs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center text-slate-500 py-12 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+                  <Shirt className="w-12 h-12 text-slate-300 mb-3" />
+                  <p className="font-semibold text-slate-600">No designs saved yet.</p>
+                  <p className="text-sm">Head over to the 3D Studio to create your first masterpiece.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {designs.map((design) => (
+                    <div key={design.id} className="group flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden">
+                        <img 
+                          src={design.storage_url} 
+                          alt={design.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        />
+                        <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+                          {design.type}
+                        </div>
+                      </div>
+                      <div className="p-4 flex flex-col gap-3">
+                        <div>
+                          <h4 className="font-bold text-slate-900 truncate">{design.title}</h4>
+                          <p className="text-[10px] text-slate-500 uppercase tracking-widest">{new Date(design.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-auto">
+                          <button onClick={() => alert("Order placed! We are routing this to our manufacturing pipeline.")} className="flex-1 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors">
+                            Order Print
+                          </button>
+                          <button className="p-2 border border-slate-200 rounded-xl text-slate-500 hover:text-[#00E5FF] hover:border-[#00E5FF]/40 transition-colors">
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </motion.div>

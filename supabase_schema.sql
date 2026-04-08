@@ -44,6 +44,7 @@ CREATE TABLE public.designs (
   title text NOT NULL,
   type text NOT NULL, -- e.g., 't-shirt', 'jacket'
   storage_url text NOT NULL, -- The Cloudflare R2 public URL
+  configuration jsonb, -- Stores the JSON serialization of the 2D Canvas state
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

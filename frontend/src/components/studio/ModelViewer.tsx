@@ -7,11 +7,8 @@ import * as THREE from "three";
 import { useStudioStore } from "@/store/useStudioStore";
 
 function GarmentModel() {
-  const { currentColor, currentMaterial } = useStudioStore();
+  const { garmentColor } = useStudioStore();
   const meshRef = useRef<THREE.Mesh>(null);
-
-  const roughness = currentMaterial === "glossy" ? 0.1 : currentMaterial === "metallic" ? 0.2 : 0.8;
-  const metalness = currentMaterial === "metallic" ? 0.9 : 0;
 
   return (
     <Float speed={1.2} rotationIntensity={0.3} floatIntensity={0.5}>
@@ -19,26 +16,22 @@ function GarmentModel() {
         {/* T-Shirt body */}
         <mesh ref={meshRef} position={[0, 0, 0]} castShadow>
           <boxGeometry args={[2.2, 2.8, 0.15]} />
-          <meshStandardMaterial
-            color={currentColor}
-            roughness={roughness}
-            metalness={metalness}
-          />
+          <meshStandardMaterial color={garmentColor} roughness={0.7} />
         </mesh>
         {/* Left sleeve */}
         <mesh position={[-1.6, 0.6, 0]} rotation={[0, 0, -0.4]} castShadow>
           <boxGeometry args={[1, 0.7, 0.12]} />
-          <meshStandardMaterial color={currentColor} roughness={roughness} metalness={metalness} />
+          <meshStandardMaterial color={garmentColor} roughness={0.7} />
         </mesh>
         {/* Right sleeve */}
         <mesh position={[1.6, 0.6, 0]} rotation={[0, 0, 0.4]} castShadow>
           <boxGeometry args={[1, 0.7, 0.12]} />
-          <meshStandardMaterial color={currentColor} roughness={roughness} metalness={metalness} />
+          <meshStandardMaterial color={garmentColor} roughness={0.7} />
         </mesh>
         {/* Collar */}
         <mesh position={[0, 1.5, 0]} castShadow>
           <cylinderGeometry args={[0.45, 0.45, 0.18, 32, 1, true]} />
-          <meshStandardMaterial color={currentColor} roughness={roughness} metalness={metalness} side={THREE.DoubleSide} />
+          <meshStandardMaterial color={garmentColor} roughness={0.7} side={THREE.DoubleSide} />
         </mesh>
       </group>
     </Float>
