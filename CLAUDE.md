@@ -10,10 +10,11 @@ An all-in-one fashion tech platform for Gen-Z combining AI sizing, 3D design, an
 5. **Tailor Marketplace**: Connects users to local tailors; sends 3D designs + measurements directly to the tailor.
 
 ## Tech Stack
-- **Frontend**: Next.js 15 (App Router + SSR), Tailwind CSS, Zustand, React Three Fiber + Three.js
-- **AI Backend**: Python FastAPI, Google MediaPipe, MiDaS (PyTorch), Gemini API for AI stylist chatbot
-- **Database**: Firebase (auth + Firestore for chat), Neon.tech (free PostgreSQL)
-- **Hosting**: Vercel (frontend), Hugging Face Spaces (Python AI backend)
+- **Frontend/Backend APIs**: Next.js 15 (App Router + SSR + Server Actions), Tailwind CSS, Zustand, React Three Fiber
+- **AI Backend**: Python FastAPI, Google MediaPipe, MiDaS (PyTorch), Gemini API for AI stylist
+- **Database & Auth**: Supabase (PostgreSQL + Authentication)
+- **Object Storage**: Cloudflare R2 (10GB Free/Zero Egress) + Cloudinary (Image Compression)
+- **Hosting**: Vercel (Next.js), Hugging Face Spaces (Python API)
 - **Payments**: Skipped for now (mock with UI only)
 
 ## Design System & Vibe

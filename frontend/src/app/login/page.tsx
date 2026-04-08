@@ -5,15 +5,18 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowRight, ArrowLeft } from "lucide-react";
+import { login, signup } from "./actions";
 
 const SP = { type: "spring", stiffness: 80, damping: 18 } as const;
-
 
 export default function AuthPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [showPass, setShowPass] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const cardVariants: Variants = {
     hidden: { opacity: 0, y: 30, scale: 0.97 },
@@ -21,13 +24,24 @@ export default function AuthPage() {
     exit: { opacity: 0, y: -20, scale: 0.97, transition: { duration: 0.3 } },
   };
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      router.push("/dashboard");
-    }, 800);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    const formData = new FormData(e.currentTarget);
+
+    if (mode === "signin") {
+      const res = await login(formData);
+      if (res?.error) setErrorMsg(res.error);
+    } else {
+      const res = await signup(formData);
+      if (res?.error) setErrorMsg(res.error);
+      if (res?.success) setSuccessMsg(res.success);
+    }
+    
+    setIsLoading(false);
   }
 
   return (
@@ -109,6 +123,18 @@ export default function AuthPage() {
                 <span className="text-[#444] text-xs font-bold tracking-widest uppercase">or</span>
                 <div className="flex-1 h-px bg-white/[0.06]" />
               </div>
+
+              {/* Status Messages */}
+              {errorMsg && (
+                <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold">
+                  {errorMsg}
+                </div>
+              )}
+              {successMsg && (
+                <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold">
+                  {successMsg}
+                </div>
+              )}
 
               {/* Form */}
               <form className="space-y-4" onSubmit={handleSubmit}>
