@@ -64,9 +64,6 @@ function BodyMesh({ objString }: { objString: string }) {
     const center = box.getCenter(new THREE.Vector3());
     obj.position.sub(center);
 
-    // ✅ FIX: Flip model upright — SMPL Y-axis is flipped in camera space
-    obj.rotation.x = Math.PI;   // flip 180° around X so head is up
-
     setGroup(obj);
   }, [objString]);
 
