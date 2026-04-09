@@ -24,14 +24,20 @@ export default function ThriftShopPage() {
 
   return (
     <div className="w-full">
+      {/* Demo Mode Banner */}
+      <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-2xl border" style={{ background: "rgba(251,191,36,0.08)", borderColor: "rgba(251,191,36,0.2)" }}>
+        <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#FBBF24" }}>⚠ Demo Mode</span>
+        <span className="text-xs" style={{ color: "rgba(251,191,36,0.7)" }}>This page displays sample data. Real inventory is coming soon.</span>
+      </div>
+
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={SP}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm text-purple-600 text-xs font-bold tracking-widest uppercase mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-bold tracking-widest uppercase mb-4" style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.08)", color: "#C084FC" }}>
             <PackageSearch className="w-4 h-4" /> Curated Vintage
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 text-slate-900">Thrift Shop</h1>
-          <p className="text-slate-500 text-lg max-w-2xl">
-            High-quality secondhand vintage pieces, curated by AI from your style quiz and body measurements. Every item is verified to fit your exact geometry.
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3" style={{ color: "#F0EBE3" }}>Thrift Shop</h1>
+          <p className="text-lg max-w-2xl" style={{ color: "rgba(240,235,227,0.45)" }}>
+            High-quality secondhand vintage pieces, curated by AI from your style quiz and body measurements.
           </p>
         </motion.div>
 

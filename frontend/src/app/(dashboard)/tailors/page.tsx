@@ -15,14 +15,20 @@ const TAILORS = [
 export default function TailorsPage() {
   return (
     <div className="w-full">
+      {/* Demo Mode Banner */}
+      <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-2xl border" style={{ background: "rgba(251,191,36,0.08)", borderColor: "rgba(251,191,36,0.2)" }}>
+        <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#FBBF24" }}>⚠ Demo Mode</span>
+        <span className="text-xs" style={{ color: "rgba(251,191,36,0.7)" }}>This page displays sample tailors. Real tailor network coming soon.</span>
+      </div>
+
       <header className="mb-10">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={SP}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm text-cyan-600 text-xs font-bold tracking-widest uppercase mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-bold tracking-widest uppercase mb-4" style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.08)", color: "#22D3EE" }}>
             <Scissors className="w-4 h-4" /> Node Network Active
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 text-slate-900">Tailor Network</h1>
-          <p className="text-slate-500 text-lg max-w-2xl">
-            Push your customized 3D Studio designs directly to a verified local tailor physically near you. Your AI measurements are encrypted and injected into their workflow automatically.
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3" style={{ color: "#F0EBE3" }}>Tailor Network</h1>
+          <p className="text-lg max-w-2xl" style={{ color: "rgba(240,235,227,0.45)" }}>
+            Push your customized 3D Studio designs directly to a verified local tailor near you.
           </p>
         </motion.div>
       </header>

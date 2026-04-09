@@ -1,26 +1,24 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { 
-  LayoutDashboard, 
-  Scan, 
+import {
+  LayoutDashboard,
+  Scan,
   Palette,
-  ShoppingBag, 
-  PackageSearch, 
-  Scissors, 
+  ShoppingBag,
+  PackageSearch,
+  Scissors,
   ChevronLeft,
   ChevronRight,
-  User,
   Sparkles,
-  MessageCircle
+  MessageCircle,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { createClient } from "@/utils/supabase/client";
-
 import { fetchLiveProfile } from "@/app/(dashboard)/profile/actions";
 
 const NAV_ITEMS = [
@@ -37,52 +35,68 @@ const NAV_ITEMS = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [profile, setProfile] = useState<{name: string, level: number, avatar_url: string | null}>({ name: "Loading...", level: 1, avatar_url: null });
+  const [profile, setProfile] = useState<{ name: string; level: number; avatar_url: string | null }>({
+    name: "",
+    level: 1,
+    avatar_url: null,
+  });
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await fetchLiveProfile();
-        if (response.success && response.data) {
-          setProfile({ 
-            name: response.data.username || response.data.full_name || "User", 
-            level: response.data.level || 1,
-            avatar_url: response.data.avatar_url || null
+    fetchLiveProfile()
+      .then((res) => {
+        if (res.success && res.data) {
+          setProfile({
+            name: (res.data as any).username || (res.data as any).full_name || "Creator",
+            level: (res.data as any).level || 1,
+            avatar_url: (res.data as any).avatar_url || null,
           });
-        } else {
-          setProfile({ name: "Guest User", level: 1, avatar_url: null });
         }
-      } catch (err) {
-        setProfile({ name: "User", level: 1, avatar_url: null });
-      }
-    };
-    fetchProfile();
+      })
+      .catch(() => setProfile({ name: "Creator", level: 1, avatar_url: null }));
   }, []);
 
-  const initials = profile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || "YU";
+  const initials = profile.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase() || "YU";
+
+  const sidebarBg = "#0A0909";
+  const borderColor = "rgba(255,255,255,0.07)";
+  const textMuted = "rgba(255,255,255,0.4)";
+  const textActive = "#F0EBE3";
+  const accentColor = "#FF4D94";
 
   return (
     <>
       {/* ════ DESKTOP SIDEBAR ════ */}
-      <motion.aside 
-        animate={{ width: isCollapsed ? "72px" : "260px" }}
+      <motion.aside
+        animate={{ width: isCollapsed ? "72px" : "280px" }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="hidden md:flex flex-col h-screen sticky top-0 bg-white text-slate-500 z-50 shrink-0 select-none overflow-hidden border-r border-slate-200"
+        className="hidden md:flex flex-col h-screen sticky top-0 z-50 shrink-0 select-none overflow-hidden"
+        style={{ background: sidebarBg, borderRight: `1px solid ${borderColor}` }}
       >
         {/* ── Brand Mark ── */}
-        <div className={cn("flex items-center", isCollapsed ? "justify-center px-0 pt-8 pb-6" : "px-6 pt-8 pb-6")}>
+        <div
+          className={cn("flex items-center", isCollapsed ? "justify-center px-0 pt-8 pb-6" : "px-6 pt-8 pb-6")}
+        >
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className={cn("relative shrink-0 transition-all duration-300", isCollapsed ? "h-[3.25rem] w-[3.25rem] mx-auto" : "h-12 w-12")}>
-              <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain drop-shadow-sm" priority />
+            <div className={cn("relative shrink-0 transition-all duration-300", isCollapsed ? "h-12 w-12 mx-auto" : "h-12 w-12")}>
+              <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain" priority />
             </div>
             {!isCollapsed && (
-              <motion.span 
-                initial={{ opacity: 0, x: -8 }} 
+              <motion.span
+                initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-slate-900 text-[24px] font-extrabold tracking-[2px] uppercase pt-1"
-                style={{ fontFamily: "var(--font-syne), sans-serif" }}
+                className="font-extrabold tracking-[2px] uppercase whitespace-nowrap"
+                style={{
+                  fontFamily: "var(--font-syne), sans-serif",
+                  fontSize: "22px",
+                  color: textActive,
+                }}
               >
                 YOUNGIN
               </motion.span>
@@ -91,7 +105,7 @@ export default function Sidebar() {
         </div>
 
         {/* ── Divider ── */}
-        <div className="mx-5 h-px bg-slate-200 mb-4" />
+        <div className="mx-5 h-px mb-4" style={{ background: borderColor }} />
 
         {/* ── Nav Items ── */}
         <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto overflow-x-hidden">
@@ -100,41 +114,46 @@ export default function Sidebar() {
             const Icon = item.icon;
             return (
               <Link key={item.label} href={item.href}>
-                <div className={cn(
-                  "relative flex items-center gap-3 px-3 py-3 rounded-xl transition-all cursor-pointer group",
-                  isActive 
-                    ? "text-slate-900" 
-                    : "hover:text-slate-900"
-                )}>
-                  {/* Active indicator bar */}
+                <div
+                  className={cn(
+                    "relative flex items-center gap-3 px-3 py-3 rounded-xl transition-all cursor-pointer group",
+                  )}
+                  style={{
+                    background: isActive ? "rgba(255,77,148,0.12)" : "transparent",
+                    color: isActive ? textActive : textMuted,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) (e.currentTarget as HTMLElement).style.background = "transparent";
+                  }}
+                >
                   {isActive && (
-                    <motion.div 
-                      layoutId="activeNav"
-                      className="absolute inset-0 bg-slate-100 rounded-xl"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    <div
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
+                      style={{ background: accentColor }}
                     />
                   )}
-                  
-                  <div className={cn(
-                    "relative z-10 transition-colors",
-                    isActive ? "text-[#FF4D94]" : "text-slate-500 group-hover:text-slate-600",
-                    isCollapsed && "mx-auto"
-                  )}>
-                    <Icon className="w-[20px] h-[20px]" />
+
+                  <div
+                    className={cn("transition-colors", isCollapsed && "mx-auto")}
+                    style={{ color: isActive ? accentColor : "inherit" }}
+                  >
+                    <Icon className="w-5 h-5" />
                   </div>
-                  
+
                   {!isCollapsed && (
-                    <span className={cn(
-                      "relative z-10 text-[14px] font-bold tracking-wide transition-colors whitespace-nowrap",
-                      isActive ? "text-slate-900" : "text-slate-500 group-hover:text-slate-900"
-                    )}>
+                    <span className="text-[14px] font-semibold tracking-wide whitespace-nowrap">
                       {item.label}
                     </span>
                   )}
 
-                  {/* Collapsed tooltip */}
                   {isCollapsed && (
-                    <div className="fixed left-[75px] bg-slate-900 text-white px-3 py-1.5 rounded-md text-xs font-bold opacity-0 group-hover:opacity-100 pointer-events-none z-[100] whitespace-nowrap transition-opacity shadow-xl">
+                    <div
+                      className="fixed left-[75px] px-3 py-1.5 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 pointer-events-none z-[100] whitespace-nowrap transition-opacity shadow-2xl"
+                      style={{ background: "#1A1A1A", color: textActive, border: `1px solid ${borderColor}` }}
+                    >
                       {item.label}
                     </div>
                   )}
@@ -145,52 +164,64 @@ export default function Sidebar() {
         </nav>
 
         {/* ── Bottom Section ── */}
-        <div className="mt-auto px-3 pb-4 space-y-3">
-          {/* Collapse toggle */}
-          <button 
-            onClick={() => setIsCollapsed(!isCollapsed)} 
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all font-bold"
+        <div className="mt-auto px-3 pb-5 space-y-3">
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl transition-all"
+            style={{ color: textMuted }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)")}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
           >
-            {isCollapsed 
-              ? <ChevronRight className="w-5 h-5 mx-auto text-[#FF4D94]" /> 
-              : (
-                <>
-                  <ChevronLeft className="w-5 h-5 text-[#FF4D94]" />
-                  <span className="text-[13px]">Collapse</span>
-                </>
-              )
-            }
+            {isCollapsed ? (
+              <ChevronRight className="w-5 h-5" style={{ color: accentColor }} />
+            ) : (
+              <>
+                <ChevronLeft className="w-5 h-5" style={{ color: accentColor }} />
+                <span className="text-[13px] font-semibold">Collapse</span>
+              </>
+            )}
           </button>
 
-          {/* Divider */}
-          <div className="mx-2 h-px bg-slate-200" />
+          <div className="h-px mx-2" style={{ background: borderColor }} />
 
-          {/* Profile */}
           <Link href="/profile">
-            <div className={cn(
-              "flex items-center gap-3 px-3 py-3 rounded-xl transition-all cursor-pointer group border border-transparent",
-              pathname === "/profile" 
-                ? "bg-slate-50 border-slate-200 text-slate-900" 
-                : "hover:bg-slate-50 text-slate-500 hover:text-slate-900",
-              isCollapsed && "justify-center px-0"
-            )}>
-              <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center shadow-lg overflow-hidden border-2 border-white ring-2 ring-slate-100">
-                {(profile.avatar_url && !imageError) ? (
-                  <img 
-                    src={profile.avatar_url} 
-                    referrerPolicy="no-referrer" 
-                    alt="Profile" 
-                    className="w-full h-full object-cover" 
+            <div
+              className={cn(
+                "flex items-center gap-3 px-3 py-3 rounded-xl transition-all cursor-pointer",
+                isCollapsed && "justify-center px-0"
+              )}
+              style={{
+                background: pathname === "/profile" ? "rgba(255,77,148,0.1)" : "transparent",
+                border: pathname === "/profile" ? `1px solid rgba(255,77,148,0.2)` : "1px solid transparent",
+              }}
+            >
+              <div
+                className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center overflow-hidden shadow-lg border-2"
+                style={{
+                  background: "linear-gradient(135deg, #FF4D94, #B8005C)",
+                  borderColor: "rgba(255,255,255,0.15)",
+                }}
+              >
+                {profile.avatar_url && !imageError ? (
+                  <img
+                    src={profile.avatar_url}
+                    referrerPolicy="no-referrer"
+                    alt="Profile"
+                    className="w-full h-full object-cover"
                     onError={() => setImageError(true)}
                   />
                 ) : (
-                  <span className="text-[13px] font-bold text-white tracking-widest">{initials}</span>
+                  <span className="text-[13px] font-black text-white">{initials}</span>
                 )}
               </div>
-              {!isCollapsed && (
+              {!isCollapsed && profile.name && (
                 <div className="flex flex-col min-w-0">
-                  <span className="text-[14px] font-bold text-slate-900 truncate">{profile.name}</span>
-                  <span className="text-[11px] text-[#FF4D94] font-bold uppercase tracking-widest">Lv. {profile.level} VIP</span>
+                  <span className="text-[14px] font-bold truncate" style={{ color: textActive }}>
+                    {profile.name}
+                  </span>
+                  <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: accentColor }}>
+                    Lv. {profile.level} Creator
+                  </span>
                 </div>
               )}
             </div>
@@ -199,17 +230,30 @@ export default function Sidebar() {
       </motion.aside>
 
       {/* ════ MOBILE BOTTOM BAR ════ */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] border-t border-slate-200 bg-white/95 backdrop-blur-xl z-50 flex items-center justify-around px-1">
+      <div
+        className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] z-50 flex items-center justify-around px-1"
+        style={{ background: sidebarBg, borderTop: `1px solid ${borderColor}` }}
+      >
         {NAV_ITEMS.slice(0, 5).map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
           return (
             <Link key={item.label} href={item.href} className="flex-1 flex flex-col items-center justify-center gap-0.5 group py-2 relative">
               {isActive && (
-                <motion.div layoutId="mobileActiveNav" className="absolute -top-px left-3 right-3 h-[2px] bg-[#FF4D94] rounded-full" />
+                <motion.div
+                  layoutId="mobileActiveNav"
+                  className="absolute -top-px left-3 right-3 h-[2px] rounded-full"
+                  style={{ background: accentColor }}
+                />
               )}
-              <Icon className={cn("w-5 h-5 transition-colors", isActive ? "text-[#FF4D94]" : "text-slate-600 group-hover:text-white")} />
-              <span className={cn("text-[10px] font-medium transition-colors", isActive ? "text-slate-900" : "text-slate-500")}>
+              <Icon
+                className="w-5 h-5 transition-colors"
+                style={{ color: isActive ? accentColor : textMuted }}
+              />
+              <span
+                className="text-[10px] font-semibold transition-colors"
+                style={{ color: isActive ? textActive : textMuted }}
+              >
                 {item.label}
               </span>
             </Link>

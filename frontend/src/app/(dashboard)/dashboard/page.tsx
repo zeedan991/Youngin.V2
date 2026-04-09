@@ -1,212 +1,398 @@
 "use client";
 
 import { motion, type Transition } from "framer-motion";
-import { 
-  ShieldCheck, 
-  Sparkles, 
-  TrendingUp, 
-  Scissors, 
-  Package, 
-  LayoutTemplate,
+import {
+  Sparkles,
   ArrowRight,
-  Activity
+  Palette,
+  Wand2,
+  LayoutTemplate,
+  ShieldCheck,
+  Calendar,
+  TrendingUp,
+  Image as ImageIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { fetchLiveProfile } from "@/app/(dashboard)/profile/actions";
+import { ACHIEVEMENTS, computeUnlockedAchievements, RARITY_COLORS, type Achievement } from "@/lib/achievements";
+import AchievementToast from "@/components/dashboard/AchievementToast";
 
-const SP: Transition = { duration: 0.6, ease: "easeOut" };
+const SP: Transition = { duration: 0.7, ease: [0.22, 1, 0.36, 1] };
+
+type ProfileData = {
+  full_name?: string;
+  username?: string;
+  level?: number;
+  xp?: number;
+  designs_count?: number;
+  created_at?: string;
+  achievements?: string[];
+};
 
 export default function DashboardOverviewPage() {
-  const [userProfile, setUserProfile] = useState({ name: "Icon", level: 1, title: "Rising Icon", xp: 0, xpNext: 5000 });
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [unlockedIds, setUnlockedIds] = useState<string[]>([]);
+  const [toastAchievement, setToastAchievement] = useState<Achievement | null>(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-        if (data) {
-           setUserProfile({
-             name: data.full_name || user.email?.split('@')[0] || "Icon",
-             level: data.level || 1,
-             title: data.level > 10 ? "Atelier Master" : "Rising Icon",
-             xp: data.xp || 0,
-             xpNext: (data.level || 1) * 5000
-           });
+    const load = async () => {
+      try {
+        const res = await fetchLiveProfile();
+        if (res.success && res.data) {
+          setProfile(res.data as ProfileData);
+          const unlocked = computeUnlockedAchievements({
+            username: (res.data as ProfileData).username,
+            designs_count: (res.data as ProfileData).designs_count,
+            created_at: (res.data as ProfileData).created_at,
+          });
+          setUnlockedIds(unlocked);
+
+          // Show toast for first_login on very first visit
+          const shownKey = "youngin_shown_achievements";
+          const shown = JSON.parse(localStorage.getItem(shownKey) || "[]") as string[];
+          const newlyEarned = unlocked.filter((id) => !shown.includes(id));
+          if (newlyEarned.length > 0) {
+            const first = ACHIEVEMENTS.find((a) => a.id === newlyEarned[0]);
+            if (first) setToastAchievement(first);
+            localStorage.setItem(shownKey, JSON.stringify([...shown, ...newlyEarned]));
+          }
         }
+      } catch (e) {
+        console.error("Dashboard profile load failed:", e);
       }
     };
-    fetchProfile();
+    load();
   }, []);
 
-  const scan = { chest: "98.2", waist: "76.4", hips: "94.1", date: "Today, 10:42 AM" };
-  const badges = [
-    { title: "Precision Mapped", desc: "Completed 3D scan", icon: Activity, color: "text-[#FF4D94]" },
-    { title: "Visionary", desc: "Designed 5 pieces", icon: LayoutTemplate, color: "text-purple-400" },
-    { title: "Couture Node", desc: "First tailor order", icon: Scissors, color: "text-blue-400" },
-  ];
-  const projects = [
-    { title: "Oversized Utility Jacket", status: "Pattern Cutting", meta: "Atelier Lisbon", tag: "Tailor" },
-    { title: "Monthly Thrift Box", status: "Being Curated", meta: "Arriving May 12", tag: "Subscription" }
-  ];
+  const displayName = profile?.username || profile?.full_name?.split(" ")[0] || "Creator";
+  const level = profile?.level || 1;
+  const xp = profile?.xp || 0;
+  const xpNext = level * 5000;
+  const xpPercent = Math.min((xp / xpNext) * 100, 100);
+  const designsCount = profile?.designs_count || 0;
+  const memberSince = profile?.created_at
+    ? new Date(profile.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+    : "—";
 
-  const xpPercent = (userProfile.xp / userProfile.xpNext) * 100;
+  const unlockedAchievements = ACHIEVEMENTS.filter((a) => unlockedIds.includes(a.id)).slice(0, 4);
+
+  const quickActions = [
+    {
+      label: "Open 3D Studio",
+      desc: "Design & create your next piece",
+      href: "/studio",
+      icon: Palette,
+      gradient: "from-[#FF4D94] to-[#B8005C]",
+    },
+    {
+      label: "AI Stylist",
+      desc: "Get personalized style advice",
+      href: "/ai-stylist",
+      icon: Wand2,
+      gradient: "from-purple-500 to-purple-800",
+    },
+    {
+      label: "Style Quiz",
+      desc: "Discover your fashion identity",
+      href: "/style-quiz",
+      icon: Sparkles,
+      gradient: "from-amber-400 to-orange-600",
+    },
+  ];
 
   return (
-    <div className="w-full">
-      <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={SP}>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2">Welcome back.</h1>
-          <p className="text-slate-500 text-lg">Here is your style command center, {userProfile.name.split(" ")[0]}.</p>
-        </motion.div>
-        
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={SP} className="flex gap-4">
-           {/* Primary action hooked up dynamically over time */}
-           <Link href="/studio">
-             <button className="rounded-full bg-[#FF4D94] text-white px-6 py-2.5 font-bold text-sm hover:scale-105 transition-transform flex items-center gap-2">
-               Enter 3D Studio <ArrowRight className="w-4 h-4"/>
-             </button>
-           </Link>
-        </motion.div>
-      </header>
+    <div className="w-full space-y-10">
+      {/* ── Achievement Toast ── */}
+      <AchievementToast achievement={toastAchievement} onClose={() => setToastAchievement(null)} />
 
-      {/* ════ BENTO GRID LAYOUT ════ */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        
-        {/* 1. GAMIFICATION / PROFILE (Spans 2 columns on wide screens) */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SP, delay: 0.1 }}
-          className="md:col-span-2 lg:col-span-2 rounded-3xl border border-slate-200 bg-white shadow-sm p-8 relative overflow-hidden group"
-        >
-          {/* subtle background glow */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF4D94]/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 group-hover:bg-[#FF4D94]/10 transition-colors duration-700" />
-          
-          <div className="flex items-center gap-6 mb-8 relative z-10">
-            <div className="h-20 w-20 shrink-0 rounded-2xl bg-gradient-to-br from-[#FF4D94] to-[#B8005C] shadow-inner flex items-center justify-center border-4 border-white shadow-sm">
-              <span className="text-white font-extrabold text-2xl tracking-tighter">LV.{userProfile.level}</span>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight mb-1">{userProfile.name}</h2>
-              <div className="flex items-center gap-2 text-slate-400">
-                <Sparkles className="w-4 h-4 text-yellow-400" />
-                <span className="font-medium text-sm text-yellow-500">{userProfile.title}</span> &bull; 
-                <span className="text-sm border border-slate-200 px-2 py-0.5 rounded-md flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-[#FF4D94]" /> 99.8% Credibility
-                </span>
-              </div>
-            </div>
-          </div>
+      {/* ── Hero Welcome Header ── */}
+      <motion.header
+        initial={{ opacity: 0, y: -24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={SP}
+        className="flex flex-col md:flex-row md:items-end justify-between gap-6"
+      >
+        <div>
+          <p className="text-xs font-black uppercase tracking-[4px] mb-3" style={{ color: "var(--dash-accent)" }}>
+            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+          </p>
+          <h1
+            className="text-5xl md:text-7xl font-extrabold leading-none mb-3 tracking-tight"
+            style={{ fontFamily: "var(--font-display)", color: "var(--dash-text)" }}
+          >
+            Welcome back,
+            <br />
+            <span style={{ color: "var(--dash-accent)" }}>@{displayName}</span>
+          </h1>
+          <p style={{ color: "var(--dash-muted)" }} className="text-lg font-medium">
+            Your fashion command center. Let&apos;s create something iconic.
+          </p>
+        </div>
 
-          <div className="relative z-10 w-full bg-slate-100 rounded-full h-3 border border-slate-200 overflow-hidden">
-            <motion.div 
-              initial={{ width: 0 }} animate={{ width: `${xpPercent}%` }} transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-              className="h-full bg-gradient-to-r from-[#FF4D94] to-[#B8005C] rounded-full"
-            />
+        <div className="flex items-center gap-3 shrink-0">
+          <div
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-sm font-bold"
+            style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)", color: "var(--dash-text)" }}
+          >
+            <ShieldCheck className="w-4 h-4" style={{ color: "var(--dash-accent)" }} />
+            Level {level} Creator
           </div>
-          <div className="mt-2 flex justify-between text-xs text-slate-500 font-medium relative z-10">
-            <span>{userProfile.xp} XP</span>
-            <span>{userProfile.xpNext} XP for Next Rank</span>
-          </div>
-        </motion.div>
+          <Link href="/studio">
+            <button
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm text-white transition-all hover:scale-105 hover:shadow-lg"
+              style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}
+            >
+              Open Studio <ArrowRight className="w-4 h-4" />
+            </button>
+          </Link>
+        </div>
+      </motion.header>
 
-        {/* 2. LATEST SCAN METRICS */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SP, delay: 0.15 }}
-          className="md:col-span-1 lg:col-span-1 rounded-3xl border border-slate-200 bg-white shadow-sm p-8 flex flex-col justify-between"
-        >
+      {/* ── XP Progress Bar ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SP, delay: 0.1 }}
+        className="rounded-3xl p-6 border"
+        style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}
+      >
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-bold text-slate-700">Latest Scan</h3>
-              <Activity className="w-5 h-5 text-[#FF4D94]" />
-            </div>
-            <div className="space-y-4 text-slate-900">
-              <div className="flex justify-between items-end border-b border-slate-200 pb-2">
-                <span className="text-sm text-slate-500">Chest</span>
-                <span className="font-mono text-xl font-bold">{scan.chest}<span className="text-xs text-slate-500 ml-1">cm</span></span>
-              </div>
-              <div className="flex justify-between items-end border-b border-slate-200 pb-2">
-                <span className="text-sm text-slate-500">Waist</span>
-                <span className="font-mono text-xl font-bold">{scan.waist}<span className="text-xs text-slate-500 ml-1">cm</span></span>
-              </div>
-              <div className="flex justify-between items-end pb-2">
-                <span className="text-sm text-slate-500">Hips</span>
-                <span className="font-mono text-xl font-bold">{scan.hips}<span className="text-xs text-slate-500 ml-1">cm</span></span>
-              </div>
-            </div>
+            <span className="text-sm font-black uppercase tracking-widest" style={{ color: "var(--dash-muted)" }}>
+              XP Progress
+            </span>
+            <p className="text-2xl font-extrabold mt-1" style={{ color: "var(--dash-text)" }}>
+              {xp.toLocaleString()} <span className="text-base font-medium" style={{ color: "var(--dash-muted)" }}>/ {xpNext.toLocaleString()} XP</span>
+            </p>
           </div>
-          <div className="mt-4 pt-4 border-t border-slate-200 flex flex-col gap-2">
-            <span className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold flex items-center justify-between">
-              Status <span className="text-[#FF4D94] flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#FF4D94] animate-pulse"/> Verified</span>
+          <div className="text-right">
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "var(--dash-muted)" }}>Next Rank</p>
+            <span className="text-sm font-black" style={{ color: "var(--dash-accent)" }}>
+              Level {level + 1}
             </span>
           </div>
-        </motion.div>
+        </div>
+        <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${xpPercent}%` }}
+            transition={{ duration: 1.5, ease: "easeOut", delay: 0.4 }}
+            className="h-full rounded-full"
+            style={{ background: "linear-gradient(90deg, #FF4D94, #B8005C)" }}
+          />
+        </div>
+      </motion.div>
 
-        {/* 3. ACTIVE PROJECTS */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SP, delay: 0.2 }}
-          className="md:col-span-3 lg:col-span-1 rounded-3xl border border-slate-200 bg-white shadow-sm p-8 flex flex-col"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-slate-700">Active Pipelines</h3>
-            <TrendingUp className="w-5 h-5 text-slate-400" />
+      {/* ── Quick Actions ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {quickActions.map((action, i) => {
+          const Icon = action.icon;
+          return (
+            <motion.div
+              key={action.href}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SP, delay: 0.1 + i * 0.07 }}
+            >
+              <Link href={action.href}>
+                <div
+                  className="group rounded-3xl p-6 border cursor-pointer transition-all hover:scale-[1.02] hover:shadow-2xl"
+                  style={{
+                    background: "var(--dash-surface)",
+                    borderColor: "var(--dash-border)",
+                  }}
+                >
+                  <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-extrabold text-base mb-1" style={{ color: "var(--dash-text)" }}>
+                    {action.label}
+                  </h3>
+                  <p className="text-sm" style={{ color: "var(--dash-muted)" }}>
+                    {action.desc}
+                  </p>
+                  <div className="mt-4 flex items-center gap-1 text-xs font-black uppercase tracking-wider transition-colors" style={{ color: "var(--dash-accent)" }}>
+                    Go <ArrowRight className="w-3 h-3" />
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* ── Stats Row ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SP, delay: 0.25 }}
+        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+      >
+        {[
+          { label: "Designs Created", value: designsCount, icon: LayoutTemplate, suffix: "" },
+          { label: "Current Level", value: level, icon: TrendingUp, suffix: "" },
+          { label: "Achievements", value: unlockedIds.length, icon: Sparkles, suffix: "" },
+          { label: "Member Since", value: memberSince, icon: Calendar, suffix: "" },
+        ].map((stat, i) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.label}
+              className="rounded-3xl p-5 border flex flex-col gap-3"
+              style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}
+            >
+              <div
+                className="h-9 w-9 rounded-xl flex items-center justify-center"
+                style={{ background: "var(--dash-accent-dim)" }}
+              >
+                <Icon className="w-5 h-5" style={{ color: "var(--dash-accent)" }} />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-widest font-bold mb-1" style={{ color: "var(--dash-muted)" }}>
+                  {stat.label}
+                </p>
+                <p className="text-2xl font-extrabold" style={{ color: "var(--dash-text)" }}>
+                  {stat.value}
+                  {stat.suffix}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </motion.div>
+
+      {/* ── My Designs ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SP, delay: 0.3 }}
+        className="rounded-3xl border p-8"
+        style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-extrabold mb-1" style={{ color: "var(--dash-text)" }}>
+              My Designs
+            </h2>
+            <p className="text-sm" style={{ color: "var(--dash-muted)" }}>
+              Everything you&apos;ve created in the studio
+            </p>
           </div>
-          <div className="flex-1 flex flex-col gap-4">
-            {projects.map((proj, i) => (
-              <div key={i} className="flex-1 rounded-2xl bg-slate-50 border border-slate-200 p-4 flex flex-col justify-between group hover:bg-slate-100 transition-colors cursor-pointer">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-slate-900 shrink-0">
-                     {proj.tag === "Tailor" ? <Scissors className="w-4 h-4 text-white" /> : <Package className="w-4 h-4 text-white" />}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm leading-tight text-slate-900 mb-1 group-hover:text-[#FF4D94] transition-colors">{proj.title}</h4>
-                    <p className="text-xs text-slate-500">{proj.meta}</p>
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center gap-2">
-                  <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-slate-400 rounded-full w-[60%]" />
-                  </div>
-                  <span className="text-[10px] font-bold tracking-wider uppercase text-slate-500">{proj.status}</span>
-                </div>
+          <Link href="/studio">
+            <button
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all hover:scale-105"
+              style={{ borderColor: "var(--dash-accent)", color: "var(--dash-accent)", background: "var(--dash-accent-dim)" }}
+            >
+              + New Design
+            </button>
+          </Link>
+        </div>
+
+        {designsCount === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-4">
+            <div
+              className="h-20 w-20 rounded-3xl flex items-center justify-center text-4xl"
+              style={{ background: "var(--dash-accent-dim)" }}
+            >
+              🎨
+            </div>
+            <h3 className="text-lg font-extrabold" style={{ color: "var(--dash-text)" }}>
+              No designs yet
+            </h3>
+            <p className="text-sm text-center max-w-xs" style={{ color: "var(--dash-muted)" }}>
+              Head to the 3D Studio and create your first masterpiece to unlock your first achievement!
+            </p>
+            <Link href="/studio">
+              <button
+                className="mt-2 px-6 py-3 rounded-2xl font-bold text-sm text-white hover:scale-105 transition-transform"
+                style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}
+              >
+                Start Creating
+              </button>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Array.from({ length: Math.min(designsCount, 4) }).map((_, i) => (
+              <div
+                key={i}
+                className="aspect-square rounded-2xl border flex items-center justify-center text-3xl"
+                style={{ background: "rgba(255,255,255,0.03)", borderColor: "var(--dash-border)" }}
+              >
+                <ImageIcon className="w-8 h-8 opacity-20" />
               </div>
             ))}
           </div>
-        </motion.div>
+        )}
+      </motion.div>
 
-        {/* 4. UNLOCKED BADGES (Spans full width bottom) */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SP, delay: 0.25 }}
-          className="md:col-span-3 lg:col-span-4 rounded-3xl border border-slate-200 bg-white shadow-sm p-8"
-        >
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-             <div>
-               <h3 className="font-bold text-lg mb-1 text-slate-900">Your Achievements</h3>
-               <p className="text-sm text-slate-500">Unlock badges to increase your platform credibility.</p>
-             </div>
-             <button className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1 hover:text-[#FF4D94] transition-colors">
-               View All <ArrowRight className="w-3 h-3"/>
-             </button>
+      {/* ── Achievements ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SP, delay: 0.35 }}
+        className="rounded-3xl border p-8"
+        style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-extrabold mb-1" style={{ color: "var(--dash-text)" }}>
+              Achievements
+            </h2>
+            <p className="text-sm" style={{ color: "var(--dash-muted)" }}>
+              {unlockedIds.length} of {ACHIEVEMENTS.length} unlocked
+            </p>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {badges.map((badge, i) => {
-              const Icon = badge.icon;
-              return (
-                <div key={i} className="rounded-2xl bg-slate-50 border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-all cursor-default shadow-sm">
-                  <div className={`h-12 w-12 rounded-xl bg-white flex items-center justify-center shrink-0 border border-slate-200 shadow-sm`}>
-                    <Icon className={`w-6 h-6 ${badge.color}`} />
+          <Link href="/profile">
+            <button className="text-xs font-black uppercase tracking-wider flex items-center gap-1 hover:opacity-70 transition-opacity" style={{ color: "var(--dash-accent)" }}>
+              View All <ArrowRight className="w-3 h-3" />
+            </button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {unlockedAchievements.length > 0
+            ? unlockedAchievements.map((achievement) => (
+                <div
+                  key={achievement.id}
+                  className="rounded-2xl border p-4 flex items-center gap-3 transition-all hover:scale-[1.02]"
+                  style={{ background: "rgba(255,255,255,0.03)", borderColor: "var(--dash-border)" }}
+                >
+                  <div className={`h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br ${RARITY_COLORS[achievement.rarity]} flex items-center justify-center text-lg shadow-lg`}>
+                    {achievement.icon}
                   </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-slate-900 mb-0.5">{badge.title}</h4>
-                    <p className="text-xs text-slate-500">{badge.desc}</p>
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold truncate" style={{ color: "var(--dash-text)" }}>
+                      {achievement.title}
+                    </h4>
+                    <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--dash-accent)" }}>
+                      +{achievement.xpReward} XP
+                    </p>
                   </div>
                 </div>
-              )
-            })}
-          </div>
-        </motion.div>
-      </div>
+              ))
+            : ACHIEVEMENTS.slice(0, 4).map((achievement) => (
+                <div
+                  key={achievement.id}
+                  className="rounded-2xl border p-4 flex items-center gap-3 opacity-30 grayscale"
+                  style={{ background: "rgba(255,255,255,0.02)", borderColor: "var(--dash-border)" }}
+                >
+                  <div className="h-10 w-10 shrink-0 rounded-xl bg-white/10 flex items-center justify-center text-lg">
+                    {achievement.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold truncate" style={{ color: "var(--dash-text)" }}>
+                      {achievement.title}
+                    </h4>
+                    <p className="text-[10px]" style={{ color: "var(--dash-muted)" }}>
+                      Locked
+                    </p>
+                  </div>
+                </div>
+              ))}
+        </div>
+      </motion.div>
     </div>
   );
 }
