@@ -103,7 +103,8 @@ def _run_hmr2(image_path: str) -> dict:
             "on a plain background in bright light."
         )
 
-    dataset    = ViTDetDataset(model_cfg, img, [boxes[0]])
+    # Use the highest-confidence detection
+    dataset    = ViTDetDataset(model_cfg, img, boxes[:1])
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False)
 
     with torch.no_grad():
