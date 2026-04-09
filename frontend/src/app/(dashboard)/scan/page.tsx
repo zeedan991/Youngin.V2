@@ -227,6 +227,9 @@ export default function AISizingPage() {
       const res = await fetch(`${SCAN_API}/api/scan`, {
         method: "POST",
         body:   form,
+        headers: {
+          "Bypass-Tunnel-Reminder": "true"
+        },
         signal: AbortSignal.timeout(180_000),
       });
       const data = await res.json();
