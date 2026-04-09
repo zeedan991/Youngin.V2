@@ -16,12 +16,17 @@ export async function fetchLiveProfile() {
   const fallbackAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
 
   if (profileData) {
+    const { count: followersCount } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", user.id);
+    const { count: followingCount } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", user.id);
+
     return {
       success: true,
       data: {
         ...profileData,
         full_name: profileData.full_name || fallbackName,
         avatar_url: profileData.avatar_url || fallbackAvatar,
+        followers: followersCount || 0,
+        following: followingCount || 0,
       }
     };
   }
@@ -60,6 +65,9 @@ export async function updateProfile(formData: FormData) {
     }, { onConflict: 'id' });
     
     if (error) {
+      if (error.code === '23505' && error.message.includes('username')) {
+        return { success: false, error: "Username is already taken. Please choose another one." };
+      }
       console.error("Profile Save Error:", error);
       return { success: false, error: error.message };
     }

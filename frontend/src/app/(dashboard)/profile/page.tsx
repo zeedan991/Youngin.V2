@@ -162,6 +162,18 @@ export default function ProfilePage() {
                 </a>
               )}
             </div>
+
+            <div className="flex items-center gap-6 mb-3">
+              <div className="flex items-center gap-1.5">
+                <span className="font-black text-sm" style={{ color: textMain }}>{profile?.followers || 0}</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: textMuted }}>Followers</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-black text-sm" style={{ color: textMain }}>{profile?.following || 0}</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: textMuted }}>Following</span>
+              </div>
+            </div>
+
             <p className="text-sm flex items-center gap-2 flex-wrap" style={{ color: textMuted }}>
               {profile?.username && <span className="font-bold" style={{ color: textMain }}>{profile?.full_name}</span>}
               {profile?.username && <span>•</span>}
