@@ -12,14 +12,38 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<"settings" | "history" | "payments" | "designs">("settings");
   const [designs, setDesigns] = useState<any[]>([]);
   const [loadingDesigns, setLoadingDesigns] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const initProfile = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        if (profileData) {
+          setProfile(profileData);
+        } else {
+          setProfile({
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "User",
+            email: user.email,
+            level: 1
+          });
+        }
+      }
+    };
+    initProfile();
+  }, []);
 
   useEffect(() => {
     if (activeTab === "designs") {
       const fetchDesigns = async () => {
         setLoadingDesigns(true);
         const supabase = createClient();
-        const { data } = await supabase.from("designs").select("*").order("created_at", { ascending: false });
-        if (data) setDesigns(data);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase.from("designs").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+          if (data) setDesigns(data);
+        }
         setLoadingDesigns(false);
       };
       fetchDesigns();
@@ -33,6 +57,8 @@ export default function ProfilePage() {
     { id: "designs", label: "Saved Designs", icon: Shirt },
   ] as const;
 
+  const initials = profile?.full_name?.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() || "YU";
+
   return (
     <div className="w-full max-w-6xl mx-auto">
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -40,7 +66,7 @@ export default function ProfilePage() {
           <div className="relative">
              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] shadow-inner flex items-center justify-center p-1">
                <div className="w-full h-full rounded-full bg-white border-4 border-slate-100 flex items-center justify-center text-3xl font-black text-slate-900 shadow-sm">
-                 AR
+                 {initials}
                </div>
              </div>
              <button className="absolute bottom-0 right-0 p-2 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors shadow-sm">
@@ -48,15 +74,17 @@ export default function ProfilePage() {
              </button>
           </div>
           <div>
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2 text-slate-900">Alex Rivera</h1>
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2 text-slate-900">
+              {profile?.full_name || "Loading..."}
+            </h1>
             <p className="text-slate-500 text-lg flex items-center gap-2">
-              Level 12 &bull; <span className="text-[#FF4D94]">Premium Subscriber</span>
+              Level {profile?.level || 1} &bull; <span className="text-[#FF4D94]">Premium Subscriber</span>
             </p>
           </div>
         </motion.div>
         
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={SP}>
-          <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors font-bold text-sm shadow-sm">
+          <button onClick={async () => { await createClient().auth.signOut(); window.location.href = "/login"; }} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors font-bold text-sm shadow-sm">
             <LogOut className="w-4 h-4" /> Sign Out
           </button>
         </motion.div>
@@ -97,15 +125,15 @@ export default function ProfilePage() {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                    <div className="space-y-1">
                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Full Name</label>
-                     <input type="text" defaultValue="Alex Rivera" className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
+                     <input type="text" defaultValue={profile?.full_name || ""} className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
                    </div>
                    <div className="space-y-1">
                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Email Address</label>
-                     <input type="email" defaultValue="alex.rivera@example.com" className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
+                     <input type="email" defaultValue={profile?.email || ""} className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
                    </div>
                    <div className="space-y-1 md:col-span-2">
                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Shipping Address</label>
-                     <input type="text" defaultValue="42 Couture Ave, DTLA, 90014" className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
+                     <input type="text" defaultValue="Enter your shipping address" className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
                    </div>
                  </div>
                </div>
