@@ -17,9 +17,16 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const initProfile = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      try {
+        const supabase = createClient();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError || !user) {
+          console.error("User Auth Error:", userError);
+          setProfile({ full_name: "Guest User", email: "No session active" });
+          return;
+        }
+
         const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
         
         // Always try to pull from the DB first, but if it's null (like some Google profiles), fallback to raw user metadata
@@ -40,6 +47,9 @@ export default function ProfilePage() {
             level: 1
           });
         }
+      } catch (err) {
+        console.error("Critical Profile Error:", err);
+        setProfile({ full_name: "User", email: "Data unretrievable", level: 1 });
       }
     };
     initProfile();
