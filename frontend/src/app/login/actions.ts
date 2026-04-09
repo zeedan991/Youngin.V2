@@ -55,3 +55,10 @@ export async function signup(formData: FormData) {
 
   return { success: 'Verification email sent! Please check your inbox to confirm your account.' }
 }
+
+export async function signout() {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  revalidatePath('/', 'layout')
+  redirect('/login')
+}

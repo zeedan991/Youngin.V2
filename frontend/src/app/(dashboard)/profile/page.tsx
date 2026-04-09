@@ -5,6 +5,7 @@ import { Settings, CreditCard, Clock, Shirt, Edit3, LogOut, ChevronRight } from 
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
+import { signout } from "@/app/login/actions";
 
 const SP: Transition = { duration: 0.6, ease: "easeOut" };
 
@@ -88,7 +89,7 @@ export default function ProfilePage() {
         </motion.div>
         
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={SP}>
-          <button onClick={async () => { await createClient().auth.signOut(); window.location.href = "/login"; }} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors font-bold text-sm shadow-sm">
+          <button onClick={() => signout()} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors font-bold text-sm shadow-sm">
             <LogOut className="w-4 h-4" /> Sign Out
           </button>
         </motion.div>
