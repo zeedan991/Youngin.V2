@@ -21,12 +21,22 @@ export default function ProfilePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        
+        // Always try to pull from the DB first, but if it's null (like some Google profiles), fallback to raw user metadata
+        const fallbackName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || "User";
+        const fallbackAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+
         if (profileData) {
-          setProfile(profileData);
+          setProfile({
+            ...profileData,
+            full_name: profileData.full_name || fallbackName,
+            avatar_url: profileData.avatar_url || fallbackAvatar,
+          });
         } else {
           setProfile({
-            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "User",
+            full_name: fallbackName,
             email: user.email,
+            avatar_url: fallbackAvatar,
             level: 1
           });
         }
