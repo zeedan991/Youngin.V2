@@ -13,7 +13,6 @@ export async function fetchLiveProfile() {
   const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
 
   const fallbackName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || "User";
-  const fallbackAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
 
   if (profileData) {
     const { count: followersCount } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", user.id);
@@ -24,7 +23,6 @@ export async function fetchLiveProfile() {
       data: {
         ...profileData,
         full_name: profileData.full_name || fallbackName,
-        avatar_url: profileData.avatar_url || fallbackAvatar,
         followers: followersCount || 0,
         following: followingCount || 0,
       }
@@ -36,7 +34,7 @@ export async function fetchLiveProfile() {
     data: {
       full_name: fallbackName,
       email: user.email,
-      avatar_url: fallbackAvatar,
+      avatar_url: null,
       level: 1
     }
   };
@@ -52,6 +50,7 @@ export async function updateProfile(formData: FormData) {
   const bio = formData.get('bio') as string;
   const instagram = formData.get('instagram') as string;
   const website = formData.get('website') as string;
+  const avatarUrl = formData.get('avatar_url') as string;
   
   if (fullName || username) {
     const { error } = await supabase.from('profiles').upsert({
@@ -61,7 +60,8 @@ export async function updateProfile(formData: FormData) {
       email: user.email,
       bio: bio || null,
       instagram: instagram || null,
-      website: website || null
+      website: website || null,
+      avatar_url: avatarUrl || null
     }, { onConflict: 'id' });
     
     if (error) {

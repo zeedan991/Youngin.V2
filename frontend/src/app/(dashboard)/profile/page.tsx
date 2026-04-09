@@ -86,7 +86,9 @@ export default function ProfilePage() {
         bio: formData.get("bio") as string,
         instagram: formData.get("instagram") as string,
         website: formData.get("website") as string,
+        avatar_url: formData.get("avatar_url") as string,
       }));
+      setImageError(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } else {
@@ -255,6 +257,20 @@ export default function ProfilePage() {
                   <input
                     type="text" name="full_name"
                     defaultValue={profile?.full_name || ""}
+                    className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all"
+                    style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
+                    onFocus={(e) => (e.target.style.borderColor = accent)}
+                    onBlur={(e) => (e.target.style.borderColor = border)}
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-xs font-black uppercase tracking-widest flex items-center gap-2" style={{ color: textMuted }}>
+                    <User className="w-3.5 h-3.5" /> Avatar Image URL
+                  </label>
+                  <input
+                    type="url" name="avatar_url"
+                    defaultValue={profile?.avatar_url || ""}
+                    placeholder="https://example.com/my-photo.jpg"
                     className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all"
                     style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
                     onFocus={(e) => (e.target.style.borderColor = accent)}

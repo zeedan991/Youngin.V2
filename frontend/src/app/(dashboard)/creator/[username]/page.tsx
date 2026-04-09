@@ -24,6 +24,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ usern
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followLoading, setFollowLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     getUserProfile(username).then((res) => {
@@ -31,6 +32,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ usern
         setData(res.data);
         setIsFollowing(res.data.isFollowing);
         setFollowerCount(res.data.followers);
+        setImageError(false);
       } else {
         setError(res.error || "Creator not found");
       }
@@ -88,8 +90,8 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ usern
                 className="w-full h-full rounded-full flex items-center justify-center text-3xl font-black overflow-hidden"
                 style={{ background: "#1A1A1A", color: textMain }}
               >
-                {(profile?.avatar_url) ? (
-                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                {(profile?.avatar_url && !imageError) ? (
+                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" onError={() => setImageError(true)} />
                 ) : (
                   initials
                 )}
