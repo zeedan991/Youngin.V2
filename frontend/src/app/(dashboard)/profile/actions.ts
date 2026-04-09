@@ -44,13 +44,19 @@ export async function updateProfile(formData: FormData) {
 
   const fullName = formData.get('full_name') as string;
   const username = formData.get('username') as string;
+  const bio = formData.get('bio') as string;
+  const instagram = formData.get('instagram') as string;
+  const website = formData.get('website') as string;
   
   if (fullName || username) {
     const { error } = await supabase.from('profiles').upsert({
       id: user.id,
       full_name: fullName,
       username: username,
-      email: user.email
+      email: user.email,
+      bio: bio || null,
+      instagram: instagram || null,
+      website: website || null
     }, { onConflict: 'id' });
     
     if (error) {

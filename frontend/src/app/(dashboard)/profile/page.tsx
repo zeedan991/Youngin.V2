@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, type Transition } from "framer-motion";
-import { Settings, CreditCard, Clock, Shirt, Edit3, LogOut, ChevronRight, Trophy, Lock } from "lucide-react";
+import { Settings, CreditCard, Clock, Shirt, Edit3, LogOut, ChevronRight, Trophy, Lock, AtSign, Globe, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { signout } from "@/app/login/actions";
@@ -83,6 +83,9 @@ export default function ProfilePage() {
         ...prev,
         full_name: formData.get("full_name") as string,
         username: formData.get("username") as string,
+        bio: formData.get("bio") as string,
+        instagram: formData.get("instagram") as string,
+        website: formData.get("website") as string,
       }));
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -142,12 +145,29 @@ export default function ProfilePage() {
             >
               {profile?.username || profile?.full_name || "Loading..."}
             </h1>
+            {profile?.bio && (
+              <p className="max-w-lg text-sm mb-3 leading-relaxed" style={{ color: textMain }}>
+                {profile.bio}
+              </p>
+            )}
+            <div className="flex items-center gap-4 mb-3">
+              {profile?.instagram && (
+                <a href={`https://instagram.com/${profile.instagram.replace('@','')}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-bold transition-all hover:scale-105" style={{ color: accent }}>
+                  <AtSign className="w-3.5 h-3.5" /> {profile.instagram.replace('@','')}
+                </a>
+              )}
+              {profile?.website && (
+                <a href={profile.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-bold transition-all hover:scale-105" style={{ color: accent }}>
+                  <Globe className="w-3.5 h-3.5" /> Portfolio Site
+                </a>
+              )}
+            </div>
             <p className="text-sm flex items-center gap-2 flex-wrap" style={{ color: textMuted }}>
-              {profile?.username && <span style={{ color: textMain }}>{profile?.full_name}</span>}
+              {profile?.username && <span className="font-bold" style={{ color: textMain }}>{profile?.full_name}</span>}
               {profile?.username && <span>•</span>}
-              <span>Level {profile?.level || 1}</span>
+              <span className="font-bold">Level {profile?.level || 1}</span>
               <span>•</span>
-              <span style={{ color: accent }}>Member since {memberSince}</span>
+              <span className="font-bold" style={{ color: accent }}>Member since {memberSince}</span>
             </p>
           </div>
         </div>
@@ -239,6 +259,53 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
+
+              <div className="mt-8 pt-8" style={{ borderTop: `1px solid ${border}` }}>
+                <h2 className="text-xl font-extrabold mb-6" style={{ color: textMain }}>Public Profile</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-xs font-black uppercase tracking-widest" style={{ color: textMuted }}>Bio</label>
+                    <textarea
+                      name="bio"
+                      defaultValue={profile?.bio || ""}
+                      placeholder="Tell the world about your design aesthetic..."
+                      className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all resize-none min-h-[100px]"
+                      style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
+                      onFocus={(e) => (e.target.style.borderColor = accent)}
+                      onBlur={(e) => (e.target.style.borderColor = border)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest flex items-center gap-2" style={{ color: textMuted }}>
+                      <AtSign className="w-3.5 h-3.5" /> Instagram
+                    </label>
+                    <input
+                      type="text" name="instagram"
+                      defaultValue={profile?.instagram || ""}
+                      placeholder="@yourhandle"
+                      className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all"
+                      style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
+                      onFocus={(e) => (e.target.style.borderColor = accent)}
+                      onBlur={(e) => (e.target.style.borderColor = border)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest flex items-center gap-2" style={{ color: textMuted }}>
+                      <Globe className="w-3.5 h-3.5" /> Portfolio Site
+                    </label>
+                    <input
+                      type="url" name="website"
+                      defaultValue={profile?.website || ""}
+                      placeholder="https://myportfolio.com"
+                      className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all"
+                      style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
+                      onFocus={(e) => (e.target.style.borderColor = accent)}
+                      onBlur={(e) => (e.target.style.borderColor = border)}
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="pt-6 flex items-center justify-between" style={{ borderTop: `1px solid ${border}` }}>
                 <button
                   type="submit" disabled={isSaving}
