@@ -159,7 +159,38 @@ export default function ProfilePage() {
 
   return (
     <div className="w-full max-w-6xl mx-auto">
-      {/* ── Profile Header ── */}
+      {/* ── Skeleton Loader ── */}
+      {!profile ? (
+        <div className="animate-pulse">
+          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="flex items-center gap-6">
+              <div className="w-24 h-24 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }} />
+              <div className="space-y-3">
+                <div className="h-10 w-52 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }} />
+                <div className="h-4 w-36 rounded-lg" style={{ background: "rgba(255,255,255,0.05)" }} />
+                <div className="h-4 w-48 rounded-lg" style={{ background: "rgba(255,255,255,0.05)" }} />
+              </div>
+            </div>
+            <div className="h-10 w-28 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }} />
+          </div>
+          <div className="flex gap-6">
+            <div className="w-56 shrink-0 flex flex-col gap-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-14 rounded-2xl" style={{ background: "rgba(255,255,255,0.06)" }} />
+              ))}
+            </div>
+            <div className="flex-1 rounded-3xl border p-8 min-h-[420px]" style={{ background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)" }}>
+              <div className="h-6 w-40 rounded-lg mb-6" style={{ background: "rgba(255,255,255,0.08)" }} />
+              <div className="grid grid-cols-2 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-12 rounded-xl" style={{ background: "rgba(255,255,255,0.06)" }} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+      <>
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -525,6 +556,8 @@ export default function ProfilePage() {
           )}
         </motion.div>
       </div>
+      </>
+      )}
     </div>
   );
 }

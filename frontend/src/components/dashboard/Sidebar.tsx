@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import {
   LayoutDashboard,
   Scan,
@@ -125,51 +125,6 @@ export default function Sidebar() {
           </Link>
         </div>
 
-        {/* ── Global Search ── */}
-        {!isCollapsed && (
-          <div className="px-4 mb-4 relative z-50">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: textMuted }} />
-              <input
-                type="text"
-                placeholder="Find creators..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 rounded-xl text-xs font-semibold outline-none transition-all"
-                style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${borderColor}`, color: textActive }}
-                onFocus={(e) => { e.target.style.borderColor = accentColor; setIsSearching(true); }}
-                onBlur={(e) => { e.target.style.borderColor = borderColor; setTimeout(() => setIsSearching(false), 200); }}
-              />
-            </div>
-            
-            {/* Search Dropdown */}
-            {isSearching && searchResults.length > 0 && (
-              <div className="absolute top-full left-4 right-4 mt-2 rounded-xl border overflow-hidden shadow-2xl backdrop-blur-xl" style={{ background: "rgba(20,20,20,0.95)", border: `1px solid ${borderColor}` }}>
-                {searchResults.map((user: any) => (
-                  <button
-                    key={user.id}
-                    onClick={() => { router.push(`/creator/${user.username}`); setIsSearching(false); setSearchQuery(''); }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors text-left"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-slate-800 shrink-0 overflow-hidden">
-                      {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" /> : <span className="flex items-center justify-center w-full h-full text-[8px] font-bold text-white bg-[#FF4D94]">YU</span>}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold truncate text-white leading-none">{user.full_name || user.username}</p>
-                      <p className="text-[10px] text-white/40 truncate mt-0.5">@{user.username}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-            {isSearching && searchQuery.length >= 2 && searchResults.length === 0 && (
-              <div className="absolute top-full left-4 right-4 mt-2 px-3 py-3 rounded-xl border shadow-2xl backdrop-blur-xl text-xs text-white/50 text-center" style={{ background: "rgba(20,20,20,0.95)", border: `1px solid ${borderColor}` }}>
-                No creators found
-              </div>
-            )}
-          </div>
-        )}
-
         {/* ── Divider ── */}
         <div className="mx-5 h-px mb-4" style={{ background: borderColor }} />
 
@@ -178,8 +133,10 @@ export default function Sidebar() {
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
+            const showSearch = item.href === "/dashboard";
             return (
-              <Link key={item.label} href={item.href}>
+              <Fragment key={item.label}>
+              <Link href={item.href}>
                 <div
                   className={cn(
                     "relative flex items-center gap-3 px-3 py-3 rounded-xl transition-all cursor-pointer group",
@@ -225,6 +182,64 @@ export default function Sidebar() {
                   )}
                 </div>
               </Link>
+
+              {/* ── Inline Search (below Dashboard) ── */}
+              {showSearch && (
+                <div key="search-bar" className="relative z-50 mt-1 mb-1">
+                  {!isCollapsed ? (
+                    <>
+                      <div className="relative px-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: textMuted }} />
+                        <input
+                          type="text"
+                          placeholder="Find creators..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full pl-9 pr-3 py-3 rounded-xl text-[13px] font-semibold outline-none transition-all"
+                          style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${borderColor}`, color: textActive }}
+                          onFocus={(e) => { e.target.style.borderColor = accentColor; setIsSearching(true); }}
+                          onBlur={(e) => { e.target.style.borderColor = borderColor; setTimeout(() => setIsSearching(false), 200); }}
+                        />
+                      </div>
+                      {isSearching && searchResults.length > 0 && (
+                        <div className="absolute left-1 right-1 mt-1 rounded-xl border overflow-hidden shadow-2xl" style={{ background: "rgba(15,15,15,0.98)", border: `1px solid ${borderColor}`, zIndex: 999 }}>
+                          {searchResults.map((user: any) => (
+                            <button
+                              key={user.id}
+                              onClick={() => { router.push(`/creator/${user.username}`); setIsSearching(false); setSearchQuery(''); }}
+                              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors text-left"
+                            >
+                              <div className="w-7 h-7 rounded-full shrink-0 overflow-hidden" style={{ background: "#FF4D94" }}>
+                                {user.avatar_url
+                                  ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
+                                  : <span className="flex items-center justify-center w-full h-full text-[9px] font-black text-white">{(user.username || 'YU').substring(0,2).toUpperCase()}</span>}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold truncate leading-none" style={{ color: textActive }}>{user.full_name || user.username}</p>
+                                <p className="text-[10px] truncate mt-0.5" style={{ color: textMuted }}>@{user.username}</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {isSearching && searchQuery.length >= 2 && searchResults.length === 0 && (
+                        <div className="absolute left-1 right-1 mt-1 px-3 py-3 rounded-xl border text-xs text-center" style={{ background: "rgba(15,15,15,0.98)", border: `1px solid ${borderColor}`, color: textMuted, zIndex: 999 }}>
+                          No creators found
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div
+                      className="flex items-center justify-center py-3 rounded-xl cursor-pointer group"
+                      style={{ color: textMuted }}
+                      onClick={() => setIsCollapsed(false)}
+                    >
+                      <Search className="w-5 h-5" />
+                    </div>
+                  )}
+                </div>
+              )}
+              </Fragment>
             );
           })}
         </nav>
