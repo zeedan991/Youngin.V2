@@ -68,9 +68,15 @@ export default function ProfilePage() {
     setIsSaving(true);
     const result = await updateProfile(formData);
     if (result.success) {
-      setProfile((prev: any) => ({ ...prev, full_name: formData.get('full_name') as string }));
+      setProfile((prev: any) => ({ 
+        ...prev, 
+        full_name: formData.get('full_name') as string,
+        username: formData.get('username') as string 
+      }));
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
+    } else {
+      alert("Failed to save: " + result.error);
     }
     setIsSaving(false);
   };
@@ -95,10 +101,10 @@ export default function ProfilePage() {
           </div>
           <div>
             <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2 text-slate-900">
-              {profile?.full_name || "Loading..."}
+              {profile?.username || profile?.full_name || "Loading..."}
             </h1>
             <p className="text-slate-500 text-lg flex items-center gap-2">
-              Level {profile?.level || 1} &bull; <span className="text-[#FF4D94]">Premium Subscriber</span>
+              {profile?.username ? profile?.full_name + " • " : ""}Level {profile?.level || 1} &bull; <span className="text-[#FF4D94]">Premium Subscriber</span>
             </p>
           </div>
         </motion.div>
@@ -143,11 +149,15 @@ export default function ProfilePage() {
                <div>
                  <h2 className="text-xl font-bold mb-4 text-slate-900">Personal Details</h2>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div className="space-y-1 md:col-span-1">
+                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Username</label>
+                     <input type="text" name="username" defaultValue={profile?.username || ""} placeholder="supercool_fashion" className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
+                   </div>
                    <div className="space-y-1">
                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Full Name</label>
                      <input type="text" name="full_name" defaultValue={profile?.full_name || ""} className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
                    </div>
-                   <div className="space-y-1">
+                   <div className="space-y-1 md:col-span-2 mt-4">
                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Email Address</label>
                      <input type="email" disabled defaultValue={profile?.email || ""} className="w-full bg-slate-100 shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-500 text-sm transition-colors cursor-not-allowed" />
                    </div>

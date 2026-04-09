@@ -43,16 +43,20 @@ export async function updateProfile(formData: FormData) {
   if (!user) return { success: false, error: "Not logged in" };
 
   const fullName = formData.get('full_name') as string;
+  const username = formData.get('username') as string;
   
-  if (fullName) {
+  if (fullName || username) {
     const { error } = await supabase.from('profiles').upsert({
       id: user.id,
       full_name: fullName,
-      email: user.email,
-      updated_at: new Date().toISOString()
+      username: username,
+      email: user.email
     }, { onConflict: 'id' });
     
-    if (error) return { success: false, error: error.message };
+    if (error) {
+      console.error("Profile Save Error:", error);
+      return { success: false, error: error.message };
+    }
   }
 
   return { success: true };
