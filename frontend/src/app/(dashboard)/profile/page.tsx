@@ -65,8 +65,12 @@ export default function ProfilePage() {
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={SP} className="flex items-center gap-6">
           <div className="relative">
              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] shadow-inner flex items-center justify-center p-1">
-               <div className="w-full h-full rounded-full bg-white border-4 border-slate-100 flex items-center justify-center text-3xl font-black text-slate-900 shadow-sm">
-                 {initials}
+               <div className="w-full h-full rounded-full bg-slate-100 border-4 border-white flex items-center justify-center text-3xl font-black text-slate-900 shadow-sm overflow-hidden">
+                 {profile?.avatar_url ? (
+                   <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
+                 ) : (
+                   initials
+                 )}
                </div>
              </div>
              <button className="absolute bottom-0 right-0 p-2 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors shadow-sm">
