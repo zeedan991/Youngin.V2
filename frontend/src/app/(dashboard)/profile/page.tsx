@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { signout } from "@/app/login/actions";
+import { fetchLiveProfile } from "./actions";
 
 const SP: Transition = { duration: 0.6, ease: "easeOut" };
 
@@ -18,35 +19,15 @@ export default function ProfilePage() {
   useEffect(() => {
     const initProfile = async () => {
       try {
-        const supabase = createClient();
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const response = await fetchLiveProfile();
         
-        if (userError || !user) {
-          console.error("User Auth Error:", userError);
+        if (!response.success || !response.data) {
+          console.error("User Auth Error:", response.error);
           setProfile({ full_name: "Guest User", email: "No session active" });
           return;
         }
 
-        const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-        
-        // Always try to pull from the DB first, but if it's null (like some Google profiles), fallback to raw user metadata
-        const fallbackName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || "User";
-        const fallbackAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
-
-        if (profileData) {
-          setProfile({
-            ...profileData,
-            full_name: profileData.full_name || fallbackName,
-            avatar_url: profileData.avatar_url || fallbackAvatar,
-          });
-        } else {
-          setProfile({
-            full_name: fallbackName,
-            email: user.email,
-            avatar_url: fallbackAvatar,
-            level: 1
-          });
-        }
+        setProfile(response.data);
       } catch (err) {
         console.error("Critical Profile Error:", err);
         setProfile({ full_name: "User", email: "Data unretrievable", level: 1 });
