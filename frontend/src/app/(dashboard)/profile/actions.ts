@@ -36,3 +36,24 @@ export async function fetchLiveProfile() {
     }
   };
 }
+
+export async function updateProfile(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not logged in" };
+
+  const fullName = formData.get('full_name') as string;
+  
+  if (fullName) {
+    const { error } = await supabase.from('profiles').upsert({
+      id: user.id,
+      full_name: fullName,
+      email: user.email,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'id' });
+    
+    if (error) return { success: false, error: error.message };
+  }
+
+  return { success: true };
+}

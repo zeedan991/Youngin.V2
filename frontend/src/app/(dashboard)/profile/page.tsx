@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { signout } from "@/app/login/actions";
-import { fetchLiveProfile } from "./actions";
+import { fetchLiveProfile, updateProfile } from "./actions";
 
 const SP: Transition = { duration: 0.6, ease: "easeOut" };
 
@@ -59,7 +59,21 @@ export default function ProfilePage() {
     { id: "designs", label: "Saved Designs", icon: Shirt },
   ] as const;
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
   const initials = profile?.full_name?.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() || "YU";
+
+  const handleSave = async (formData: FormData) => {
+    setIsSaving(true);
+    const result = await updateProfile(formData);
+    if (result.success) {
+      setProfile((prev: any) => ({ ...prev, full_name: formData.get('full_name') as string }));
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }
+    setIsSaving(false);
+  };
 
   return (
     <div className="w-full max-w-6xl mx-auto">
@@ -69,7 +83,7 @@ export default function ProfilePage() {
              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] shadow-inner flex items-center justify-center p-1">
                <div className="w-full h-full rounded-full bg-slate-100 border-4 border-white flex items-center justify-center text-3xl font-black text-slate-900 shadow-sm overflow-hidden">
                  {profile?.avatar_url ? (
-                   <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
+                   <img src={profile.avatar_url} alt="Profile Picture" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                  ) : (
                    initials
                  )}
@@ -125,29 +139,32 @@ export default function ProfilePage() {
           className="flex-1 rounded-3xl border border-slate-200 bg-white shadow-sm p-8 min-h-[400px]"
         >
           {activeTab === "settings" && (
-            <div className="space-y-8 animate-in fade-in duration-500">
+            <form action={handleSave} className="space-y-8 animate-in fade-in duration-500">
                <div>
                  <h2 className="text-xl font-bold mb-4 text-slate-900">Personal Details</h2>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                    <div className="space-y-1">
                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Full Name</label>
-                     <input type="text" defaultValue={profile?.full_name || ""} className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
+                     <input type="text" name="full_name" defaultValue={profile?.full_name || ""} className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
                    </div>
                    <div className="space-y-1">
                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Email Address</label>
-                     <input type="email" defaultValue={profile?.email || ""} className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
+                     <input type="email" disabled defaultValue={profile?.email || ""} className="w-full bg-slate-100 shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-500 text-sm transition-colors cursor-not-allowed" />
                    </div>
                    <div className="space-y-1 md:col-span-2">
                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Shipping Address</label>
-                     <input type="text" defaultValue="Enter your shipping address" className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
+                     <input type="text" name="shipping_address" defaultValue="Enter your shipping address" className="w-full bg-white shadow-sm border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-[#FF4D94]/50 transition-colors" />
                    </div>
                  </div>
                </div>
                
-               <div className="pt-6 border-t border-slate-200">
-                 <button className="px-6 py-2.5 bg-[#FF4D94] text-white shadow-sm rounded-full font-bold text-sm hover:scale-105 transition-transform">Save Changes</button>
+               <div className="pt-6 border-t border-slate-200 flex items-center justify-between">
+                 <button type="submit" disabled={isSaving} className="px-6 py-2.5 bg-[#FF4D94] text-white shadow-sm rounded-full font-bold text-sm hover:scale-105 transition-transform disabled:opacity-50">
+                   {isSaving ? "Saving..." : "Save Changes"}
+                 </button>
+                 {saveSuccess && <span className="text-sm font-bold text-green-500 animate-in fade-in block">Changes saved successfully!</span>}
                </div>
-            </div>
+            </form>
           )}
 
           {activeTab === "history" && (
