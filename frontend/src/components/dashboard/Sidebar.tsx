@@ -38,6 +38,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [profile, setProfile] = useState<{name: string, level: number, avatar_url: string | null}>({ name: "Loading...", level: 1, avatar_url: null });
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -59,18 +60,20 @@ export default function Sidebar() {
     fetchProfile();
   }, []);
 
+  const initials = profile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || "YU";
+
   return (
     <>
       {/* ════ DESKTOP SIDEBAR ════ */}
       <motion.aside 
-        animate={{ width: isCollapsed ? "72px" : "240px" }}
+        animate={{ width: isCollapsed ? "72px" : "260px" }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="hidden md:flex flex-col h-screen sticky top-0 bg-white text-slate-500 z-50 shrink-0 select-none overflow-hidden"
+        className="hidden md:flex flex-col h-screen sticky top-0 bg-white text-slate-500 z-50 shrink-0 select-none overflow-hidden border-r border-slate-200"
       >
         {/* ── Brand Mark ── */}
-        <div className={cn("flex items-center", isCollapsed ? "justify-center px-0 pt-6 pb-4" : "px-5 pt-6 pb-4")}>
-          <Link href="/dashboard" className="flex items-center justify-center gap-2.5 flex-1 min-w-0">
-            <div className={cn("relative shrink-0 transition-all duration-300", isCollapsed ? "h-[3.25rem] w-[3.25rem] mx-auto ml-1.5" : "h-11 w-11")}>
+        <div className={cn("flex items-center", isCollapsed ? "justify-center px-0 pt-8 pb-6" : "px-6 pt-8 pb-6")}>
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className={cn("relative shrink-0 transition-all duration-300", isCollapsed ? "h-[3.25rem] w-[3.25rem] mx-auto" : "h-12 w-12")}>
               <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain drop-shadow-sm" priority />
             </div>
             {!isCollapsed && (
@@ -78,7 +81,7 @@ export default function Sidebar() {
                 initial={{ opacity: 0, x: -8 }} 
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-slate-900 text-[20px] font-extrabold tracking-[3px] uppercase truncate pt-1"
+                className="text-slate-900 text-[24px] font-extrabold tracking-[2px] uppercase pt-1"
                 style={{ fontFamily: "var(--font-syne), sans-serif" }}
               >
                 YOUNGIN
@@ -88,17 +91,17 @@ export default function Sidebar() {
         </div>
 
         {/* ── Divider ── */}
-        <div className="mx-4 h-px bg-slate-200 mb-2" />
+        <div className="mx-5 h-px bg-slate-200 mb-4" />
 
         {/* ── Nav Items ── */}
-        <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto overflow-x-hidden">
+        <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto overflow-x-hidden">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
               <Link key={item.label} href={item.href}>
                 <div className={cn(
-                  "relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer group",
+                  "relative flex items-center gap-3 px-3 py-3 rounded-xl transition-all cursor-pointer group",
                   isActive 
                     ? "text-slate-900" 
                     : "hover:text-slate-900"
@@ -107,22 +110,22 @@ export default function Sidebar() {
                   {isActive && (
                     <motion.div 
                       layoutId="activeNav"
-                      className="absolute inset-0 bg-slate-100 rounded-lg"
+                      className="absolute inset-0 bg-slate-100 rounded-xl"
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
                   )}
                   
                   <div className={cn(
-                    "relative z-10 p-1.5 rounded-md transition-colors",
+                    "relative z-10 transition-colors",
                     isActive ? "text-[#FF4D94]" : "text-slate-500 group-hover:text-slate-600",
                     isCollapsed && "mx-auto"
                   )}>
-                    <Icon className="w-[18px] h-[18px]" />
+                    <Icon className="w-[20px] h-[20px]" />
                   </div>
                   
                   {!isCollapsed && (
                     <span className={cn(
-                      "relative z-10 text-[13px] font-medium tracking-wide transition-colors whitespace-nowrap",
+                      "relative z-10 text-[14px] font-bold tracking-wide transition-colors whitespace-nowrap",
                       isActive ? "text-slate-900" : "text-slate-500 group-hover:text-slate-900"
                     )}>
                       {item.label}
@@ -142,17 +145,17 @@ export default function Sidebar() {
         </nav>
 
         {/* ── Bottom Section ── */}
-        <div className="mt-auto px-2 pb-3 space-y-2">
+        <div className="mt-auto px-3 pb-4 space-y-3">
           {/* Collapse toggle */}
           <button 
             onClick={() => setIsCollapsed(!isCollapsed)} 
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all font-bold"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all font-bold"
           >
             {isCollapsed 
-              ? <ChevronRight className="w-[18px] h-[18px] mx-auto text-[#FF4D94]" /> 
+              ? <ChevronRight className="w-5 h-5 mx-auto text-[#FF4D94]" /> 
               : (
                 <>
-                  <ChevronLeft className="w-[18px] h-[18px] text-[#FF4D94]" />
+                  <ChevronLeft className="w-5 h-5 text-[#FF4D94]" />
                   <span className="text-[13px]">Collapse</span>
                 </>
               )
@@ -165,23 +168,29 @@ export default function Sidebar() {
           {/* Profile */}
           <Link href="/profile">
             <div className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer group",
+              "flex items-center gap-3 px-3 py-3 rounded-xl transition-all cursor-pointer group border border-transparent",
               pathname === "/profile" 
-                ? "bg-slate-100 text-slate-900" 
+                ? "bg-slate-50 border-slate-200 text-slate-900" 
                 : "hover:bg-slate-50 text-slate-500 hover:text-slate-900",
               isCollapsed && "justify-center px-0"
             )}>
-              <div className="h-8 w-8 shrink-0 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center shadow-lg border border-white overflow-hidden">
-                {profile.avatar_url ? (
-                  <img src={profile.avatar_url} referrerPolicy="no-referrer" alt="Profile" className="w-full h-full object-cover" />
+              <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center shadow-lg overflow-hidden border-2 border-white ring-2 ring-slate-100">
+                {(profile.avatar_url && !imageError) ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    referrerPolicy="no-referrer" 
+                    alt="Profile" 
+                    className="w-full h-full object-cover" 
+                    onError={() => setImageError(true)}
+                  />
                 ) : (
-                  <User className="w-3.5 h-3.5 text-white" />
+                  <span className="text-[13px] font-bold text-white tracking-widest">{initials}</span>
                 )}
               </div>
               {!isCollapsed && (
                 <div className="flex flex-col min-w-0">
-                  <span className="text-[13px] font-semibold text-slate-900 truncate">{profile.name}</span>
-                  <span className="text-[11px] text-[#FF4D94] font-bold">Lv. {profile.level} Premium</span>
+                  <span className="text-[14px] font-bold text-slate-900 truncate">{profile.name}</span>
+                  <span className="text-[11px] text-[#FF4D94] font-bold uppercase tracking-widest">Lv. {profile.level} VIP</span>
                 </div>
               )}
             </div>
