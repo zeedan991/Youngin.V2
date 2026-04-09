@@ -27,11 +27,11 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       // unsafe-eval only in dev (Next.js HMR needs it), removed in production
-      `script-src 'self' ${isDev ? "'unsafe-eval'" : ""} 'unsafe-inline'`,
+      `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://images.unsplash.com",
-      "connect-src 'self' https://api.youngin.fashion",
+      "img-src 'self' data: blob: https://*",
+      "connect-src 'self' https://* localhost:* ws://* wss://*",
       "frame-ancestors 'none'",
       "form-action 'self'",
       "base-uri 'self'",
