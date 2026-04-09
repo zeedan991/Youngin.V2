@@ -24,6 +24,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [unlockedIds, setUnlockedIds] = useState<string[]>([]);
 
   useEffect(() => {
@@ -97,6 +98,61 @@ export default function ProfilePage() {
     setIsSaving(false);
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setUploadingAvatar(true);
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        alert("Authentication error");
+        setUploadingAvatar(false);
+        return;
+      }
+
+      // Generate random string to prevent caching issues if overwriting
+      const filename = `${user.id}-${Math.random().toString(36).substring(7)}`; 
+      
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(filename, file, { upsert: true });
+
+      if (error) {
+        throw error;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(data.path);
+
+      // Instantly save to profile as well for perfect UX
+      const formData = new FormData();
+      formData.append("full_name", profile.full_name || "");
+      formData.append("username", profile.username || "");
+      formData.append("bio", profile.bio || "");
+      formData.append("instagram", profile.instagram || "");
+      formData.append("website", profile.website || "");
+      formData.append("avatar_url", publicUrl);
+      
+      const res = await updateProfile(formData);
+      if (res.success) {
+        setProfile((prev: any) => ({ ...prev, avatar_url: publicUrl }));
+        setImageError(false);
+      } else {
+        alert("Failed to save avatar details");
+      }
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      alert("Failed to upload image. Make sure the 'avatars' storage bucket exists and is public.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const memberSince = profile?.created_at
     ? new Date(profile.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : "—";
@@ -112,10 +168,10 @@ export default function ProfilePage() {
       >
         <div className="flex items-center gap-6">
           {/* Avatar */}
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full p-[3px]" style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>
+          <div className="relative group cursor-pointer">
+            <div className={`w-24 h-24 rounded-full p-[3px] transition-all ${uploadingAvatar ? 'animate-pulse opacity-50' : 'group-hover:scale-105'}`} style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>
               <div
-                className="w-full h-full rounded-full flex items-center justify-center text-2xl font-black overflow-hidden"
+                className="w-full h-full rounded-full flex items-center justify-center text-2xl font-black overflow-hidden relative"
                 style={{ background: "#1A1A1A", color: textMain }}
               >
                 {(profile?.avatar_url && !imageError) ? (
@@ -129,14 +185,19 @@ export default function ProfilePage() {
                 ) : (
                   initials
                 )}
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Edit3 className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-            <button
-              className="absolute bottom-0 right-0 p-2 rounded-full border"
-              style={{ background: "#1A1A1A", borderColor: border }}
-            >
-              <Edit3 className="w-3.5 h-3.5" style={{ color: textMuted }} />
-            </button>
+            
+            <input 
+              type="file" 
+              accept="image/*" 
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              onChange={handleAvatarUpload}
+              disabled={uploadingAvatar}
+            />
           </div>
 
           {/* Name */}
@@ -257,20 +318,6 @@ export default function ProfilePage() {
                   <input
                     type="text" name="full_name"
                     defaultValue={profile?.full_name || ""}
-                    className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all"
-                    style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
-                    onFocus={(e) => (e.target.style.borderColor = accent)}
-                    onBlur={(e) => (e.target.style.borderColor = border)}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-xs font-black uppercase tracking-widest flex items-center gap-2" style={{ color: textMuted }}>
-                    <User className="w-3.5 h-3.5" /> Avatar Image URL
-                  </label>
-                  <input
-                    type="url" name="avatar_url"
-                    defaultValue={profile?.avatar_url || ""}
-                    placeholder="https://example.com/my-photo.jpg"
                     className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all"
                     style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
                     onFocus={(e) => (e.target.style.borderColor = accent)}

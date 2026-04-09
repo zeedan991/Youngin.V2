@@ -91,7 +91,9 @@ export async function toggleFollow(targetUserId: string) {
 }
 
 export async function searchCreators(query: string) {
-  if (!query || query.length < 2) return { success: true, data: [] };
+  const cleanQuery = query.replace('@', '');
+  
+  if (!cleanQuery || cleanQuery.length < 2) return { success: true, data: [] };
   
   const supabase = await createClient();
   
@@ -99,7 +101,7 @@ export async function searchCreators(query: string) {
   const { data, error } = await supabase
     .from("profiles")
     .select("id, username, full_name, avatar_url, level")
-    .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
+    .or(`username.ilike.%${cleanQuery}%,full_name.ilike.%${cleanQuery}%`)
     .limit(5);
     
   if (error) {
