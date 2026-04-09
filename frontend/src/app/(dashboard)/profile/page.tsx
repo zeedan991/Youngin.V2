@@ -61,6 +61,7 @@ export default function ProfilePage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const initials = profile?.full_name?.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() || "YU";
 
@@ -88,8 +89,14 @@ export default function ProfilePage() {
           <div className="relative">
              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] shadow-inner flex items-center justify-center p-1">
                <div className="w-full h-full rounded-full bg-slate-100 border-4 border-white flex items-center justify-center text-3xl font-black text-slate-900 shadow-sm overflow-hidden">
-                 {profile?.avatar_url ? (
-                   <img src={profile.avatar_url} alt="Profile Picture" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                 {(profile?.avatar_url && !imageError) ? (
+                   <img 
+                     src={profile.avatar_url} 
+                     alt="Profile Picture" 
+                     referrerPolicy="no-referrer" 
+                     className="w-full h-full object-cover" 
+                     onError={() => setImageError(true)}
+                   />
                  ) : (
                    initials
                  )}

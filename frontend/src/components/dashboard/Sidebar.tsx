@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 
+import { fetchLiveProfile } from "@/app/(dashboard)/profile/actions";
+
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "AI Sizing", href: "/scan", icon: Scan },
@@ -35,20 +37,23 @@ const NAV_ITEMS = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [profile, setProfile] = useState<{name: string, level: number}>({ name: "Loading...", level: 1 });
+  const [profile, setProfile] = useState<{name: string, level: number, avatar_url: string | null}>({ name: "Loading...", level: 1, avatar_url: null });
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase.from('profiles').select('full_name, level').eq('id', user.id).single();
-        if (data && data.full_name) {
-           setProfile({ name: data.full_name, level: data.level });
-        } else if (user.email) {
-           // Fallback to email prefix if full_name is missing
-           setProfile({ name: user.email.split('@')[0], level: 1 });
+      try {
+        const response = await fetchLiveProfile();
+        if (response.success && response.data) {
+          setProfile({ 
+            name: response.data.username || response.data.full_name || "User", 
+            level: response.data.level || 1,
+            avatar_url: response.data.avatar_url || null
+          });
+        } else {
+          setProfile({ name: "Guest User", level: 1, avatar_url: null });
         }
+      } catch (err) {
+        setProfile({ name: "User", level: 1, avatar_url: null });
       }
     };
     fetchProfile();
@@ -64,8 +69,8 @@ export default function Sidebar() {
       >
         {/* ── Brand Mark ── */}
         <div className={cn("flex items-center", isCollapsed ? "justify-center px-0 pt-6 pb-4" : "px-5 pt-6 pb-4")}>
-          <Link href="/dashboard" className="flex items-center gap-2.5 flex-1 min-w-0">
-            <div className={cn("relative shrink-0 transition-all duration-300", isCollapsed ? "h-9 w-9" : "h-11 w-11")}>
+          <Link href="/dashboard" className="flex items-center justify-center gap-2.5 flex-1 min-w-0">
+            <div className={cn("relative shrink-0 transition-all duration-300", isCollapsed ? "h-[3.25rem] w-[3.25rem] mx-auto ml-1.5" : "h-11 w-11")}>
               <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain drop-shadow-sm" priority />
             </div>
             {!isCollapsed && (
@@ -73,7 +78,7 @@ export default function Sidebar() {
                 initial={{ opacity: 0, x: -8 }} 
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-slate-900 text-[19px] font-extrabold tracking-[3px] uppercase truncate"
+                className="text-slate-900 text-[20px] font-extrabold tracking-[3px] uppercase truncate pt-1"
                 style={{ fontFamily: "var(--font-syne), sans-serif" }}
               >
                 YOUNGIN
@@ -86,7 +91,7 @@ export default function Sidebar() {
         <div className="mx-4 h-px bg-slate-200 mb-2" />
 
         {/* ── Nav Items ── */}
-        <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto overflow-x-hidden">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -109,14 +114,15 @@ export default function Sidebar() {
                   
                   <div className={cn(
                     "relative z-10 p-1.5 rounded-md transition-colors",
-                    isActive ? "text-[#FF4D94]" : "text-slate-500 group-hover:text-slate-600"
+                    isActive ? "text-[#FF4D94]" : "text-slate-500 group-hover:text-slate-600",
+                    isCollapsed && "mx-auto"
                   )}>
                     <Icon className="w-[18px] h-[18px]" />
                   </div>
                   
                   {!isCollapsed && (
                     <span className={cn(
-                      "relative z-10 text-[13px] font-medium tracking-wide transition-colors",
+                      "relative z-10 text-[13px] font-medium tracking-wide transition-colors whitespace-nowrap",
                       isActive ? "text-slate-900" : "text-slate-500 group-hover:text-slate-900"
                     )}>
                       {item.label}
@@ -125,7 +131,7 @@ export default function Sidebar() {
 
                   {/* Collapsed tooltip */}
                   {isCollapsed && (
-                    <div className="fixed left-[80px] bg-white border border-slate-200 text-slate-900 px-3 py-1.5 rounded-md text-xs font-semibold opacity-0 group-hover:opacity-100 pointer-events-none z-[100] whitespace-nowrap transition-opacity shadow-xl">
+                    <div className="fixed left-[75px] bg-slate-900 text-white px-3 py-1.5 rounded-md text-xs font-bold opacity-0 group-hover:opacity-100 pointer-events-none z-[100] whitespace-nowrap transition-opacity shadow-xl">
                       {item.label}
                     </div>
                   )}
@@ -140,14 +146,14 @@ export default function Sidebar() {
           {/* Collapse toggle */}
           <button 
             onClick={() => setIsCollapsed(!isCollapsed)} 
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all font-bold"
           >
             {isCollapsed 
-              ? <ChevronRight className="w-[18px] h-[18px] mx-auto" /> 
+              ? <ChevronRight className="w-[18px] h-[18px] mx-auto text-[#FF4D94]" /> 
               : (
                 <>
-                  <ChevronLeft className="w-[18px] h-[18px]" />
-                  <span className="text-[13px] font-medium">Collapse</span>
+                  <ChevronLeft className="w-[18px] h-[18px] text-[#FF4D94]" />
+                  <span className="text-[13px]">Collapse</span>
                 </>
               )
             }
@@ -162,15 +168,20 @@ export default function Sidebar() {
               "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer group",
               pathname === "/profile" 
                 ? "bg-slate-100 text-slate-900" 
-                : "hover:bg-slate-50 text-slate-500 hover:text-slate-900"
+                : "hover:bg-slate-50 text-slate-500 hover:text-slate-900",
+              isCollapsed && "justify-center px-0"
             )}>
-              <div className="h-8 w-8 shrink-0 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center shadow-lg">
-                <User className="w-3.5 h-3.5 text-white" />
+              <div className="h-8 w-8 shrink-0 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center shadow-lg border border-white overflow-hidden">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} referrerPolicy="no-referrer" alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-3.5 h-3.5 text-white" />
+                )}
               </div>
               {!isCollapsed && (
                 <div className="flex flex-col min-w-0">
                   <span className="text-[13px] font-semibold text-slate-900 truncate">{profile.name}</span>
-                  <span className="text-[11px] text-slate-500">Lv. {profile.level}</span>
+                  <span className="text-[11px] text-[#FF4D94] font-bold">Lv. {profile.level} Premium</span>
                 </div>
               )}
             </div>
