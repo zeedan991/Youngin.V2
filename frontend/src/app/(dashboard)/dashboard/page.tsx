@@ -118,14 +118,13 @@ export default function DashboardOverviewPage() {
             {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
           </p>
           <h1
-            className="text-5xl md:text-7xl font-extrabold leading-none mb-3 tracking-tight"
+            className="text-3xl md:text-4xl font-extrabold leading-tight mb-2 tracking-tight"
             style={{ fontFamily: "var(--font-display)", color: "var(--dash-text)" }}
           >
-            Welcome back,
-            <br />
-            <span style={{ color: "var(--dash-accent)" }}>@{displayName}</span>
+            Welcome back,{" "}
+            <span style={{ color: "var(--dash-accent)" }}>{displayName}</span>
           </h1>
-          <p style={{ color: "var(--dash-muted)" }} className="text-lg font-medium">
+          <p style={{ color: "var(--dash-muted)" }} className="text-base font-medium">
             Your fashion command center. Let&apos;s create something iconic.
           </p>
         </div>
