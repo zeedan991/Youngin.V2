@@ -18,11 +18,8 @@ export interface DesignElement {
 export interface Design {
   id: string;
   user_id: string;
-  name: string;
-  garment_type: string;
-  garment_color: string;
-  material: string;
-  elements: DesignElement[];
+  title: string;
+  type: string;
   storage_url: string | null;
   created_at: string;
   updated_at: string;
@@ -32,9 +29,6 @@ export async function saveDesignToDb(payload: {
   id?: string;
   name: string;
   garmentType: string;
-  garmentColor: string;
-  material: string;
-  elements: DesignElement[];
   storage_url?: string;
 }) {
   const supabase = await createClient();
@@ -42,13 +36,10 @@ export async function saveDesignToDb(payload: {
   if (authErr || !user) return { success: false, error: "Not authenticated" };
 
   const row = {
-    user_id:       user.id,
-    name:          payload.name,
-    garment_type:  payload.garmentType,
-    garment_color: payload.garmentColor,
-    material:      payload.material,
-    elements:      payload.elements,
-    storage_url:   payload.storage_url || null,
+    user_id:     user.id,
+    title:       payload.name,
+    type:        payload.garmentType,
+    storage_url: payload.storage_url || null,
   };
 
   if (payload.id) {
@@ -118,7 +109,7 @@ export async function loadDesignById(id: string) {
   return data as Design | null;
 }
 
-export async function uploadSnapshotBase64(base64Str: string): Promise<{ success: boolean; url?: string; error?: string }> {
+export async function uploadSnapshotBase64(base64Str: string, timestampId: string): Promise<{ success: boolean; url?: string; error?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not logged in" };
@@ -127,8 +118,8 @@ export async function uploadSnapshotBase64(base64Str: string): Promise<{ success
     const base64Data = base64Str.replace(/^data:image\/\w+;base64,/, "");
     const buffer = Buffer.from(base64Data, "base64");
     
-    // Upload to 'designs' bucket (or 'public' if designs doesn't exist)
-    const filePath = `${user.id}/${Date.now()}_snapshot.jpg`;
+    // Upload to 'designs' bucket
+    const filePath = `${user.id}/${timestampId}_snapshot.jpg`;
     
     const { error: uploadError } = await supabase.storage
       .from("designs")
@@ -145,4 +136,26 @@ export async function uploadSnapshotBase64(base64Str: string): Promise<{ success
   } catch (err: any) {
     return { success: false, error: err.message };
   }
+}
+
+export async function uploadDesignConfig(configData: any, timestampId: string): Promise<boolean> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+  
+  try {
+    const buffer = Buffer.from(JSON.stringify(configData), "utf-8");
+    const filePath = `${user.id}/${timestampId}_config.json`;
+    await supabase.storage.from("designs").upload(filePath, buffer, { contentType: "application/json", upsert: true });
+    return true;
+  } catch { return false; }
+}
+
+export async function fetchDesignConfig(storageUrl: string): Promise<any> {
+    try {
+        const configUrl = storageUrl.replace("_snapshot.jpg", "_config.json");
+        const res = await fetch(configUrl);
+        if (!res.ok) return null;
+        return await res.json();
+    } catch { return null; }
 }

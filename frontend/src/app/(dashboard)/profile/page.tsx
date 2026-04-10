@@ -277,11 +277,15 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {designs.map((design: any) => (
                     <div key={design.id} className="group relative rounded-2xl overflow-hidden border flex flex-col" style={{ borderColor: "var(--dash-border)", background: "var(--dash-surface, rgba(255,255,255,0.04))" }}>
-                      {/* Color preview block */}
-                      <div className="aspect-square flex items-center justify-center relative" style={{ background: design.garment_color || "#F5F5F5" }}>
-                        <span className="text-5xl">
-                          {{ tshirt: "👕", hoodie: "🧥", jeans: "👖", dress: "👗", jacket: "🥼", polo: "🎽" }[design.garment_type as string] || "👕"}
-                        </span>
+                      {/* Color & Image preview block */}
+                      <div className="aspect-square flex items-center justify-center relative overflow-hidden" style={{ background: design.garment_color || "#F5F5F5" }}>
+                        {design.storage_url ? (
+                           <img src={design.storage_url} alt="Design" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        ) : (
+                           <span className="text-5xl">
+                             {({ tshirt: "👕", hoodie: "🧥", jeans: "👖", dress: "👗", jacket: "🥼", polo: "🎽" } as any)[design.type || design.garment_type as string] || "👕"}
+                           </span>
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                           <Link href={`/studio`} className="w-full py-1.5 bg-white text-black rounded-lg text-xs font-bold text-center hover:bg-gray-100 transition-colors">
                             Open in Studio
@@ -290,16 +294,14 @@ export default function ProfilePage() {
                       </div>
                       {/* Info */}
                       <div className="p-3">
-                        <h4 className="font-bold text-sm truncate" style={{ color: "var(--dash-text)" }}>{design.name}</h4>
+                        <h4 className="font-bold text-sm truncate" style={{ color: "var(--dash-text)" }}>{design.title || design.name}</h4>
                         <p className="text-[10px] uppercase tracking-wider mt-0.5 mb-1.5" style={{ color: "var(--dash-muted)" }}>
-                          {design.garment_type} · {design.material}
+                          {design.type || design.garment_type || "tshirt"}
                         </p>
                         <div className="flex items-center justify-between">
+                          <span className="text-[9px]" style={{ color: "var(--dash-muted)" }}></span>
                           <span className="text-[9px]" style={{ color: "var(--dash-muted)" }}>
-                            {(design.elements as any[])?.length || 0} element{(design.elements as any[])?.length !== 1 ? "s" : ""}
-                          </span>
-                          <span className="text-[9px]" style={{ color: "var(--dash-muted)" }}>
-                            {new Date(design.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            {new Date(design.updated_at || design.created_at || Date.now()).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                           </span>
                         </div>
                       </div>

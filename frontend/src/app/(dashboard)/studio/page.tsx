@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toJpeg } from 'html-to-image';
-import { saveDesignToDb, loadUserDesigns, deleteDesign, uploadSnapshotBase64, type Design } from "./actions";
+import { saveDesignToDb, loadUserDesigns, deleteDesign, uploadSnapshotBase64, uploadDesignConfig, fetchDesignConfig, type Design } from "./actions";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 export interface DesignElement {
@@ -379,24 +379,55 @@ export default function StudioPage() {
   const handleSave = async () => {
     setSaving(true); setSaveError(null);
     let publicUrl = undefined;
+    const timestampId = Date.now().toString();
 
-    // Capture Snapshot of the Artboard for Thumbnail
+    const configData = {
+      garmentType, garmentColor, elements, frontPaintData, backPaintData, designName
+    };
+
     if (artboardRef.current) {
       try {
-        const base64Str = await toJpeg(artboardRef.current, { quality: 0.85, pixelRatio: 2 });
-        const uploadResult = await uploadSnapshotBase64(base64Str);
+        const originalSide = currentSide;
+        
+        setCurrentSide("front");
+        await new Promise(r => setTimeout(r, 100)); // Paint cycle 1
+        const front64 = await toJpeg(artboardRef.current, { quality: 0.85, pixelRatio: 1.5 });
+        
+        setCurrentSide("back");
+        await new Promise(r => setTimeout(r, 100)); // Paint cycle 2
+        const back64 = await toJpeg(artboardRef.current, { quality: 0.85, pixelRatio: 1.5 });
+        
+        setCurrentSide(originalSide);
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d")!;
+        const imgF = new Image(); const imgB = new Image();
+        
+        await new Promise(r => { imgF.onload = r; imgF.src = front64; });
+        await new Promise(r => { imgB.onload = r; imgB.src = back64; });
+        
+        canvas.width = imgF.width + imgB.width;
+        canvas.height = imgF.height;
+        ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(imgF, 0, 0);
+        ctx.drawImage(imgB, imgF.width, 0);
+        
+        const compositeBase64 = canvas.toDataURL("image/jpeg", 0.85);
+
+        const uploadResult = await uploadSnapshotBase64(compositeBase64, timestampId);
         if (uploadResult.success && uploadResult.url) {
           publicUrl = uploadResult.url;
         } else {
           console.warn("Could not save thumbnail", uploadResult.error);
         }
-      } catch (e) { console.error("Html2Canvas Error:", e); }
+        
+        await uploadDesignConfig(configData, timestampId);
+
+      } catch (e) { console.error("Snapshot Error:", e); }
     }
 
-    const m = elements.map(e => ({...e, type: "shape" as any})); 
     const result = await saveDesignToDb({
-      id: dbDesignId, name: designName, garmentType, garmentColor, material: "cotton", elements: m as any,
-      storage_url: publicUrl
+      id: dbDesignId, name: designName, garmentType, storage_url: publicUrl
     });
     
     setSaving(false);
@@ -413,15 +444,30 @@ export default function StudioPage() {
     setLoadingDesigns(false);
   };
 
-  const loadDesign = (d: Design) => {
-    setGarmentType(d.garment_type);
-    setGarmentColor(d.garment_color);
-    setElements((d.elements || []).map(e => ({...e, type: (e as any).type === "shape" ? "image" : e.type} as any)));
-    setDesignName(d.name);
-    setDbDesignId(d.id);
+  const loadDesign = async (d: Design) => {
     setRightTab("layers");
-    setHistory([{ elements: d.elements as any, frontPaintData: "", backPaintData: "" }]);
-    setHistoryIndex(0);
+    
+    // Read from the remote JSON Config mapped to the thumbnail URL
+    if (d.storage_url) {
+      const config = await fetchDesignConfig(d.storage_url);
+      if (config) {
+        setGarmentType(config.garmentType || "tshirt");
+        setGarmentColor(config.garmentColor || "#FFFFFF");
+        setElements(config.elements || []);
+        setFrontPaintData(config.frontPaintData || "");
+        setBackPaintData(config.backPaintData || "");
+        setDesignName(config.designName || d.title || "Untitled");
+        setDbDesignId(d.id);
+        setHistory([{ elements: config.elements || [], frontPaintData: config.frontPaintData || "", backPaintData: config.backPaintData || "" }]);
+        setHistoryIndex(0);
+        return;
+      }
+    }
+
+    // Fallback if config is missing (but DB saved it)
+    setGarmentType(d.type || "tshirt");
+    setDesignName(d.title || "Untitled");
+    setDbDesignId(d.id);
   };
 
   return (
@@ -700,10 +746,10 @@ export default function StudioPage() {
                   myDesigns.map(d => (
                     <div key={d.id} className="border-2 border-transparent bg-white p-4 rounded-xl hover:border-black cursor-pointer transition-all shadow-sm group" onClick={() => loadDesign(d)}>
                        <div className="flex justify-between items-start mb-2">
-                          <p className="text-[13px] font-black text-gray-900 truncate tracking-tight">{d.name}</p>
-                          <div className="w-5 h-5 rounded-full shrink-0 border-2 border-white shadow-md outline outline-2 outline-gray-200" style={{ background: d.garment_color }} />
+                          <p className="text-[13px] font-black text-gray-900 truncate tracking-tight">{d.title || (d as any).name}</p>
+                          <div className="w-5 h-5 rounded-full shrink-0 border-2 border-white shadow-md outline outline-2 outline-gray-200" style={{ background: (d as any).garment_color || '#1A1A1A' }} />
                        </div>
-                       <p className="text-[9px] text-gray-400 font-black uppercase tracking-[0.2em]">{d.garment_type}</p>
+                       <p className="text-[9px] text-gray-400 font-black uppercase tracking-[0.2em]">{d.type || (d as any).garment_type}</p>
                        {d.storage_url && <img src={d.storage_url} className="w-full h-24 object-cover rounded-md mt-2 opacity-50" />}
                     </div>
                   ))
