@@ -519,7 +519,7 @@ export default function StudioPage() {
                 <p className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-400 mb-3">Garment Type</p>
                 <div className="grid grid-cols-2 gap-2">
                   {GARMENT_TYPES.map(g => (
-                    <button key={g.id} onClick={() => setGarmentType(g.id)} className="flex items-center justify-between px-3 py-3 rounded-xl border-2 transition-all hover:border-gray-400 bg-white" style={{ borderColor: garmentType === g.id ? "#1A1A1A" : "#F0F0F0", transform: garmentType === g.id ? "scale(1.02)" : "scale(1)" }}>
+                    <button suppressHydrationWarning key={g.id} onClick={() => setGarmentType(g.id)} className="flex items-center justify-between px-3 py-3 rounded-xl border-2 transition-all hover:border-gray-400 bg-white" style={{ borderColor: garmentType === g.id ? "#1A1A1A" : "#F0F0F0", transform: garmentType === g.id ? "scale(1.02)" : "scale(1)" }}>
                       <span className="text-[11px] font-black uppercase">{g.label}</span><span className="text-xl">{g.icon}</span>
                     </button>
                   ))}
