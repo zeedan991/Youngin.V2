@@ -111,7 +111,7 @@ export default function Navbar() {
         </Link>
 
         {/* ── Nav Items ── */}
-        <nav className="flex-1 flex items-center justify-center gap-1 xl:gap-2 overflow-x-auto no-scrollbar">
+        <nav className="flex-1 flex items-center justify-center gap-1 xl:gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
