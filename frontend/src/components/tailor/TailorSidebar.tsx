@@ -110,11 +110,23 @@ export default function TailorSidebar() {
         </button>
       </div>
 
+      {/* Logout button — always visible */}
+      <div className="px-2 pb-2">
+        <button
+          onClick={handleLogout}
+          title="Sign Out"
+          className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-bold uppercase tracking-wider ${collapsed ? "justify-center" : ""}`}
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          {!collapsed && <span>Sign Out</span>}
+        </button>
+      </div>
+
       {/* User */}
       <div className={`flex items-center gap-3 px-3 py-4 border-t border-white/5 ${collapsed ? "justify-center" : ""}`}>
-        <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center text-white font-black text-sm">
+        <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center text-white font-black text-sm overflow-hidden">
           {profile.avatar_url ? (
-            <img src={profile.avatar_url} className="w-full h-full object-cover rounded-full" alt="" />
+            <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" />
           ) : (
             profile.full_name?.[0]?.toUpperCase() || "T"
           )}
@@ -124,11 +136,6 @@ export default function TailorSidebar() {
             <p className="text-[#F0EBE3] font-black text-xs truncate">{profile.full_name}</p>
             <p className="text-[#FF4D94] text-[9px] font-black uppercase tracking-wider">LV. {profile.level || 1} CREATOR</p>
           </div>
-        )}
-        {!collapsed && (
-          <button onClick={handleLogout} title="Sign Out" className="text-white/20 hover:text-white/60 transition-colors">
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
         )}
       </div>
     </aside>
