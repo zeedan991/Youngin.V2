@@ -90,11 +90,11 @@ export default function Navbar() {
     <>
       {/* ════ DESKTOP TOP NAVBAR ════ */}
       <motion.header
-        className="hidden lg:flex items-center justify-between sticky top-0 z-50 px-6 h-[72px] shrink-0 select-none shadow-sm"
+        className="hidden lg:flex items-center justify-between sticky top-0 z-50 px-4 xl:px-6 h-[70px] shrink-0 select-none shadow-sm"
         style={{ background: navbarBg, borderBottom: `1px solid ${borderColor}` }}
       >
         {/* ── Brand Mark ── */}
-        <Link href="/dashboard" className="flex items-center gap-3 shrink-0 mr-6 xl:mr-10">
+        <Link href="/dashboard" className="flex items-center gap-3 shrink-0 mr-3 xl:mr-8">
           <div className="relative h-10 w-10">
             <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain" priority />
           </div>
@@ -111,14 +111,14 @@ export default function Navbar() {
         </Link>
 
         {/* ── Nav Items ── */}
-        <nav className="flex-1 flex items-center justify-center gap-1 xl:gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <nav className="flex-1 flex items-center justify-center gap-0.5 xl:gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
               <Link key={item.label} href={item.href}>
                 <div
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all cursor-pointer group whitespace-nowrap relative"
+                  className="flex items-center gap-1.5 xl:gap-2 px-2 xl:px-3 py-1.5 xl:py-2 rounded-xl transition-all cursor-pointer group whitespace-nowrap relative"
                   style={{
                     color: isActive ? textActive : textMuted,
                   }}
@@ -129,15 +129,15 @@ export default function Navbar() {
                     if (!isActive) (e.currentTarget as HTMLElement).style.background = "transparent";
                   }}
                 >
-                  <Icon className="w-4 h-4 transition-colors" style={{ color: isActive ? accentColor : "inherit" }} />
-                  <span className="text-[13px] font-semibold tracking-wide hidden lg:block">
+                  <Icon className="w-3.5 h-3.5 xl:w-4 xl:h-4 transition-colors" style={{ color: isActive ? accentColor : "inherit" }} />
+                  <span className="text-[11px] xl:text-[12px] font-bold tracking-wide hidden lg:block">
                     {item.label}
                   </span>
                   
                   {isActive && (
                     <motion.div
                       layoutId="desktopTopNavActive"
-                      className="absolute bottom-[-16px] left-0 right-0 h-[2px] rounded-full"
+                      className="absolute bottom-[-14px] xl:bottom-[-16px] left-0 right-0 h-[2px] rounded-full"
                       style={{ background: accentColor }}
                     />
                   )}
@@ -148,16 +148,16 @@ export default function Navbar() {
         </nav>
 
         {/* ── Right Section (Search + Profile) ── */}
-        <div className="flex items-center gap-4 shrink-0 ml-6 xl:ml-10 relative">
+        <div className="flex items-center gap-3 xl:gap-4 shrink-0 ml-3 xl:ml-6 relative">
           <div className="relative hidden xl:block">
-             <div className="relative px-1 w-[220px]">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: textMuted }} />
+             <div className="relative px-1 w-[160px] xl:w-[200px]">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: textMuted }} />
                 <input
                   type="text"
                   placeholder="Find creators..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl text-[13px] font-semibold outline-none transition-all focus:w-[260px]"
+                  className="w-full pl-9 pr-3 py-2 rounded-xl text-[12px] font-semibold outline-none transition-all focus:w-[200px] xl:focus:w-[240px]"
                   style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${borderColor}`, color: textActive }}
                   onFocus={(e) => { e.target.style.borderColor = accentColor; setIsSearching(true); }}
                   onBlur={(e) => { e.target.style.borderColor = borderColor; setTimeout(() => setIsSearching(false), 200); }}
