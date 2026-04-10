@@ -101,7 +101,7 @@ export async function searchCreators(query: string) {
   // REMOVED 'level' column to fix DB validation crash
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url")
+    .select("id, username, full_name, avatar_url, role, tailor_specialty")
     .or(`username.ilike.%${cleanQuery}%,full_name.ilike.%${cleanQuery}%`)
     .limit(5);
     

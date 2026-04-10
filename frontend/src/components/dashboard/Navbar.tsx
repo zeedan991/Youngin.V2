@@ -35,10 +35,11 @@ const NAV_ITEMS = [
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [profile, setProfile] = useState<{ name: string; level: number; avatar_url: string | null }>({
+  const [profile, setProfile] = useState<{ name: string; level: number; avatar_url: string | null; role: string }>({
     name: "",
     level: 1,
     avatar_url: null,
+    role: "user",
   });
   const [imageError, setImageError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,10 +68,16 @@ export default function Navbar() {
             name: (res.data as any).username || (res.data as any).full_name || "Creator",
             level: (res.data as any).level || 1,
             avatar_url: (res.data as any).avatar_url || null,
+            role: (res.data as any).role || "user",
           });
+          // Auto-redirect tailors who land on consumer pages to their portal
+          const isTailorRoute = window.location.pathname.startsWith("/tailor");
+          if ((res.data as any).role === "tailor" && !isTailorRoute && window.location.pathname === "/dashboard") {
+            router.replace("/tailor/dashboard");
+          }
         }
       })
-      .catch(() => setProfile({ name: "Creator", level: 1, avatar_url: null }));
+      .catch(() => setProfile({ name: "Creator", level: 1, avatar_url: null, role: "user" }));
   }, []);
 
   const initials = profile.name
@@ -177,9 +184,14 @@ export default function Navbar() {
                           ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
                           : <span className="flex items-center justify-center w-full h-full text-[9px] font-black text-white">{(user.username || 'YU').substring(0,2).toUpperCase()}</span>}
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="text-xs font-bold truncate leading-none" style={{ color: textActive }}>{user.full_name || user.username}</p>
-                        <p className="text-[10px] truncate mt-0.5" style={{ color: textMuted }}>@{user.username}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className="text-[10px] truncate" style={{ color: textMuted }}>@{user.username}</p>
+                          {user.role === "tailor" && (
+                            <span className="text-[8px] font-black text-[#FF4D94] bg-[#FF4D94]/15 px-1.5 py-0.5 rounded tracking-wider">🧵 TAILOR</span>
+                          )}
+                        </div>
                       </div>
                     </button>
                   ))}
@@ -188,6 +200,12 @@ export default function Navbar() {
           </div>
           
           <div className="h-6 w-px" style={{ background: borderColor }} />
+
+          {profile.role === "tailor" && (
+            <Link href="/tailor/dashboard" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#FF4D94] border border-[#FF4D94]/20 hover:bg-[#FF4D94]/10 transition-all">
+              🧵 Tailor Portal
+            </Link>
+          )}
 
           <Link href="/profile" className="flex items-center gap-3 group">
             <div className="flex flex-col text-right">
