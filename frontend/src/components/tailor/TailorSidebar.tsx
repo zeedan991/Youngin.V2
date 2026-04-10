@@ -24,11 +24,11 @@ const NAV = [
   { label: "Business Profile", href: "/tailor/profile", icon: User },
 ];
 
-export default function TailorSidebar() {
+export default function TailorSidebar({ initialProfile }: { initialProfile?: { full_name: string; username: string; level: number; avatar_url: string | null } }) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
-  const [profile, setProfile] = useState<{ full_name: string; username: string; level: number; avatar_url: string | null }>({
+  const [profile, setProfile] = useState<{ full_name: string; username: string; level: number; avatar_url: string | null }>(initialProfile || {
     full_name: "Tailor",
     username: "",
     level: 1,
@@ -36,15 +36,17 @@ export default function TailorSidebar() {
   });
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        supabase.from("profiles").select("full_name, username, level, avatar_url").eq("id", user.id).single().then(({ data }) => {
-          if (data) setProfile(data as any);
-        });
-      }
-    });
-  }, []);
+    if (!initialProfile) {
+      const supabase = createClient();
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          supabase.from("profiles").select("full_name, username, level, avatar_url").eq("id", user.id).single().then(({ data }) => {
+            if (data) setProfile(data as any);
+          });
+        }
+      });
+    }
+  }, [initialProfile]);
 
   const handleLogout = async () => {
     const supabase = createClient();

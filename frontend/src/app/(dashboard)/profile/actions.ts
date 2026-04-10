@@ -15,16 +15,18 @@ export async function fetchLiveProfile() {
   const fallbackName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || "User";
 
   if (profileData) {
-    const { count: followersCount } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", user.id);
-    const { count: followingCount } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", user.id);
+    const [followersRes, followingRes] = await Promise.all([
+      supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", user.id),
+      supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", user.id)
+    ]);
 
     return {
       success: true,
       data: {
         ...profileData,
         full_name: profileData.full_name || fallbackName,
-        followers: followersCount || 0,
-        following: followingCount || 0,
+        followers: followersRes.count || 0,
+        following: followingRes.count || 0,
       }
     };
   }

@@ -32,15 +32,18 @@ const NAV_ITEMS = [
   { label: "AI Stylist", href: "/ai-stylist", icon: MessageCircle },
 ];
 
-export default function Navbar() {
+export default function Navbar({ initialProfile }: { initialProfile?: { name: string; level: number; avatar_url: string | null; role: string } }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [profile, setProfile] = useState<{ name: string; level: number; avatar_url: string | null; role: string }>({
-    name: "",
+  
+  // Use initialProfile if provided, otherwise fallback
+  const [profile, setProfile] = useState(initialProfile || {
+    name: "Creator",
     level: 1,
     avatar_url: null,
     role: "user",
   });
+
   const [imageError, setImageError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -61,24 +64,33 @@ export default function Navbar() {
   }, [searchQuery]);
 
   useEffect(() => {
-    fetchLiveProfile()
-      .then((res) => {
-        if (res.success && res.data) {
-          setProfile({
-            name: (res.data as any).username || (res.data as any).full_name || "Creator",
-            level: (res.data as any).level || 1,
-            avatar_url: (res.data as any).avatar_url || null,
-            role: (res.data as any).role || "user",
-          });
-          // Auto-redirect tailors who land on consumer pages to their portal
-          const isTailorRoute = window.location.pathname.startsWith("/tailor");
-          if ((res.data as any).role === "tailor" && !isTailorRoute && window.location.pathname === "/dashboard") {
-            router.replace("/tailor/dashboard");
+    // If the server didn't pass a profile (e.g. static export/fallback), fetch it.
+    if (!initialProfile) {
+      fetchLiveProfile()
+        .then((res) => {
+          if (res.success && res.data) {
+            setProfile({
+              name: (res.data as any).username || (res.data as any).full_name || "Creator",
+              level: (res.data as any).level || 1,
+              avatar_url: (res.data as any).avatar_url || null,
+              role: (res.data as any).role || "user",
+            });
+            // Auto-redirect tailors who land on consumer pages to their portal
+            const isTailorRoute = window.location.pathname.startsWith("/tailor");
+            if ((res.data as any).role === "tailor" && !isTailorRoute && window.location.pathname === "/dashboard") {
+              router.replace("/tailor/dashboard");
+            }
           }
+        })
+        .catch(() => setProfile({ name: "Creator", level: 1, avatar_url: null, role: "user" }));
+    } else {
+        // Even if we got a profile server-side, check role routing client-side to ensure smooth navigation
+        const isTailorRoute = window.location.pathname.startsWith("/tailor");
+        if (initialProfile.role === "tailor" && !isTailorRoute && window.location.pathname === "/dashboard") {
+            router.replace("/tailor/dashboard");
         }
-      })
-      .catch(() => setProfile({ name: "Creator", level: 1, avatar_url: null, role: "user" }));
-  }, []);
+    }
+  }, [initialProfile, router]);
 
   const initials = profile.name
     .split(" ")
