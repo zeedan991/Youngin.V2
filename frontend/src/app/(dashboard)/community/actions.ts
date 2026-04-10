@@ -98,9 +98,10 @@ export async function searchCreators(query: string) {
   const supabase = await createClient();
   
   // Search for matching usernames or full names
+  // REMOVED 'level' column to fix DB validation crash
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url, level")
+    .select("id, username, full_name, avatar_url")
     .or(`username.ilike.%${cleanQuery}%,full_name.ilike.%${cleanQuery}%`)
     .limit(5);
     
