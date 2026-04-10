@@ -3,10 +3,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Save, Layers, Type, Image as ImageIcon, Shirt, Plus, X, ArrowLeft, FolderOpen,
-  Paintbrush, Search, RotateCcw, Eraser, Move, Loader2, Check
+  Paintbrush, Search, RotateCcw, Eraser, Loader2, Check, Undo2, Redo2, Move
 } from "lucide-react";
 import Link from "next/link";
-import { saveDesignToDb, loadUserDesigns, deleteDesign, type Design } from "./actions";
+import { toJpeg } from 'html-to-image';
+import { saveDesignToDb, loadUserDesigns, deleteDesign, uploadSnapshotBase64, type Design } from "./actions";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 export interface DesignElement {
@@ -22,6 +23,12 @@ export interface DesignElement {
   y: number;
   side: "front" | "back";
 }
+
+type HistoryState = {
+  elements: DesignElement[];
+  frontPaintData: string;
+  backPaintData: string;
+};
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 const GARMENT_TYPES = [
@@ -43,7 +50,6 @@ const COLORS = [
 const FONTS = ["Inter", "Arial", "Georgia", "Courier New", "Times New Roman", "Trebuchet MS", "Verdana"];
 
 // ─── 2D Vectors ──────────────────────────────────────────────────────────────
-
 const GarmentVector = ({ type, color }: { type: string, color: string }) => {
   const baseClass = "w-full h-full drop-shadow-2xl transition-all duration-300 pointer-events-none";
   const defs = (
@@ -51,7 +57,6 @@ const GarmentVector = ({ type, color }: { type: string, color: string }) => {
       <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
         <feDropShadow dx="0" dy="15" stdDeviation="15" floodOpacity="0.1" />
       </filter>
-      {/* Inner contour shading */}
       <radialGradient id="contour" cx="30%" cy="30%" r="70%">
         <stop offset="0%" stopColor="white" stopOpacity="0.15" />
         <stop offset="80%" stopColor="black" stopOpacity="0.05" />
@@ -176,13 +181,12 @@ export default function StudioPage() {
   const [brushSize,      setBrushSize]     = useState(18);
   const [isEraser,       setIsEraser]      = useState(false);
 
-  // Paint Canvases (Left Panel)
+  // Paint Canvases
   const paintCanvasFrontRef = useRef<HTMLCanvasElement>(null);
   const paintCanvasBackRef  = useRef<HTMLCanvasElement>(null);
   const isPainting       = useRef(false);
   const lastPaintPos     = useRef<{x: number; y: number} | null>(null);
 
-  // Exported Paint Data for 2D Render
   const [frontPaintData, setFrontPaintData] = useState<string>("");
   const [backPaintData, setBackPaintData] = useState<string>("");
 
@@ -199,11 +203,53 @@ export default function StudioPage() {
   const [myDesigns,      setMyDesigns]     = useState<Design[]>([]);
   const [loadingDesigns, setLoadingDesigns] = useState(false);
 
-  // Sync the hidden / panel canvas to the visual display state
+  // Snapshot Ref
+  const artboardRef = useRef<HTMLDivElement>(null);
+  const elementsAreaRef = useRef<HTMLDivElement>(null);
+
+  // Drag & Drop State
+  const dragState = useRef<{ id: string, startX: number, startY: number, initialX: number, initialY: number } | null>(null);
+  const [isDraggingObj, setIsDraggingObj] = useState(false);
+
+  // Undo / Redo
+  const [history, setHistory] = useState<HistoryState[]>([{ elements: [], frontPaintData: "", backPaintData: "" }]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+
+  const pushHistory = useCallback((newState: HistoryState) => {
+    setHistory(prev => {
+      const slice = prev.slice(0, historyIndex + 1);
+      slice.push(newState);
+      return slice;
+    });
+    setHistoryIndex(prev => prev + 1);
+  }, [historyIndex]);
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const p = history[historyIndex - 1];
+      setElements(p.elements); setFrontPaintData(p.frontPaintData); setBackPaintData(p.backPaintData);
+      setHistoryIndex(i => i - 1);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const p = history[historyIndex + 1];
+      setElements(p.elements); setFrontPaintData(p.frontPaintData); setBackPaintData(p.backPaintData);
+      setHistoryIndex(i => i + 1);
+    }
+  };
+
+  const commitCurrentStateToHistory = useCallback(() => {
+    pushHistory({ elements, frontPaintData, backPaintData });
+  }, [elements, frontPaintData, backPaintData, pushHistory]);
+
   const syncPaint = useCallback(() => {
-     if (paintCanvasFrontRef.current) setFrontPaintData(paintCanvasFrontRef.current.toDataURL());
-     if (paintCanvasBackRef.current) setBackPaintData(paintCanvasBackRef.current.toDataURL());
-  }, []);
+     let f = frontPaintData, b = backPaintData;
+     if (paintCanvasFrontRef.current) f = paintCanvasFrontRef.current.toDataURL();
+     if (paintCanvasBackRef.current) b = paintCanvasBackRef.current.toDataURL();
+     setFrontPaintData(f); setBackPaintData(b);
+  }, [frontPaintData, backPaintData]);
 
   const paint = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const pc = currentSide === 'front' ? paintCanvasFrontRef.current : paintCanvasBackRef.current;
@@ -212,7 +258,6 @@ export default function StudioPage() {
     const scaleX = pc.width / rect.width;
     const scaleY = pc.height / rect.height;
     
-    // In native 2D, coordinates map perfectly 1:1
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
     
@@ -240,12 +285,18 @@ export default function StudioPage() {
 
   const handlePaintStart = (e: React.PointerEvent<HTMLCanvasElement>) => { e.preventDefault(); isPainting.current = true; paint(e); };
   const handlePaintMove = (e: React.PointerEvent<HTMLCanvasElement>) => { if (!isPainting.current) return; e.preventDefault(); paint(e); };
-  const handlePaintEnd = () => { isPainting.current = false; lastPaintPos.current = null; syncPaint(); };
+  const handlePaintEnd = () => { 
+    if (isPainting.current) {
+       isPainting.current = false; lastPaintPos.current = null; syncPaint();
+       setTimeout(commitCurrentStateToHistory, 50); // commit after render
+    }
+  };
   
   const clearPaintCanvas = () => {
     const pc = currentSide === 'front' ? paintCanvasFrontRef.current : paintCanvasBackRef.current;
     if (pc) pc.getContext("2d")!.clearRect(0, 0, pc.width, pc.height);
     syncPaint();
+    setTimeout(commitCurrentStateToHistory, 50);
   };
 
   const searchUnsplash = async () => {
@@ -261,28 +312,93 @@ export default function StudioPage() {
 
   const addTextEl = () => {
     if (!textContent.trim()) return;
-    setElements(prev => [...prev, {
-      id: `el_${Date.now()}`, type: "text", content: textContent,
+    const newEls = [...elements, {
+      id: `el_${Date.now()}`, type: "text" as const, content: textContent,
       font: textFont, size: textSize, color: textColor, bold: textBold,
       italic: textItalic, x: 50, y: 40, side: currentSide
-    }]);
+    }];
+    setElements(newEls);
+    pushHistory({ elements: newEls, frontPaintData, backPaintData });
   };
 
   const addUnsplashImage = (url: string) => {
-    setElements(prev => [...prev, {
-      id: `el_${Date.now()}`, type: "image", content: url, font: "Arial",
+    const newEls = [...elements, {
+      id: `el_${Date.now()}`, type: "image" as const, content: url, font: "Arial",
       size: 40, color: "#000", bold: false, italic: false, x: 50, y: 50, side: currentSide
-    }]);
+    }];
+    setElements(newEls);
+    pushHistory({ elements: newEls, frontPaintData, backPaintData });
   };
 
-  const deleteEl = (id: string) => setElements(prev => prev.filter(e => e.id !== id));
+  const deleteEl = (id: string) => {
+    const newEls = elements.filter(e => e.id !== id);
+    setElements(newEls);
+    pushHistory({ elements: newEls, frontPaintData, backPaintData });
+  };
+
+  const handlePointerDown = (e: React.PointerEvent, el: DesignElement) => {
+    if (activeTab === 'paint') return; // prevent moving while in paint mode if overlapping
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingObj(true);
+    dragState.current = { id: el.id, startX: e.clientX, startY: e.clientY, initialX: el.x, initialY: el.y };
+  };
+
+  useEffect(() => {
+    const handleMove = (e: PointerEvent) => {
+      if (!isDraggingObj || !dragState.current || !elementsAreaRef.current) return;
+      e.preventDefault();
+      const rect = elementsAreaRef.current.getBoundingClientRect();
+      const dx = ((e.clientX - dragState.current.startX) / rect.width) * 100;
+      const dy = ((e.clientY - dragState.current.startY) / rect.height) * 100;
+      
+      const newX = Math.max(0, Math.min(100, dragState.current.initialX + dx));
+      const newY = Math.max(0, Math.min(100, dragState.current.initialY + dy));
+      
+      setElements(prev => prev.map(p => p.id === dragState.current!.id ? { ...p, x: newX, y: newY } : p));
+    };
+
+    const handleUp = () => {
+      if (isDraggingObj) {
+        setIsDraggingObj(false);
+        dragState.current = null;
+        commitCurrentStateToHistory(); // Save the final dragged position
+      }
+    };
+
+    if (isDraggingObj) {
+      window.addEventListener('pointermove', handleMove);
+      window.addEventListener('pointerup', handleUp);
+    }
+    return () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+    };
+  }, [isDraggingObj, commitCurrentStateToHistory]);
 
   const handleSave = async () => {
     setSaving(true); setSaveError(null);
+    let publicUrl = undefined;
+
+    // Capture Snapshot of the Artboard for Thumbnail
+    if (artboardRef.current) {
+      try {
+        const base64Str = await toJpeg(artboardRef.current, { quality: 0.85, pixelRatio: 2 });
+        const uploadResult = await uploadSnapshotBase64(base64Str);
+        if (uploadResult.success && uploadResult.url) {
+          publicUrl = uploadResult.url;
+        } else {
+          console.warn("Could not save thumbnail", uploadResult.error);
+        }
+      } catch (e) { console.error("Html2Canvas Error:", e); }
+    }
+
     const m = elements.map(e => ({...e, type: "shape" as any})); 
     const result = await saveDesignToDb({
       id: dbDesignId, name: designName, garmentType, garmentColor, material: "cotton", elements: m as any,
+      storage_url: publicUrl
     });
+    
     setSaving(false);
     if (result.success && result.id) {
       setDbDesignId(result.id); setSaved(true); setTimeout(() => setSaved(false), 2500);
@@ -304,7 +420,8 @@ export default function StudioPage() {
     setDesignName(d.name);
     setDbDesignId(d.id);
     setRightTab("layers");
-    // Note: paint layers are not reliably saved in simple array format, would require blob upload to supabase
+    setHistory([{ elements: d.elements as any, frontPaintData: "", backPaintData: "" }]);
+    setHistoryIndex(0);
   };
 
   return (
@@ -453,32 +570,52 @@ export default function StudioPage() {
         {/* ── CENTER: 2D PURE CANVAS ─────────────────────────────────────────── */}
         <div className="flex-1 relative overflow-hidden flex flex-col items-center justify-center" style={{ background: "radial-gradient(circle at center, #FFFFFF 0%, #E5E5E5 100%)" }}>
            
-           <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex gap-2">
+           <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex gap-2">
              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 bg-white/50 backdrop-blur-md px-5 py-2 rounded-full shadow-sm">
                {garmentType} ─ 2D MODE
              </span>
            </div>
 
-           {/* MASTER 2D ARTBOARD */}
-           <div className="relative w-full max-w-[550px] aspect-square flex items-center justify-center">
+           {/* Undo/Redo Buttons */}
+           <div className="absolute bottom-6 right-6 z-40 flex items-center gap-2 p-1.5 bg-white border border-gray-200 rounded-full shadow-xl">
+              <button 
+                onClick={handleUndo} 
+                disabled={historyIndex <= 0}
+                className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 hover:bg-gray-100 disabled:opacity-30 transition-all text-gray-700"
+              >
+                <Undo2 className="w-4 h-4" />
+              </button>
+              <div className="h-6 w-px bg-gray-200" />
+              <button 
+                onClick={handleRedo} 
+                disabled={historyIndex >= history.length - 1}
+                className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 hover:bg-gray-100 disabled:opacity-30 transition-all text-gray-700"
+              >
+                <Redo2 className="w-4 h-4" />
+              </button>
+           </div>
+
+           {/* MASTER 2D ARTBOARD (Ref attached for Snapshot generation) */}
+           <div ref={artboardRef} className="relative w-full max-w-[550px] aspect-square flex items-center justify-center bg-transparent">
               
               {/* Base Garment Vector */}
               <div className="absolute inset-4 z-10">
                  <GarmentVector type={garmentType} color={garmentColor} />
               </div>
 
-              {/* Graphical Overlays (Bound slightly inside garment to simulate chest/back limits) */}
-              <div className="absolute inset-[15%] z-20 pointer-events-none overflow-hidden" style={{ clipPath: garmentType === 'tshirt' ? 'inset(0)' : 'none' }}>
+              {/* Graphical Overlays (Interactive) */}
+              <div ref={elementsAreaRef} className="absolute inset-[10%] z-20 overflow-hidden" style={{ clipPath: garmentType === 'tshirt' ? 'inset(0)' : 'none' }}>
                   
                   {/* Sync'd Paint Layer */}
-                  {currentSide === 'front' && frontPaintData && <img src={frontPaintData} className="absolute inset-0 w-full h-full opacity-90 mix-blend-multiply" alt=""/>}
-                  {currentSide === 'back' && backPaintData && <img src={backPaintData} className="absolute inset-0 w-full h-full opacity-90 mix-blend-multiply" alt=""/>}
+                  {currentSide === 'front' && frontPaintData && <img src={frontPaintData} className="absolute inset-0 w-full h-full opacity-90 mix-blend-multiply pointer-events-none" alt=""/>}
+                  {currentSide === 'back' && backPaintData && <img src={backPaintData} className="absolute inset-0 w-full h-full opacity-90 mix-blend-multiply pointer-events-none" alt=""/>}
                   
-                  {/* Generated Elements */}
+                  {/* Generated Draggable Elements */}
                   {elements.filter(e => e.side === currentSide).map(el => (
                     <div 
                       key={el.id} 
-                      className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                      className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-move hover:ring-2 hover:ring-black hover:ring-offset-2 transition-shadow"
+                      onPointerDown={(e) => handlePointerDown(e, el)}
                       style={{ 
                         left: `${el.x}%`, 
                         top: `${el.y}%`, 
@@ -486,13 +623,13 @@ export default function StudioPage() {
                       }}
                     >
                       {el.type === 'image' ? (
-                        <img src={el.content} className="w-full h-auto drop-shadow-xl mix-blend-multiply rounded-lg" alt=""/>
+                        <img src={el.content} className="w-full h-auto drop-shadow-xl mix-blend-multiply rounded-lg select-none pointer-events-none" draggable={false} alt=""/>
                       ) : (
                         <span style={{ 
                           color: el.color, fontSize: `${el.size}px`, fontFamily: el.font,
                           fontWeight: el.bold ? '900' : '500', fontStyle: el.italic ? 'italic' : 'normal',
                           whiteSpace: 'nowrap'
-                        }} className="inline-block transition-all drop-shadow-sm tracking-tight leading-none">
+                        }} className="inline-block drop-shadow-sm tracking-tight leading-none select-none pointer-events-none">
                           {el.content}
                         </span>
                       )}
@@ -533,16 +670,13 @@ export default function StudioPage() {
                             
                             <div className="flex flex-col gap-2 bg-[#FAFAFA] p-2.5 rounded-lg border border-gray-100">
                               <div className="flex items-center gap-3">
-                                <span className="text-[9px] font-black text-gray-400 uppercase w-6">Y</span>
-                                <input type="range" className="flex-1 accent-black h-1.5" min={0} max={100} value={el.y} onChange={e => setElements(prev => prev.map(p => p.id === el.id ? {...p, y: Number(e.target.value)} : p))} />
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className="text-[9px] font-black text-gray-400 uppercase w-6">X</span>
-                                <input type="range" className="flex-1 accent-black h-1.5" min={0} max={100} value={el.x} onChange={e => setElements(prev => prev.map(p => p.id === el.id ? {...p, x: Number(e.target.value)} : p))} />
-                              </div>
-                              <div className="flex items-center gap-3">
                                 <span className="text-[9px] font-black text-gray-400 uppercase w-6">SCL</span>
-                                <input type="range" className="flex-1 accent-black h-1.5" min={10} max={el.type === 'image' ? 100 : 200} value={el.size} onChange={e => setElements(prev => prev.map(p => p.id === el.id ? {...p, size: Number(e.target.value)} : p))} />
+                                <input type="range" className="flex-1 accent-black h-1.5" min={10} max={el.type === 'image' ? 100 : 200} value={el.size} 
+                                  onChange={e => {
+                                    setElements(prev => prev.map(p => p.id === el.id ? {...p, size: Number(e.target.value)} : p));
+                                  }} 
+                                  onMouseUp={commitCurrentStateToHistory}
+                                />
                               </div>
                             </div>
                           </div>
@@ -570,6 +704,7 @@ export default function StudioPage() {
                           <div className="w-5 h-5 rounded-full shrink-0 border-2 border-white shadow-md outline outline-2 outline-gray-200" style={{ background: d.garment_color }} />
                        </div>
                        <p className="text-[9px] text-gray-400 font-black uppercase tracking-[0.2em]">{d.garment_type}</p>
+                       {d.storage_url && <img src={d.storage_url} className="w-full h-24 object-cover rounded-md mt-2 opacity-50" />}
                     </div>
                   ))
                 }

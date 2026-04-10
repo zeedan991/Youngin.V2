@@ -23,7 +23,7 @@ export interface Design {
   garment_color: string;
   material: string;
   elements: DesignElement[];
-  thumbnail_url: string | null;
+  storage_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -35,6 +35,7 @@ export async function saveDesignToDb(payload: {
   garmentColor: string;
   material: string;
   elements: DesignElement[];
+  storage_url?: string;
 }) {
   const supabase = await createClient();
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
@@ -47,6 +48,7 @@ export async function saveDesignToDb(payload: {
     garment_color: payload.garmentColor,
     material:      payload.material,
     elements:      payload.elements,
+    storage_url:   payload.storage_url || null,
   };
 
   if (payload.id) {
@@ -114,4 +116,33 @@ export async function loadDesignById(id: string) {
     .single();
 
   return data as Design | null;
+}
+
+export async function uploadSnapshotBase64(base64Str: string): Promise<{ success: boolean; url?: string; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not logged in" };
+
+  try {
+    const base64Data = base64Str.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Data, "base64");
+    
+    // Upload to 'designs' bucket (or 'public' if designs doesn't exist)
+    const filePath = `${user.id}/${Date.now()}_snapshot.jpg`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from("designs")
+      .upload(filePath, buffer, {
+        contentType: "image/jpeg",
+        upsert: true
+      });
+      
+    if (uploadError) return { success: false, error: uploadError.message };
+
+    const { data: { publicUrl } } = supabase.storage.from("designs").getPublicUrl(filePath);
+    
+    return { success: true, url: publicUrl };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
