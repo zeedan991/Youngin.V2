@@ -49,11 +49,11 @@ function BodyMesh({ objString }: { objString: string }) {
     obj.traverse((child: any) => {
       if (child.isMesh) {
         child.material = new THREE.MeshStandardMaterial({
-          color: new THREE.Color("#FF4D94"),
-          roughness: 0.4,
-          metalness: 0.08,
-          transparent: true,
-          opacity: 0.90,
+          color: new THREE.Color("#C8A882"),
+          roughness: 0.65,
+          metalness: 0.0,
+          transparent: false,
+          opacity: 1.0,
         });
         child.geometry.computeVertexNormals();
       }
@@ -75,10 +75,10 @@ function Scene3D({ objString }: { objString: string }) {
   return (
     <Canvas style={{ width: "100%", height: "100%" }} gl={{ antialias: true, alpha: true }}>
       <PerspectiveCamera makeDefault position={[0, 0, 2.6]} fov={40} />
-      <ambientLight intensity={0.55} />
-      <directionalLight position={[3, 5, 3]}   intensity={1.5} />
-      <directionalLight position={[-3, -2, -3]} intensity={0.4} />
-      <pointLight position={[0, 3, 0]} intensity={0.7} color="#FF4D94" />
+      <ambientLight intensity={0.7} />
+      <directionalLight position={[3, 5, 3]}   intensity={1.2} />
+      <directionalLight position={[-3, -2, -3]} intensity={0.5} />
+      <pointLight position={[0, 3, 0]} intensity={0.4} color="#FFF0E0" />
       <Suspense fallback={null}>
         <BodyMesh objString={objString} />
         <Environment preset="city" />
