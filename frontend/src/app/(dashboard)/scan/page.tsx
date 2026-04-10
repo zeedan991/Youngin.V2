@@ -84,33 +84,34 @@ function PhotoBox({ label, hint, file, onChange }: { label: string; hint: string
   const preview = file ? URL.createObjectURL(file) : null;
   const ref = useRef<HTMLInputElement>(null);
   return (
-    <div className="flex flex-col gap-2 items-center">
-      <span className="text-xs font-bold uppercase tracking-widest text-white/50">{label}</span>
+    <div className="flex flex-col gap-2 items-center w-full max-w-[180px]">
+      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 drop-shadow-md">{label}</span>
       <button type="button" onClick={() => ref.current?.click()}
-        className="group relative w-[160px] h-[220px] rounded-2xl overflow-hidden transition-all duration-300 flex-shrink-0"
+        className="group relative w-full aspect-[3/4] rounded-[24px] overflow-hidden transition-all duration-400 flex-shrink-0 cursor-pointer"
         style={{ 
-          background: file ? "transparent" : "rgba(255,255,255,0.03)", 
-          border: `1.5px dashed ${file ? pink : "rgba(255,255,255,0.1)"}`, 
-          boxShadow: file ? "0 0 20px rgba(255,77,148,0.12)" : "none" 
+          background: file ? "transparent" : "rgba(10,10,13,0.4)", 
+          border: `1.5px dashed ${file ? pink : "rgba(255,255,255,0.12)"}`, 
+          boxShadow: file ? "0 0 25px rgba(255,77,148,0.15)" : "none" 
         }}>
         {preview ? (
           <>
             <img src={preview} alt={label} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <span className="text-white text-xs font-semibold">Change Photo</span>
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+              <span className="text-white text-xs font-bold tracking-wider">CHANGE</span>
             </div>
-            <div className="absolute top-2 right-2 bg-[#FF4D94] rounded-full p-1 shadow-lg">
-              <CheckCircle className="w-3 h-3 text-white" />
+            <div className="absolute top-3 right-3 bg-[#FF4D94] rounded-full p-1.5 shadow-xl">
+              <CheckCircle className="w-3.5 h-3.5 text-white" />
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center gap-3 h-full px-4">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110" style={{ background: "rgba(255,77,148,0.1)", border: "1px solid rgba(255,77,148,0.2)" }}>
-              <Camera className="w-5 h-5" style={{ color: pink }} />
+          <div className="flex flex-col items-center justify-center gap-4 h-full px-5">
+            <div className="w-14 h-14 rounded-[18px] flex items-center justify-center transition-transform group-hover:scale-110 group-hover:-translate-y-1 shadow-lg" 
+              style={{ background: "rgba(255,77,148,0.08)", border: "1px solid rgba(255,77,148,0.25)" }}>
+              <Camera className="w-6 h-6" style={{ color: pink }} />
             </div>
             <div className="text-center">
-              <p className="text-white/70 text-xs font-bold mb-1">Upload File</p>
-              <p className="text-white/30 text-[9px] leading-tight">{hint}</p>
+              <p className="text-white/80 text-sm font-black tracking-wide mb-1.5">Tap to Upload</p>
+              <p className="text-white/30 text-[10px] leading-snug px-1">{hint}</p>
             </div>
           </div>
         )}
@@ -270,23 +271,38 @@ export default function AISizingPage() {
                 </div>
               </div>
 
-              {/* RIGHT: Hero Graphic */}
+              {/* RIGHT: Guide Images */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }}
-                className="hidden lg:flex w-80 h-[460px] rounded-3xl overflow-hidden border shrink-0 relative items-center justify-center"
-                style={{ borderColor: bdr, background: "linear-gradient(to bottom, rgba(255,255,255,0.03), transparent)" }}
+                className="hidden lg:flex flex-col gap-4 w-80 shrink-0"
               >
-                 <Image src="/dribbble_vexum_full_shot.png" alt="Example Scan" fill className="object-cover opacity-60 mix-blend-screen" unoptimized />
-                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A0909] via-transparent to-transparent" />
-                 
-                 {/* Floating badge */}
-                 <div className="absolute bottom-6 bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex flex-col gap-2 w-10/12 shadow-2xl">
-                    <div className="flex items-center justify-between">
-                       <span className="text-xs font-bold text-white uppercase flex items-center gap-2"><CheckCircle className="w-3.5 h-3.5 text-green-400" /> Body Scanned</span>
-                       <span className="text-[10px] text-white/50">100%</span>
+                {/* DO */}
+                <div className="relative h-[220px] rounded-3xl overflow-hidden border" style={{ borderColor: "rgba(74,222,128,0.3)", background: "#060608" }}>
+                  <Image src="/correct_pose.png" alt="Correct Pose" fill className="object-cover opacity-90 mix-blend-screen" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                    <div>
+                      <span className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-green-400">
+                        <CheckCircle className="w-4 h-4" /> Correct
+                      </span>
+                      <p className="text-[9px] text-white/50 mt-0.5">Tight clothes, straight, arms out.</p>
                     </div>
-                    <div className="h-1 rounded-full w-full bg-white/10 overflow-hidden"><div className="h-full w-full bg-green-400" /></div>
-                 </div>
+                  </div>
+                </div>
+
+                {/* DONT */}
+                <div className="relative h-[220px] rounded-3xl overflow-hidden border" style={{ borderColor: "rgba(239,68,68,0.3)", background: "#060608" }}>
+                  <Image src="/wrong_pose.png" alt="Wrong Pose" fill className="object-cover opacity-90 mix-blend-screen" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                    <div>
+                      <span className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-red-400">
+                        <AlertCircle className="w-4 h-4" /> Wrong
+                      </span>
+                      <p className="text-[9px] text-white/50 mt-0.5">Baggy clothes, slouched, angled.</p>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             </motion.div>
           )}
@@ -296,59 +312,67 @@ export default function AISizingPage() {
             <motion.div key="upload"
               initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.4 }}
-              className="flex flex-col items-center w-full max-w-4xl mx-auto"
+              className="flex flex-col items-center w-full max-w-5xl mx-auto"
             >
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-black text-white mb-2" style={{ fontFamily: "var(--font-syne)" }}>Upload Images</h2>
-                <p className="text-white/40 text-sm">Please provide clear, well-lit photos for maximum accuracy.</p>
+              <div className="text-center mb-10">
+                <h2 className="text-4xl font-black text-white mb-2" style={{ fontFamily: "var(--font-syne)" }}>Upload Images</h2>
+                <p className="text-white/40 text-sm max-w-md mx-auto leading-relaxed">Provide clear, well-lit photos. The AI uses these to build a mathematically exact replica of your proportions.</p>
               </div>
 
               {error && (
-                <div className="flex items-center justify-center gap-2 p-3 rounded-xl border mb-6 w-full max-w-lg" style={{ background: "rgba(239,68,68,0.1)", borderColor: "rgba(239,68,68,0.2)" }}>
-                  <AlertCircle className="w-4 h-4 text-red-400" />
-                  <p className="text-red-200 text-xs font-semibold">{error}</p>
+                <div className="flex items-center justify-center gap-2 p-3.5 rounded-xl border mb-6 w-full max-w-lg" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)" }}>
+                  <AlertCircle className="w-4 h-4 text-red-500" />
+                  <p className="text-red-200 text-xs font-bold">{error}</p>
                 </div>
               )}
 
-              {/* Compact Horizonal Layout for Uploads & Form */}
-              <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 w-full">
+              {/* Upload Container Array */}
+              <div className="flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-6 w-full">
                 
-                {/* Photos */}
-                <div className="flex gap-6 justify-center">
+                {/* Photos Panel */}
+                <div className="flex gap-4 md:gap-8 justify-center rounded-3xl p-6 border w-full max-w-xl" style={{ background: surf, borderColor: bdr, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
                   <PhotoBox label="Front View" hint="Stand straight, arms wide" file={frontFile} onChange={setFrontFile} />
                   <PhotoBox label="Side View" hint="Turn 90 degrees left or right" file={sideFile} onChange={setSideFile} />
                 </div>
 
-                {/* Form Elements */}
-                <div className="flex flex-col justify-center gap-4 w-full max-w-[260px] p-6 rounded-2xl border" style={{ background: surf, borderColor: bdr }}>
+                {/* Form Settings Panel */}
+                <div className="flex flex-col justify-center gap-5 w-full max-w-[320px] p-7 rounded-3xl border" style={{ background: surf, borderColor: bdr, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
                   
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/50 flex justify-between">
-                      <span>Height</span> <span className="text-white/30 text-[9px]">(cm)</span>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.15em] text-white/50 flex justify-between items-end">
+                      <span>Height</span> <span className="text-white/30 text-[9px] lowercase opacity-60">in centimeters</span>
                     </label>
                     <input type="number" min={120} max={250} value={height} onChange={(e) => setHeight(Number(e.target.value))}
-                      className="w-full rounded-xl px-4 py-3 text-sm font-bold outline-none transition-colors"
-                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#F0EBE3" }}
+                      className="w-full rounded-2xl px-5 py-3.5 text-base font-bold outline-none transition-colors"
+                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}
                       onFocus={(e) => (e.target.style.borderColor = pink)}
                       onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")} />
                   </div>
 
-                  <div className="space-y-1.5 mb-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/50">Body Shape Profile</label>
-                    <select value={gender} onChange={(e) => setGender(e.target.value as any)}
-                      className="w-full rounded-xl px-4 py-3 text-sm font-bold outline-none cursor-pointer appearance-none"
-                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#F0EBE3" }}>
-                      <option value="neutral">Neutral Average</option>
-                      <option value="male">Masculine Frame</option>
-                      <option value="female">Feminine Frame</option>
-                    </select>
+                  <div className="space-y-2 mb-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.15em] text-white/50">Baseline Shape</label>
+                    <div className="relative">
+                      <select value={gender} onChange={(e) => setGender(e.target.value as any)}
+                        className="w-full rounded-2xl px-5 py-3.5 text-sm font-bold outline-none cursor-pointer appearance-none"
+                        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}>
+                        <option value="neutral">Neutral Average</option>
+                        <option value="male">Masculine Frame</option>
+                        <option value="female">Feminine Frame</option>
+                      </select>
+                      <ChevronLeft className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 -rotate-90 text-white/40 pointer-events-none" />
+                    </div>
                   </div>
 
-                  <button onClick={handleScan} disabled={!frontFile || !sideFile}
-                    className="flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-white text-sm tracking-wide transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:scale-100"
-                    style={{ background: `linear-gradient(135deg, ${pink}, #B8005C)` }}>
-                    <Scan className="w-4 h-4" /> Analyse
-                  </button>
+                  <div className="pt-2">
+                    <button onClick={handleScan} disabled={!frontFile || !sideFile}
+                      className="flex items-center justify-center gap-2.5 w-full py-4 rounded-2xl font-black text-white text-sm tracking-widest uppercase transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:scale-100"
+                      style={{ background: `linear-gradient(135deg, ${pink}, #B8005C)`, boxShadow: !frontFile || !sideFile ? "none" : "0 8px 30px rgba(255,77,148,0.25)" }}>
+                      <Scan className="w-4 h-4" /> Start Analysis
+                    </button>
+                    <button onClick={() => setStep("guide")} className="w-full mt-3 text-center text-xs font-semibold text-white/30 hover:text-white/70 transition-colors">
+                       Return to Guide
+                    </button>
+                  </div>
                   
                 </div>
               </div>
