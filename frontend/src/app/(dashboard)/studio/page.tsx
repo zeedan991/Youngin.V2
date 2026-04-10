@@ -207,7 +207,7 @@ export default function StudioPage() {
   const [elements,       setElements]      = useState<DesignElement[]>([]);
   const [selectedEl,     setSelectedEl]    = useState<string|null>(null);
   const [activeTab,      setActiveTab]     = useState<"garment"|"text"|"paint"|"graphics"|"layers">("garment");
-  const [rightTab,       setRightTab]      = useState<"summary"|"mydesigns">("summary");
+  const [rightTab,       setRightTab]      = useState<"layers"|"mydesigns">("layers");
 
   // Text tool state
   const [textContent,    setTextContent]   = useState("YOUNGIN");
@@ -406,7 +406,7 @@ export default function StudioPage() {
     setElements((d.elements || []).map(e => ({...e, type: (e as any).type === "shape" ? "image" : e.type} as any)));
     setDesignName(d.name);
     setDbDesignId(d.id);
-    setRightTab("summary");
+    setRightTab("layers");
   };
 
   const openMyDesigns = async () => {
