@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import {
   motion,
   useScroll,
@@ -225,14 +227,25 @@ function StatementBanner() {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
+    const checkUserAndRedirect = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push("/dashboard");
+      } else {
+        setIsLoading(false);
+      }
+    };
+    
+    // We replace the hardcoded timeout with the auth check
+    checkUserAndRedirect();
+  }, [router]);
 
   function handleSubscribe(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
