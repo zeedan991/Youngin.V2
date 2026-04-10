@@ -5,331 +5,147 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, ContactShadows, Environment } from "@react-three/drei";
 import * as THREE from "three";
 import {
-  ChevronDown, Save, Download, RotateCcw, Eye, Layers, Type,
-  Image as ImageIcon, Palette, Shirt, Plus, Trash2, Bold, Italic,
-  AlignLeft, AlignCenter, AlignRight, Check, Loader2, X, ArrowLeft,
-  ZoomIn, ZoomOut, Maximize2, Settings
+  ChevronDown, Save, Layers, Type, Image as ImageIcon, Shirt,
+  Plus, Trash2, Bold, Italic, AlignLeft, AlignCenter, AlignRight,
+  Check, Loader2, X, ArrowLeft, FolderOpen, AlertCircle
 } from "lucide-react";
 import Link from "next/link";
+import { saveDesignToDb, loadUserDesigns, deleteDesign, type Design, type DesignElement } from "./actions";
 
-// ─── Design save to localStorage ──────────────────────────────────────────
-interface DesignElement {
-  id: string;
-  type: "text" | "shape";
-  content: string;
-  font: string;
-  size: number;
-  color: string;
-  bold: boolean;
-  italic: boolean;
-  x: number;
-  y: number;
-}
-
-interface SavedDesign {
-  id: string;
-  name: string;
-  garmentType: string;
-  garmentColor: string;
-  material: string;
-  elements: DesignElement[];
-  timestamp: number;
-}
-
-function saveDesign(design: SavedDesign) {
-  const stored = JSON.parse(localStorage.getItem("youngin_designs") || "[]");
-  const idx = stored.findIndex((d: SavedDesign) => d.id === design.id);
-  if (idx >= 0) stored[idx] = design;
-  else stored.push(design);
-  localStorage.setItem("youngin_designs", JSON.stringify(stored));
-}
-
-// ─── Garment Types ─────────────────────────────────────────────────────────
+// ─── Constants ──────────────────────────────────────────────────────────────
 const GARMENT_TYPES = [
-  { id: "tshirt",  label: "T-Shirt",   icon: "👕" },
-  { id: "hoodie",  label: "Hoodie",    icon: "🧥" },
-  { id: "jeans",   label: "Jeans",     icon: "👖" },
-  { id: "dress",   label: "Dress",     icon: "👗" },
-  { id: "jacket",  label: "Jacket",    icon: "🥼" },
-  { id: "polo",    label: "Polo",      icon: "🎽" },
+  { id: "tshirt",  label: "T-Shirt",  icon: "👕" },
+  { id: "hoodie",  label: "Hoodie",   icon: "🧥" },
+  { id: "jeans",   label: "Jeans",    icon: "👖" },
+  { id: "dress",   label: "Dress",    icon: "👗" },
+  { id: "jacket",  label: "Jacket",   icon: "🥼" },
+  { id: "polo",    label: "Polo",     icon: "🎽" },
 ];
 
 const COLORS = [
-  "#FFFFFF", "#F5F5F5", "#1A1A1A", "#2D2D2D",
-  "#C0392B", "#E74C3C", "#E67E22", "#F39C12",
-  "#27AE60", "#2ECC71", "#2980B9", "#3498DB",
-  "#8E44AD", "#9B59B6", "#E91E63", "#FF4081",
-  "#795548", "#9E9E9E", "#607D8B", "#00BCD4",
+  "#FFFFFF","#F5F5F5","#1A1A1A","#2D2D2D","#C0392B","#E74C3C",
+  "#E67E22","#F39C12","#27AE60","#2ECC71","#2980B9","#3498DB",
+  "#8E44AD","#9B59B6","#E91E63","#FF4081","#795548","#9E9E9E",
+  "#607D8B","#00BCD4",
 ];
 
 const MATERIALS = [
-  { id: "cotton",  label: "Cotton",  roughness: 0.9, metalness: 0.0 },
-  { id: "silk",    label: "Silk",    roughness: 0.2, metalness: 0.05 },
-  { id: "denim",   label: "Denim",   roughness: 0.85, metalness: 0.0 },
-  { id: "leather", label: "Leather", roughness: 0.35, metalness: 0.1 },
-  { id: "wool",    label: "Wool",    roughness: 0.95, metalness: 0.0 },
+  { id: "cotton",  label: "Cotton",  roughness: 0.9,  metalness: 0.0  },
+  { id: "silk",    label: "Silk",    roughness: 0.2,  metalness: 0.05 },
+  { id: "denim",   label: "Denim",   roughness: 0.85, metalness: 0.0  },
+  { id: "leather", label: "Leather", roughness: 0.35, metalness: 0.1  },
+  { id: "wool",    label: "Wool",    roughness: 0.95, metalness: 0.0  },
   { id: "satin",   label: "Satin",   roughness: 0.15, metalness: 0.08 },
 ];
 
-const FONTS = ["Arial", "Georgia", "Courier New", "Times New Roman", "Trebuchet MS", "Verdana"];
+const FONTS = ["Arial","Georgia","Courier New","Times New Roman","Trebuchet MS","Verdana"];
 
-// ─── Procedural Garment Geometries ─────────────────────────────────────────
-function TShirtMesh({ color, roughness, metalness, texture }: any) {
-  const bodyGeom = new THREE.BoxGeometry(1.6, 2.0, 0.4, 1, 1, 1);
-  const sleeveGeoL = new THREE.BoxGeometry(0.6, 0.7, 0.35);
-  const sleeveGeoR = new THREE.BoxGeometry(0.6, 0.7, 0.35);
-  const mat = new THREE.MeshStandardMaterial({ color, roughness, metalness, map: texture || null });
+// ─── 3D Garment Meshes ──────────────────────────────────────────────────────
+function GarmentMesh({ type, color, roughness, metalness, texture }: {
+  type: string; color: string; roughness: number; metalness: number; texture: THREE.CanvasTexture | null;
+}) {
+  const threeColor = new THREE.Color(color);
+  const mat = { color: threeColor, roughness, metalness, map: texture };
 
-  return (
-    <group position={[0, 0, 0]}>
-      <mesh geometry={bodyGeom} material={mat} castShadow />
-      {/* Left sleeve */}
-      <mesh position={[-1.1, 0.6, 0]} rotation={[0, 0, 0.3]} castShadow>
-        <boxGeometry args={[0.65, 0.65, 0.35]} />
-        <meshStandardMaterial color={color} roughness={roughness} metalness={metalness} map={texture || null} />
-      </mesh>
-      {/* Right sleeve */}
-      <mesh position={[1.1, 0.6, 0]} rotation={[0, 0, -0.3]} castShadow>
-        <boxGeometry args={[0.65, 0.65, 0.35]} />
-        <meshStandardMaterial color={color} roughness={roughness} metalness={metalness} map={texture || null} />
-      </mesh>
-      {/* Collar */}
-      <mesh position={[0, 1.05, 0.02]}>
-        <torusGeometry args={[0.28, 0.09, 8, 20, Math.PI]} />
-        <meshStandardMaterial color={color} roughness={roughness} metalness={metalness} />
-      </mesh>
-    </group>
-  );
+  switch (type) {
+    case "tshirt": return (
+      <group>
+        <mesh castShadow><boxGeometry args={[1.6,2.0,0.4]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[-1.1,0.6,0]} rotation={[0,0,0.3]} castShadow><boxGeometry args={[0.65,0.65,0.35]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[1.1,0.6,0]} rotation={[0,0,-0.3]} castShadow><boxGeometry args={[0.65,0.65,0.35]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[0,1.05,0.02]}><torusGeometry args={[0.28,0.09,8,20,Math.PI]}/><meshStandardMaterial {...mat}/></mesh>
+      </group>
+    );
+    case "hoodie": return (
+      <group>
+        <mesh castShadow><boxGeometry args={[1.7,2.1,0.45]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[-1.2,0.4,0]} rotation={[0,0,0.25]} castShadow><boxGeometry args={[0.7,0.9,0.38]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[1.2,0.4,0]} rotation={[0,0,-0.25]} castShadow><boxGeometry args={[0.7,0.9,0.38]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[0,1.35,-0.05]} castShadow><sphereGeometry args={[0.52,16,12,0,Math.PI*2,0,Math.PI*0.65]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[0,-0.5,0.23]}><boxGeometry args={[0.9,0.35,0.04]}/><meshStandardMaterial {...mat}/></mesh>
+      </group>
+    );
+    case "jeans": return (
+      <group>
+        <mesh position={[0,1.1,0]} castShadow><boxGeometry args={[1.5,0.25,0.4]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[-0.38,-0.35,0]} castShadow><cylinderGeometry args={[0.33,0.25,2.0,12]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[0.38,-0.35,0]} castShadow><cylinderGeometry args={[0.33,0.25,2.0,12]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[0,0.55,0]} castShadow><boxGeometry args={[0.78,0.6,0.38]}/><meshStandardMaterial {...mat}/></mesh>
+      </group>
+    );
+    case "dress": return (
+      <group>
+        <mesh position={[0,0.75,0]} castShadow><boxGeometry args={[1.3,1.4,0.35]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[0,-0.5,0]} castShadow><cylinderGeometry args={[1.1,1.5,1.8,20]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[-0.35,1.55,0]} castShadow><boxGeometry args={[0.12,0.4,0.08]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[0.35,1.55,0]} castShadow><boxGeometry args={[0.12,0.4,0.08]}/><meshStandardMaterial {...mat}/></mesh>
+      </group>
+    );
+    case "jacket": return (
+      <group>
+        <mesh castShadow><boxGeometry args={[1.75,2.1,0.48]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[-1.22,0.35,0]} rotation={[0,0,0.2]} castShadow><boxGeometry args={[0.72,1.0,0.4]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[1.22,0.35,0]} rotation={[0,0,-0.2]} castShadow><boxGeometry args={[0.72,1.0,0.4]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[-0.3,0.85,0.25]} rotation={[0,0,0.3]} castShadow><boxGeometry args={[0.32,0.65,0.06]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[0.3,0.85,0.25]} rotation={[0,0,-0.3]} castShadow><boxGeometry args={[0.32,0.65,0.06]}/><meshStandardMaterial {...mat}/></mesh>
+      </group>
+    );
+    default: return ( // polo
+      <group>
+        <mesh castShadow><boxGeometry args={[1.55,2.0,0.4]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[-1.06,0.65,0]} rotation={[0,0,0.27]} castShadow><boxGeometry args={[0.6,0.65,0.33]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[1.06,0.65,0]} rotation={[0,0,-0.27]} castShadow><boxGeometry args={[0.6,0.65,0.33]}/><meshStandardMaterial {...mat}/></mesh>
+        <mesh position={[0,1.1,0.05]}><boxGeometry args={[0.7,0.22,0.12]}/><meshStandardMaterial {...mat}/></mesh>
+      </group>
+    );
+  }
 }
 
-function HoodieMesh({ color, roughness, metalness, texture }: any) {
-  const mat = { color, roughness, metalness, map: texture || null };
-  return (
-    <group>
-      {/* Body */}
-      <mesh castShadow>
-        <boxGeometry args={[1.7, 2.1, 0.45]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Left sleeve */}
-      <mesh position={[-1.2, 0.4, 0]} rotation={[0, 0, 0.25]} castShadow>
-        <boxGeometry args={[0.7, 0.9, 0.38]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Right sleeve */}
-      <mesh position={[1.2, 0.4, 0]} rotation={[0, 0, -0.25]} castShadow>
-        <boxGeometry args={[0.7, 0.9, 0.38]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Hood */}
-      <mesh position={[0, 1.35, -0.05]} castShadow>
-        <sphereGeometry args={[0.52, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.65]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Pocket */}
-      <mesh position={[0, -0.5, 0.23]}>
-        <boxGeometry args={[0.9, 0.35, 0.04]} />
-        <meshStandardMaterial color={color} roughness={roughness + 0.05} metalness={metalness} />
-      </mesh>
-    </group>
-  );
-}
-
-function JeansMesh({ color, roughness, metalness }: any) {
-  const mat = { color, roughness, metalness };
-  return (
-    <group position={[0, 0, 0]}>
-      {/* Waistband */}
-      <mesh position={[0, 1.1, 0]} castShadow>
-        <boxGeometry args={[1.5, 0.25, 0.4]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Left leg */}
-      <mesh position={[-0.38, -0.35, 0]} castShadow>
-        <cylinderGeometry args={[0.33, 0.25, 2.0, 12]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Right leg */}
-      <mesh position={[0.38, -0.35, 0]} castShadow>
-        <cylinderGeometry args={[0.33, 0.25, 2.0, 12]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Crotch join */}
-      <mesh position={[0, 0.55, 0]} castShadow>
-        <boxGeometry args={[0.78, 0.6, 0.38]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-    </group>
-  );
-}
-
-function DressMesh({ color, roughness, metalness, texture }: any) {
-  const mat = { color, roughness, metalness, map: texture || null };
-  return (
-    <group>
-      {/* Bodice */}
-      <mesh position={[0, 0.75, 0]} castShadow>
-        <boxGeometry args={[1.3, 1.4, 0.35]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Skirt (flared cone) */}
-      <mesh position={[0, -0.5, 0]} castShadow>
-        <cylinderGeometry args={[1.1, 1.5, 1.8, 20]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Straps */}
-      <mesh position={[-0.35, 1.55, 0]} castShadow>
-        <boxGeometry args={[0.12, 0.4, 0.08]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      <mesh position={[0.35, 1.55, 0]} castShadow>
-        <boxGeometry args={[0.12, 0.4, 0.08]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-    </group>
-  );
-}
-
-function JacketMesh({ color, roughness, metalness }: any) {
-  const mat = { color, roughness, metalness };
-  return (
-    <group>
-      {/* Body */}
-      <mesh castShadow>
-        <boxGeometry args={[1.75, 2.1, 0.48]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Left sleeve */}
-      <mesh position={[-1.22, 0.35, 0]} rotation={[0, 0, 0.2]} castShadow>
-        <boxGeometry args={[0.72, 1.0, 0.4]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Right sleeve */}
-      <mesh position={[1.22, 0.35, 0]} rotation={[0, 0, -0.2]} castShadow>
-        <boxGeometry args={[0.72, 1.0, 0.4]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Left lapel */}
-      <mesh position={[-0.3, 0.85, 0.25]} rotation={[0, 0, 0.3]} castShadow>
-        <boxGeometry args={[0.32, 0.65, 0.06]} />
-        <meshStandardMaterial color={color} roughness={roughness - 0.1} metalness={metalness} />
-      </mesh>
-      {/* Right lapel */}
-      <mesh position={[0.3, 0.85, 0.25]} rotation={[0, 0, -0.3]} castShadow>
-        <boxGeometry args={[0.32, 0.65, 0.06]} />
-        <meshStandardMaterial color={color} roughness={roughness - 0.1} metalness={metalness} />
-      </mesh>
-      {/* Collar */}
-      <mesh position={[0, 1.1, 0.2]}>
-        <boxGeometry args={[0.9, 0.25, 0.08]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-    </group>
-  );
-}
-
-function PoloMesh({ color, roughness, metalness }: any) {
-  const mat = { color, roughness, metalness };
-  return (
-    <group>
-      <mesh castShadow>
-        <boxGeometry args={[1.55, 2.0, 0.4]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      <mesh position={[-1.06, 0.65, 0]} rotation={[0, 0, 0.27]} castShadow>
-        <boxGeometry args={[0.6, 0.65, 0.33]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      <mesh position={[1.06, 0.65, 0]} rotation={[0, 0, -0.27]} castShadow>
-        <boxGeometry args={[0.6, 0.65, 0.33]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Polo collar */}
-      <mesh position={[0, 1.1, 0.05]}>
-        <boxGeometry args={[0.7, 0.22, 0.12]} />
-        <meshStandardMaterial {...mat} />
-      </mesh>
-      {/* Button placket */}
-      <mesh position={[0, 0.5, 0.21]}>
-        <boxGeometry args={[0.14, 0.7, 0.03]} />
-        <meshStandardMaterial color="#F0F0F0" roughness={0.9} metalness={0} />
-      </mesh>
-    </group>
-  );
-}
-
-// ─── Camera view presets ───────────────────────────────────────────────────
-const VIEW_PRESETS = {
+// ─── Camera Preset Controller ───────────────────────────────────────────────
+const VIEW_POSITIONS = {
   front: new THREE.Vector3(0, 0, 4.5),
   back:  new THREE.Vector3(0, 0, -4.5),
   side:  new THREE.Vector3(4.5, 0, 0),
 };
 
-function CameraController({ view }: { view: "front" | "back" | "side" }) {
+function CameraController({ view }: { view: "front"|"back"|"side" }) {
   const { camera } = useThree();
-  const target = VIEW_PRESETS[view];
-  const lerpSpeed = useRef(0.08);
-
-  useFrame(() => {
-    camera.position.lerp(target, lerpSpeed.current);
-    camera.lookAt(0, 0, 0);
-  });
-
+  const target = VIEW_POSITIONS[view];
+  useFrame(() => { camera.position.lerp(target, 0.07); camera.lookAt(0, 0, 0); });
   return null;
 }
 
-// ─── Main 3D Scene ─────────────────────────────────────────────────────────
-function GarmentScene({ garmentType, color, material, texture }: {
-  garmentType: string;
-  color: string;
-  material: typeof MATERIALS[0];
-  texture: THREE.CanvasTexture | null;
+// ─── 3D Scene ───────────────────────────────────────────────────────────────
+function GarmentScene({ type, color, roughness, metalness, texture }: {
+  type: string; color: string; roughness: number; metalness: number; texture: THREE.CanvasTexture | null;
 }) {
-  const threeColor = new THREE.Color(color);
-  const props = { color: threeColor, roughness: material.roughness, metalness: material.metalness, texture };
-
   return (
     <>
-      {/* 3-point studio lighting */}
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[3, 5, 4]} intensity={1.4} castShadow shadow-mapSize={[1024, 1024]} />
-      <directionalLight position={[-3, 2, -2]} intensity={0.6} color="#E8F0FF" />
-      <pointLight position={[0, -2, 3]} intensity={0.4} color="#FFF8F0" />
-
-      {garmentType === "tshirt"  && <TShirtMesh {...props} />}
-      {garmentType === "hoodie"  && <HoodieMesh {...props} />}
-      {garmentType === "jeans"   && <JeansMesh  {...props} />}
-      {garmentType === "dress"   && <DressMesh  {...props} />}
-      {garmentType === "jacket"  && <JacketMesh {...props} />}
-      {garmentType === "polo"    && <PoloMesh   {...props} />}
-
-      {/* Shadow beneath garment */}
-      <ContactShadows position={[0, -1.6, 0]} opacity={0.3} scale={5} blur={2.5} />
-
-      {/* Ground plane */}
-      <mesh position={[0, -1.62, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[20, 20]} />
-        <meshStandardMaterial color="#F8F8F8" roughness={1} />
+      <ambientLight intensity={0.45} />
+      <directionalLight position={[3,5,4]} intensity={1.4} castShadow shadow-mapSize={[1024,1024]} />
+      <directionalLight position={[-3,2,-2]} intensity={0.55} color="#E8F0FF" />
+      <pointLight position={[0,-2,3]} intensity={0.35} color="#FFF8F0" />
+      <GarmentMesh type={type} color={color} roughness={roughness} metalness={metalness} texture={texture} />
+      <ContactShadows position={[0,-1.6,0]} opacity={0.28} scale={5} blur={2.5} />
+      <mesh position={[0,-1.62,0]} rotation={[-Math.PI/2,0,0]} receiveShadow>
+        <planeGeometry args={[20,20]}/><meshStandardMaterial color="#F8F8F8" roughness={1}/>
       </mesh>
     </>
   );
 }
 
-// ─── Main Studio Page ───────────────────────────────────────────────────────
+// ─── Main Page ───────────────────────────────────────────────────────────────
 export default function StudioPage() {
-  // Garment state
-  const [garmentType, setGarmentType] = useState("tshirt");
-  const [garmentColor, setGarmentColor]   = useState("#FFFFFF");
-  const [materialId,   setMaterialId]     = useState("cotton");
-  const [cameraView,   setCameraView]     = useState<"front" | "back" | "side">("front");
-
-  // Design elements
+  const [garmentType,   setGarmentType]   = useState("tshirt");
+  const [garmentColor,  setGarmentColor]  = useState("#FFFFFF");
+  const [materialId,    setMaterialId]    = useState("cotton");
+  const [cameraView,    setCameraView]    = useState<"front"|"back"|"side">("front");
   const [elements,      setElements]      = useState<DesignElement[]>([]);
-  const [selectedEl,    setSelectedEl]    = useState<string | null>(null);
-  const [activeTab,     setActiveTab]     = useState<"garment" | "text" | "graphics" | "layers">("garment");
-  const [rightTab,      setRightTab]      = useState<"layers" | "settings">("layers");
+  const [selectedEl,    setSelectedEl]    = useState<string|null>(null);
+  const [activeTab,     setActiveTab]     = useState<"garment"|"text"|"graphics"|"layers">("garment");
+  const [rightTab,      setRightTab]      = useState<"summary"|"mydesigns">("summary");
 
-  // Text tool state
+  // Text tool
   const [textContent,   setTextContent]   = useState("YOUNGIN");
   const [textFont,      setTextFont]      = useState("Arial");
   const [textSize,      setTextSize]      = useState(36);
@@ -338,33 +154,38 @@ export default function StudioPage() {
   const [textItalic,    setTextItalic]    = useState(false);
   const [textAlign,     setTextAlign]     = useState<"left"|"center"|"right">("center");
 
-  // Texture on garment
-  const [texture,       setTexture]       = useState<THREE.CanvasTexture | null>(null);
+  // Texture
+  const [texture, setTexture] = useState<THREE.CanvasTexture|null>(null);
+
+  // Save state
   const [saving,        setSaving]        = useState(false);
   const [saved,         setSaved]         = useState(false);
+  const [saveError,     setSaveError]     = useState<string|null>(null);
   const [designName,    setDesignName]    = useState("My Design");
+  const [dbDesignId,    setDbDesignId]    = useState<string|undefined>(undefined);
 
-  const designId = useRef(`design_${Date.now()}`);
+  // My Designs
+  const [myDesigns,     setMyDesigns]     = useState<Design[]>([]);
+  const [loadingDesigns, setLoadingDesigns] = useState(false);
+
   const material = MATERIALS.find(m => m.id === materialId) || MATERIALS[0];
 
-  // ─── Rebuild canvas texture whenever elements change ─────────────────────
+  // ─── Rebuild texture when elements change ──────────────────────────────
   const rebuildTexture = useCallback((els: DesignElement[]) => {
     const c = document.createElement("canvas");
     c.width = 1024; c.height = 1024;
     const ctx = c.getContext("2d")!;
     ctx.clearRect(0, 0, 1024, 1024);
-
     els.forEach(el => {
       if (el.type === "text") {
-        const weight  = el.bold   ? "bold "   : "";
-        const style   = el.italic ? "italic " : "";
-        ctx.font      = `${style}${weight}${el.size * 4}px ${el.font}`;
+        const w = el.bold   ? "bold "   : "";
+        const s = el.italic ? "italic " : "";
+        ctx.font      = `${s}${w}${el.size * 4}px ${el.font}`;
         ctx.fillStyle = el.color;
         ctx.textAlign = "center";
         ctx.fillText(el.content, el.x * 10.24, el.y * 10.24);
       }
     });
-
     const tex = new THREE.CanvasTexture(c);
     tex.flipY = false;
     setTexture(tex);
@@ -372,84 +193,104 @@ export default function StudioPage() {
 
   useEffect(() => { rebuildTexture(elements); }, [elements, rebuildTexture]);
 
-  // ─── Add text element ────────────────────────────────────────────────────
+  // ─── Add text ────────────────────────────────────────────────────────────
   const addTextEl = () => {
     if (!textContent.trim()) return;
     const el: DesignElement = {
-      id: `el_${Date.now()}`,
-      type: "text",
-      content: textContent,
-      font: textFont,
-      size: textSize,
-      color: textColor,
-      bold: textBold,
-      italic: textItalic,
-      x: 51, y: 48,
+      id: `el_${Date.now()}`, type: "text",
+      content: textContent, font: textFont, size: textSize,
+      color: textColor, bold: textBold, italic: textItalic, x: 51, y: 48,
     };
-    const updated = [...elements, el];
-    setElements(updated);
+    setElements(prev => [...prev, el]);
     setSelectedEl(el.id);
   };
 
-  // ─── Delete element ──────────────────────────────────────────────────────
   const deleteEl = (id: string) => {
-    const updated = elements.filter(e => e.id !== id);
-    setElements(updated);
+    setElements(prev => prev.filter(e => e.id !== id));
     if (selectedEl === id) setSelectedEl(null);
   };
 
-  // ─── Save design ─────────────────────────────────────────────────────────
+  // ─── Save to Supabase ────────────────────────────────────────────────────
   const handleSave = async () => {
-    setSaving(true);
-    const design: SavedDesign = {
-      id: designId.current,
+    setSaving(true); setSaveError(null);
+    const result = await saveDesignToDb({
+      id: dbDesignId,
       name: designName,
-      garmentType,
-      garmentColor,
-      material: materialId,
-      elements,
-      timestamp: Date.now(),
-    };
-    saveDesign(design);
-    await new Promise(r => setTimeout(r, 600));
+      garmentType, garmentColor,
+      material: materialId, elements,
+    });
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    if (result.success && result.id) {
+      setDbDesignId(result.id);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } else {
+      setSaveError(result.error || "Save failed. Check your connection.");
+    }
   };
 
-  // ─── Panel Tabs ──────────────────────────────────────────────────────────
+  // ─── Load saved design ───────────────────────────────────────────────────
+  const loadDesign = (d: Design) => {
+    setGarmentType(d.garment_type);
+    setGarmentColor(d.garment_color);
+    setMaterialId(d.material);
+    setElements(d.elements as DesignElement[]);
+    setDesignName(d.name);
+    setDbDesignId(d.id);
+    setRightTab("summary");
+  };
+
+  // ─── Open My Designs ────────────────────────────────────────────────────
+  const openMyDesigns = async () => {
+    setRightTab("mydesigns");
+    setLoadingDesigns(true);
+    const result = await loadUserDesigns();
+    setMyDesigns(result.designs);
+    setLoadingDesigns(false);
+  };
+
+  // ─── Delete a saved design ───────────────────────────────────────────────
+  const handleDeleteDesign = async (id: string) => {
+    await deleteDesign(id);
+    setMyDesigns(prev => prev.filter(d => d.id !== id));
+    if (dbDesignId === id) { setDbDesignId(undefined); }
+  };
+
   const LEFT_TABS = [
-    { id: "garment",  label: "Garment",  icon: Shirt    },
-    { id: "text",     label: "Text",     icon: Type     },
-    { id: "graphics", label: "Graphics", icon: ImageIcon },
-    { id: "layers",   label: "Layers",   icon: Layers   },
+    { id: "garment",  label: "Garment",  Icon: Shirt     },
+    { id: "text",     label: "Text",     Icon: Type      },
+    { id: "graphics", label: "Graphics", Icon: ImageIcon  },
+    { id: "layers",   label: "Layers",   Icon: Layers    },
   ] as const;
 
   return (
-    <div className="flex flex-col" style={{ height: "100vh", background: "#F5F5F5", fontFamily: "'Inter', sans-serif" }}>
-      
-      {/* ── Top Bar ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 z-40 shrink-0" style={{ boxShadow: "0 1px 0 #E5E5E5" }}>
+    <div className="flex flex-col" style={{ height: "100vh", background: "#F4F4F5", fontFamily: "'Inter', sans-serif" }}>
+
+      {/* ── TOP BAR ─────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 z-40 shrink-0">
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="flex items-center gap-1.5 text-gray-400 hover:text-gray-700 transition-colors text-sm font-medium">
             <ArrowLeft className="w-4 h-4" /> Back
           </Link>
           <div className="w-px h-5 bg-gray-200" />
           <span className="text-sm font-black tracking-tight text-gray-900 uppercase">Design Studio</span>
+          {dbDesignId && (
+            <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">
+              Saved to Database
+            </span>
+          )}
         </div>
 
-        {/* Design name */}
         <input
-          value={designName}
-          onChange={e => setDesignName(e.target.value)}
-          className="text-sm font-semibold text-center text-gray-700 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-gray-500 outline-none px-2 py-0.5 w-[220px]"
+          value={designName} onChange={e => setDesignName(e.target.value)}
+          className="text-sm font-semibold text-center text-gray-700 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-gray-600 outline-none px-2 py-0.5 w-[220px]"
           placeholder="Untitled Design"
         />
 
         <div className="flex items-center gap-3">
           {/* View presets */}
           <div className="flex items-center rounded-xl overflow-hidden border border-gray-200 text-xs font-bold">
-            {(["front", "back", "side"] as const).map(v => (
+            {(["front","back","side"] as const).map(v => (
               <button key={v} onClick={() => setCameraView(v)}
                 className="px-3 py-1.5 capitalize transition-all"
                 style={{ background: cameraView === v ? "#1A1A1A" : "#fff", color: cameraView === v ? "#fff" : "#555" }}>
@@ -457,6 +298,18 @@ export default function StudioPage() {
               </button>
             ))}
           </div>
+
+          <button onClick={openMyDesigns}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-600 border border-gray-200 hover:border-gray-400 transition-all">
+            <FolderOpen className="w-4 h-4" /> My Designs
+          </button>
+
+          {saveError && (
+            <div className="flex items-center gap-1.5 text-xs text-red-500 max-w-[200px]">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span className="truncate">{saveError}</span>
+            </div>
+          )}
 
           <button onClick={handleSave} disabled={saving}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black text-white transition-all hover:scale-105 active:scale-95"
@@ -467,18 +320,17 @@ export default function StudioPage() {
         </div>
       </div>
 
-      {/* ── Body: 3 columns ─────────────────────────────────────────────── */}
+      {/* ── 3-COLUMN BODY ────────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden">
 
-        {/* ── LEFT PANEL (280px) ─────────────────────────────────────────── */}
+        {/* ── LEFT PANEL ──────────────────────────────────────────────────── */}
         <div className="w-[280px] shrink-0 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
-          {/* Tab bar */}
           <div className="flex border-b border-gray-100">
             {LEFT_TABS.map(t => (
               <button key={t.id} onClick={() => setActiveTab(t.id as any)}
                 className="flex-1 py-2.5 flex flex-col items-center gap-0.5 text-[9px] font-black uppercase tracking-wider transition-all"
                 style={{ color: activeTab === t.id ? "#1A1A1A" : "#AAA", borderBottom: activeTab === t.id ? "2px solid #1A1A1A" : "2px solid transparent" }}>
-                <t.icon className="w-4 h-4" />
+                <t.Icon className="w-4 h-4" />
                 {t.label}
               </button>
             ))}
@@ -486,7 +338,7 @@ export default function StudioPage() {
 
           <div className="flex-1 overflow-y-auto p-4">
 
-            {/* ── GARMENT TAB ──────────────────────────────────────────── */}
+            {/* GARMENT TAB */}
             {activeTab === "garment" && (
               <div className="space-y-5">
                 <div>
@@ -494,7 +346,7 @@ export default function StudioPage() {
                   <div className="grid grid-cols-3 gap-2">
                     {GARMENT_TYPES.map(g => (
                       <button key={g.id} onClick={() => setGarmentType(g.id)}
-                        className="flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 text-center transition-all"
+                        className="flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 transition-all"
                         style={{ borderColor: garmentType === g.id ? "#1A1A1A" : "#E5E5E5", background: garmentType === g.id ? "#F5F5F5" : "#fff" }}>
                         <span className="text-2xl">{g.icon}</span>
                         <span className="text-[9px] font-black uppercase tracking-wide text-gray-600">{g.label}</span>
@@ -534,7 +386,7 @@ export default function StudioPage() {
               </div>
             )}
 
-            {/* ── TEXT TAB ───────────────────────────────────────────────── */}
+            {/* TEXT TAB */}
             {activeTab === "text" && (
               <div className="space-y-4">
                 <div>
@@ -549,7 +401,7 @@ export default function StudioPage() {
                   <div className="relative">
                     <select value={textFont} onChange={e => setTextFont(e.target.value)}
                       className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-800 outline-none appearance-none bg-white">
-                      {FONTS.map(f => <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>)}
+                      {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                     </select>
                     <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   </div>
@@ -577,12 +429,12 @@ export default function StudioPage() {
 
                 <div className="flex items-center gap-2">
                   <button onClick={() => setTextBold(b => !b)}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl border-2 transition-all font-black"
+                    className="w-10 h-10 rounded-xl border-2 flex items-center justify-center transition-all font-black"
                     style={{ borderColor: textBold ? "#1A1A1A" : "#E5E5E5", background: textBold ? "#1A1A1A" : "#fff", color: textBold ? "#fff" : "#666" }}>
                     <Bold className="w-4 h-4" />
                   </button>
                   <button onClick={() => setTextItalic(b => !b)}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl border-2 transition-all"
+                    className="w-10 h-10 rounded-xl border-2 flex items-center justify-center transition-all"
                     style={{ borderColor: textItalic ? "#1A1A1A" : "#E5E5E5", background: textItalic ? "#1A1A1A" : "#fff", color: textItalic ? "#fff" : "#666" }}>
                     <Italic className="w-4 h-4" />
                   </button>
@@ -598,49 +450,40 @@ export default function StudioPage() {
                 </div>
 
                 <button onClick={addTextEl}
-                  className="w-full py-3 rounded-xl font-black text-sm text-white uppercase tracking-wider transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl font-black text-sm text-white flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95"
                   style={{ background: "#1A1A1A" }}>
                   <Plus className="w-4 h-4" /> Add to Garment
                 </button>
 
-                <div className="rounded-xl border border-gray-100 p-3" style={{ fontFamily: textFont, fontWeight: textBold ? "bold" : "normal", fontStyle: textItalic ? "italic" : "normal", fontSize: Math.max(12, textSize * 0.55), color: textColor, textAlign }}>
-                  {textContent || "Preview"}
+                {/* Live Preview */}
+                <div className="rounded-xl border border-gray-100 p-3 bg-gray-50" style={{ fontFamily: textFont, fontWeight: textBold ? "bold" : "normal", fontStyle: textItalic ? "italic" : "normal", fontSize: Math.max(12, textSize * 0.5), color: textColor, textAlign }}>
+                  {textContent || "Preview text here"}
                 </div>
               </div>
             )}
 
-            {/* ── GRAPHICS TAB ───────────────────────────────────────────── */}
+            {/* GRAPHICS TAB */}
             {activeTab === "graphics" && (
               <div className="space-y-4">
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Quick Shapes</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {["⭐", "❤️", "🔶", "🔵", "➕", "🌟", "◼", "▲", "⬡"].map((s, i) => (
-                    <button key={i} onClick={() => {
-                      const el: DesignElement = {
-                        id: `el_${Date.now()}`, type: "text", content: s,
-                        font: "Arial", size: 40, color: "#000000",
-                        bold: false, italic: false, x: 51, y: 48,
-                      };
-                      const updated = [...elements, el];
-                      setElements(updated);
-                    }}
+                  {["⭐","❤️","🔶","🔵","➕","🌟","◼","▲","⬡"].map((s,i) => (
+                    <button key={i} onClick={() => setElements(prev => [...prev, {
+                      id: `el_${Date.now()}`, type: "text", content: s,
+                      font: "Arial", size: 40, color: "#000000", bold: false, italic: false, x: 51, y: 48,
+                    }])}
                     className="aspect-square rounded-xl border border-gray-200 flex items-center justify-center text-2xl hover:border-gray-500 hover:bg-gray-50 transition-all">
                       {s}
                     </button>
                   ))}
                 </div>
-
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Brand Badges</p>
-                  {["ORIGINAL", "LIMITED", "EXCLUSIVE", "CLASSIC", "PREMIUM"].map(badge => (
-                    <button key={badge} onClick={() => {
-                      const el: DesignElement = {
-                        id: `el_${Date.now()}`, type: "text", content: badge,
-                        font: "Arial", size: 18, color: "#1A1A1A",
-                        bold: true, italic: false, x: 51, y: 35,
-                      };
-                      setElements(prev => [...prev, el]);
-                    }}
+                  {["ORIGINAL","LIMITED","EXCLUSIVE","CLASSIC","PREMIUM"].map(badge => (
+                    <button key={badge} onClick={() => setElements(prev => [...prev, {
+                      id: `el_${Date.now()}`, type: "text", content: badge,
+                      font: "Arial", size: 18, color: "#1A1A1A", bold: true, italic: false, x: 51, y: 35,
+                    }])}
                     className="w-full mb-2 py-2 px-3 rounded-lg border border-gray-200 text-xs font-black uppercase tracking-widest text-gray-600 text-left hover:border-gray-500 hover:bg-gray-50 transition-all">
                       {badge}
                     </button>
@@ -649,7 +492,7 @@ export default function StudioPage() {
               </div>
             )}
 
-            {/* ── LAYERS TAB ─────────────────────────────────────────────── */}
+            {/* LAYERS TAB */}
             {activeTab === "layers" && (
               <div className="space-y-2">
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Design Layers ({elements.length})</p>
@@ -660,8 +503,7 @@ export default function StudioPage() {
                   </div>
                 )}
                 {elements.map((el, i) => (
-                  <div key={el.id}
-                    onClick={() => setSelectedEl(el.id)}
+                  <div key={el.id} onClick={() => setSelectedEl(el.id)}
                     className="flex items-center gap-2.5 p-2.5 rounded-xl cursor-pointer border transition-all"
                     style={{ borderColor: selectedEl === el.id ? "#1A1A1A" : "#E5E5E5", background: selectedEl === el.id ? "#F5F5F5" : "#fff" }}>
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0" style={{ background: "#1A1A1A", color: "#fff", fontWeight: "bold" }}>{i + 1}</div>
@@ -680,93 +522,92 @@ export default function StudioPage() {
           </div>
         </div>
 
-        {/* ── CENTER: 3D VIEWPORT ───────────────────────────────────────────── */}
-        <div className="flex-1 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #F0F0F0 0%, #FAFAFA 50%, #F0F0F0 100%)" }}>
-          
-          {/* Canvas label */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+        {/* ── CENTER: 3D VIEWPORT ──────────────────────────────────────────── */}
+        <div className="flex-1 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #EFEFEF 0%, #FAFAFA 50%, #EFEFEF 100%)" }}>
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400 bg-white/80 backdrop-blur px-3 py-1.5 rounded-full border border-gray-200">
-              {GARMENT_TYPES.find(g => g.id === garmentType)?.label} — {MATERIALS.find(m => m.id === materialId)?.label}
+              {GARMENT_TYPES.find(g => g.id === garmentType)?.label} — {material.label}
             </span>
           </div>
-
-          {/* Zoom hint */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
             <span className="text-[9px] font-semibold text-gray-300 bg-white/70 backdrop-blur px-3 py-1.5 rounded-full border border-gray-100">
               Drag to rotate · Scroll to zoom · Right-click to pan
             </span>
           </div>
 
-          <Canvas shadows gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-            style={{ width: "100%", height: "100%", cursor: "grab" }}>
+          <Canvas shadows gl={{ antialias: true, alpha: false }} style={{ width: "100%", height: "100%", cursor: "grab" }}>
             <color attach="background" args={["#F7F7F7"]} />
-            <PerspectiveCamera makeDefault position={[0, 0, 4.5]} fov={42} />
-
+            <PerspectiveCamera makeDefault position={[0,0,4.5]} fov={42} />
             <Suspense fallback={null}>
-              <GarmentScene garmentType={garmentType} color={garmentColor} material={material} texture={texture} />
+              <GarmentScene type={garmentType} color={garmentColor} roughness={material.roughness} metalness={material.metalness} texture={texture} />
               <Environment preset="studio" background={false} />
             </Suspense>
-
             <CameraController view={cameraView} />
             <OrbitControls enablePan enableZoom minDistance={2} maxDistance={9} makeDefault />
           </Canvas>
         </div>
 
-        {/* ── RIGHT PANEL (280px) ───────────────────────────────────────────── */}
+        {/* ── RIGHT PANEL ──────────────────────────────────────────────────── */}
         <div className="w-[280px] shrink-0 bg-white border-l border-gray-200 flex flex-col overflow-hidden">
-          {/* Tab Bar */}
           <div className="flex border-b border-gray-100">
             {[
-              { id: "layers",   label: "Layers",   icon: Layers   },
-              { id: "settings", label: "Export",   icon: Download },
+              { id: "summary",   label: "Summary",    Icon: Layers     },
+              { id: "mydesigns", label: "My Designs", Icon: FolderOpen },
             ].map(t => (
-              <button key={t.id} onClick={() => setRightTab(t.id as any)}
+              <button key={t.id} onClick={() => t.id === "mydesigns" ? openMyDesigns() : setRightTab("summary")}
                 className="flex-1 py-2.5 flex flex-col items-center gap-0.5 text-[9px] font-black uppercase tracking-wider transition-all"
                 style={{ color: rightTab === t.id ? "#1A1A1A" : "#AAA", borderBottom: rightTab === t.id ? "2px solid #1A1A1A" : "2px solid transparent" }}>
-                <t.icon className="w-4 h-4" />
+                <t.Icon className="w-4 h-4" />
                 {t.label}
               </button>
             ))}
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">
-            {rightTab === "layers" && (
-              <div className="space-y-4">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Design Summary</p>
-                  <div className="space-y-2.5">
-                    <div className="flex justify-between text-xs">
+
+            {/* SUMMARY */}
+            {rightTab === "summary" && (
+              <div className="space-y-5">
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Design Overview</p>
+                  <div className="space-y-2.5 text-xs">
+                    <div className="flex justify-between">
                       <span className="text-gray-500 font-semibold">Garment</span>
                       <span className="font-black text-gray-800">{GARMENT_TYPES.find(g => g.id === garmentType)?.label}</span>
                     </div>
-                    <div className="flex justify-between items-center text-xs">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-500 font-semibold">Color</span>
                       <div className="flex items-center gap-1.5">
                         <div className="w-4 h-4 rounded border border-gray-200" style={{ background: garmentColor }} />
                         <span className="font-black text-gray-800 font-mono uppercase text-[10px]">{garmentColor}</span>
                       </div>
                     </div>
-                    <div className="flex justify-between text-xs">
+                    <div className="flex justify-between">
                       <span className="text-gray-500 font-semibold">Material</span>
-                      <span className="font-black text-gray-800">{MATERIALS.find(m => m.id === materialId)?.label}</span>
+                      <span className="font-black text-gray-800">{material.label}</span>
                     </div>
-                    <div className="flex justify-between text-xs">
+                    <div className="flex justify-between">
                       <span className="text-gray-500 font-semibold">Elements</span>
                       <span className="font-black text-gray-800">{elements.length}</span>
                     </div>
+                    {dbDesignId && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500 font-semibold">DB Status</span>
+                        <span className="font-black text-green-600 flex items-center gap-1"><Check className="w-3 h-3"/>Saved</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-gray-100 p-3 bg-gray-50">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2.5">All Elements</p>
-                  {elements.length === 0 ? (
-                    <p className="text-[10px] text-gray-300 text-center py-4 font-semibold">No design elements added</p>
-                  ) : (
+                {/* Element list */}
+                {elements.length > 0 && (
+                  <div className="rounded-xl border border-gray-100 p-3 bg-gray-50">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Elements</p>
                     <div className="space-y-1.5">
                       {elements.map((el, i) => (
                         <div key={el.id} className="flex items-center gap-2 p-2 rounded-lg bg-white border border-gray-100">
-                          <span className="text-[9px] font-black text-gray-400 w-4">{i + 1}</span>
-                          <div className="w-3 h-3 rounded-full border border-gray-200 shrink-0" style={{ background: el.color }} />
+                          <span className="text-[9px] font-black text-gray-400 w-4">{i+1}</span>
+                          <div className="w-3 h-3 rounded-full border border-gray-200" style={{ background: el.color }} />
                           <span className="text-[10px] font-bold text-gray-700 truncate flex-1">{el.content}</span>
                           <button onClick={() => deleteEl(el.id)} className="text-gray-300 hover:text-red-400 transition-colors">
                             <X className="w-3 h-3" />
@@ -774,59 +615,67 @@ export default function StudioPage() {
                         </div>
                       ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {saveError && (
+                  <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 font-semibold">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    {saveError}
+                  </div>
+                )}
 
                 <button onClick={handleSave} disabled={saving}
-                  className="w-full py-3.5 rounded-xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95"
-                  style={{ background: saved ? "#16A34A" : "#1A1A1A", color: "#fff" }}>
+                  className="w-full py-3.5 rounded-xl font-black text-sm text-white flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95"
+                  style={{ background: saved ? "#16A34A" : "#1A1A1A" }}>
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                  {saving ? "Saving…" : saved ? "Saved!" : "Save Design"}
+                  {saving ? "Saving to DB…" : saved ? "Saved to Supabase!" : "Save Design"}
                 </button>
               </div>
             )}
 
-            {rightTab === "settings" && (
-              <div className="space-y-5">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Export Options</p>
-                  <div className="space-y-2">
-                    {["PNG (High Res)", "PDF (Print Ready)", "JSON (Design File)"].map(opt => (
-                      <button key={opt}
-                        className="w-full py-3 px-4 rounded-xl border border-gray-200 text-left text-sm font-black text-gray-700 hover:border-gray-500 hover:bg-gray-50 transition-all flex items-center gap-2">
-                        <Download className="w-4 h-4 text-gray-400" /> {opt}
-                      </button>
-                    ))}
+            {/* MY DESIGNS */}
+            {rightTab === "mydesigns" && (
+              <div className="space-y-3">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Saved Designs ({myDesigns.length})</p>
+                {loadingDesigns ? (
+                  <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-gray-300" /></div>
+                ) : myDesigns.length === 0 ? (
+                  <div className="text-center py-12 text-gray-300">
+                    <FolderOpen className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                    <p className="text-xs font-semibold">No saved designs yet.<br/>Save your first design!</p>
                   </div>
-                </div>
-
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Canvas Size</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {["1:1 Square", "4:3 Print", "16:9 Banner", "A4 Paper"].map(size => (
-                      <button key={size}
-                        className="py-2 px-3 rounded-xl border border-gray-200 text-[10px] font-black text-gray-500 hover:border-gray-500 hover:bg-gray-50 transition-all">
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Design ID</p>
-                  <p className="font-mono text-[9px] text-gray-400 break-all">{designId.current}</p>
-                </div>
-
-                <button onClick={handleSave}
-                  className="w-full py-3.5 rounded-xl font-black text-sm text-white uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:scale-105"
-                  style={{ background: "#1A1A1A" }}>
-                  <Save className="w-4 h-4" /> Save & Export
-                </button>
+                ) : (
+                  myDesigns.map(d => (
+                    <div key={d.id} className="border border-gray-200 rounded-2xl p-3 hover:border-gray-400 transition-all cursor-pointer group"
+                      onClick={() => loadDesign(d)}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="text-sm font-bold text-gray-800">{d.name}</p>
+                          <p className="text-[10px] text-gray-400 capitalize">{d.garment_type} · {d.material}</p>
+                        </div>
+                        <div className="w-5 h-5 rounded border border-gray-200" style={{ background: d.garment_color }} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] text-gray-400">{new Date(d.updated_at).toLocaleDateString()}</span>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={e => { e.stopPropagation(); loadDesign(d); }}
+                            className="text-[9px] font-bold text-gray-700 hover:text-gray-900 px-2 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
+                            Load
+                          </button>
+                          <button onClick={e => { e.stopPropagation(); handleDeleteDesign(d.id); }}
+                            className="text-[9px] font-bold text-red-400 hover:text-red-600 px-2 py-1 rounded-lg bg-red-50 hover:bg-red-100 transition-colors">
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
         </div>
-
       </div>
     </div>
   );
