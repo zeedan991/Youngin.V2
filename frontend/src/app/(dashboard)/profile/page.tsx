@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Settings, CreditCard, Clock, Shirt, Camera, Edit3, LogOut, Trophy, Link as LinkIcon, Instagram, MapPin, Calendar, CheckCircle2 } from "lucide-react";
+import { Settings, CreditCard, Clock, Shirt, Camera, Edit3, LogOut, Trophy, Link as LinkIcon, AtSign, MapPin, Calendar, CheckCircle2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { signout } from "@/app/login/actions";
@@ -215,7 +215,7 @@ export default function ProfilePage() {
               )}
               {profile.instagram && (
                 <a href={`https://instagram.com/${profile.instagram.replace('@','')}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm hover:underline" style={{ color: "var(--dash-accent)" }}>
-                   <Instagram className="w-4 h-4" /> {profile.instagram.replace('@','')}
+                   <AtSign className="w-4 h-4" /> {profile.instagram.replace('@','')}
                 </a>
               )}
            </div>
