@@ -138,17 +138,19 @@ export async function uploadSnapshotBase64(base64Str: string, timestampId: strin
   }
 }
 
-export async function uploadDesignConfig(configData: any, timestampId: string): Promise<boolean> {
+export async function uploadDesignConfig(configData: any, timestampId: string): Promise<{ success: boolean; url?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
+  if (!user) return { success: false };
   
   try {
     const buffer = Buffer.from(JSON.stringify(configData), "utf-8");
     const filePath = `${user.id}/${timestampId}_config.json`;
     await supabase.storage.from("designs").upload(filePath, buffer, { contentType: "application/json", upsert: true });
-    return true;
-  } catch { return false; }
+    
+    const { data: { publicUrl } } = supabase.storage.from("designs").getPublicUrl(filePath);
+    return { success: true, url: publicUrl };
+  } catch { return { success: false }; }
 }
 
 export async function fetchDesignConfig(storageUrl: string): Promise<any> {

@@ -280,7 +280,7 @@ export default function ProfilePage() {
                       {/* Color & Image preview block */}
                       <div className="aspect-square flex items-center justify-center relative overflow-hidden" style={{ background: design.garment_color || "#F5F5F5" }}>
                         {design.storage_url ? (
-                           <img src={design.storage_url} alt="Design" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                           <img src={design.storage_url} alt="Design" className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105" />
                         ) : (
                            <span className="text-5xl">
                              {({ tshirt: "👕", hoodie: "🧥", jeans: "👖", dress: "👗", jacket: "🥼", polo: "🎽" } as any)[design.type || design.garment_type as string] || "👕"}

@@ -389,13 +389,21 @@ export default function StudioPage() {
       try {
         const originalSide = currentSide;
         
+        // Timeout wrapper to ensure html-to-image never hangs the UI infinitely
+        const safeToJpeg = async (node: HTMLElement) => {
+          return Promise.race([
+            toJpeg(node, { quality: 0.85, pixelRatio: 1.5 }),
+            new Promise<string>((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000))
+          ]);
+        };
+
         setCurrentSide("front");
-        await new Promise(r => setTimeout(r, 100)); // Paint cycle 1
-        const front64 = await toJpeg(artboardRef.current, { quality: 0.85, pixelRatio: 1.5 });
+        await new Promise(r => setTimeout(r, 150)); // Render flush
+        const front64 = await safeToJpeg(artboardRef.current);
         
         setCurrentSide("back");
-        await new Promise(r => setTimeout(r, 100)); // Paint cycle 2
-        const back64 = await toJpeg(artboardRef.current, { quality: 0.85, pixelRatio: 1.5 });
+        await new Promise(r => setTimeout(r, 150)); // Render flush
+        const back64 = await safeToJpeg(artboardRef.current);
         
         setCurrentSide(originalSide);
 
@@ -403,14 +411,14 @@ export default function StudioPage() {
         const ctx = canvas.getContext("2d")!;
         const imgF = new Image(); const imgB = new Image();
         
-        await new Promise(r => { imgF.onload = r; imgF.src = front64; });
-        await new Promise(r => { imgB.onload = r; imgB.src = back64; });
+        await new Promise((resolve, reject) => { imgF.onload = resolve; imgF.onerror = resolve; imgF.src = front64; });
+        await new Promise((resolve, reject) => { imgB.onload = resolve; imgB.onerror = resolve; imgB.src = back64; });
         
         canvas.width = imgF.width + imgB.width;
-        canvas.height = imgF.height;
+        canvas.height = Math.max(imgF.height, imgB.height, 1);
         ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(imgF, 0, 0);
-        ctx.drawImage(imgB, imgF.width, 0);
+        if (imgF.width > 0) ctx.drawImage(imgF, 0, 0);
+        if (imgB.width > 0) ctx.drawImage(imgB, imgF.width, 0);
         
         const compositeBase64 = canvas.toDataURL("image/jpeg", 0.85);
 
@@ -420,10 +428,16 @@ export default function StudioPage() {
         } else {
           console.warn("Could not save thumbnail", uploadResult.error);
         }
-        
-        await uploadDesignConfig(configData, timestampId);
 
       } catch (e) { console.error("Snapshot Error:", e); }
+    }
+
+    // Always upload configurations to guarantee architectural preservation regardless of snapshot success
+    const configResult = await uploadDesignConfig(configData, timestampId);
+    
+    // In case the image snapshot engine crashed but the config successfully uploaded, fallback publicUrl to the configUrl explicitly so it's not null in DB
+    if (!publicUrl && configResult.success && configResult.url) {
+      publicUrl = configResult.url;
     }
 
     const result = await saveDesignToDb({
@@ -750,7 +764,7 @@ export default function StudioPage() {
                           <div className="w-5 h-5 rounded-full shrink-0 border-2 border-white shadow-md outline outline-2 outline-gray-200" style={{ background: (d as any).garment_color || '#1A1A1A' }} />
                        </div>
                        <p className="text-[9px] text-gray-400 font-black uppercase tracking-[0.2em]">{d.type || (d as any).garment_type}</p>
-                       {d.storage_url && <img src={d.storage_url} className="w-full h-24 object-cover rounded-md mt-2 opacity-50" />}
+                       {d.storage_url && <img src={d.storage_url} className="w-full h-24 object-contain rounded-md mt-2 opacity-60 bg-gray-50/50" />}
                     </div>
                   ) : null)
                 }
