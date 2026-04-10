@@ -1,259 +1,306 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { motion, type Transition } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Send, 
-  Sparkles, 
-  Bot, 
-  User, 
-  ImagePlus, 
-  Shirt, 
-  Palette,
-  RotateCcw 
+  Calendar, Smile, HandCoins, Palette, Sparkles, X, Send, ImagePlus, Loader2
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { generateStylistResponse } from "./actions";
 
-const SP: Transition = { duration: 0.4, ease: "easeOut" };
+// Types
+type ToolId = "planner" | "mood" | "budget" | "season" | "celebrity";
 
-interface Message {
-  id: string;
-  role: "user" | "ai";
-  text: string;
-  timestamp: string;
+interface ToolDef {
+  id: ToolId;
+  title: string;
+  description: string;
+  icon: any;
+  color: string;
+  placeholder: string;
+  allowImage?: boolean;
 }
 
-const SUGGESTIONS = [
-  { label: "Style a wedding look", icon: Shirt },
-  { label: "Streetwear for summer", icon: Palette },
-  { label: "Analyze my wardrobe", icon: ImagePlus },
+const TOOLS: ToolDef[] = [
+  {
+    id: "planner",
+    title: "Weekly Wardrobe Planner",
+    description: "Input your week's schedule and let AI generate a 7-day outfit plan mixing items you already own.",
+    icon: Calendar,
+    color: "#3b82f6", // blue-500
+    placeholder: "E.g., Monday: office meetings. Tuesday: gym then date night. Wednesday: wfh...",
+  },
+  {
+    id: "mood",
+    title: "Mood Translator",
+    description: "Type how you feel, and we'll map it to colors, fabrics, and silhouettes.",
+    icon: Smile,
+    color: "#8b5cf6", // violet-500
+    placeholder: "E.g., I'm feeling lethargic but want to look secretly powerful and mysterious...",
+  },
+  {
+    id: "budget",
+    title: "Budget-Aware Advisor",
+    description: "Set a budget and describe your wardrobe. We'll maximize outfit variety and calculate Cost-Per-Wear.",
+    icon: HandCoins,
+    color: "#10b981", // emerald-500
+    placeholder: "E.g., I have $200. I own basic black jeans, a white tee, and old sneakers. What should I buy?",
+  },
+  {
+    id: "season",
+    title: "Color Season Analyser",
+    description: "Upload a photo or describe your skin/hair/eyes to get your personal hex palette.",
+    icon: Palette,
+    color: "#f59e0b", // amber-500
+    placeholder: "E.g., I have pale skin with cool undertones, dark brown hair, and hazel eyes...",
+    allowImage: true,
+  },
+  {
+    id: "celebrity",
+    title: "Celebrity Alter-Ego",
+    description: "Pick a celebrity or upload a red-carpet look. We'll deconstruct the aesthetic to wearable street style.",
+    icon: Sparkles,
+    color: "#ec4899", // pink-500
+    placeholder: "E.g., Zendaya at the Met Gala 2018 or 90s Bollywood...",
+    allowImage: true,
+  },
 ];
 
-const AI_RESPONSES: Record<string, string> = {
-  default:
-    "Based on your style profile, I'd recommend exploring oversized silhouettes with earth-tone layering. Your body measurements indicate a 98cm chest — a relaxed-fit bomber jacket paired with wide-leg trousers would create excellent proportions. Want me to pull specific items from the marketplace?",
-  wedding:
-    "For a wedding, let's elevate your look. Given your streetwear-leaning aesthetic, I'd suggest a deconstructed blazer with a mandarin collar in charcoal, slim-fit tailored trousers, and minimal white leather sneakers for that modern edge. I can find pieces from our brand partners that match your exact measurements.",
-  streetwear:
-    "Summer streetwear is all about breathable fabrics and bold graphics. Think mesh-panel cargo shorts, a heavyweight cotton oversized tee in cream or sage, and chunky trail sandals. Based on your 76cm waist, I'd suggest a size L in most streetwear brands for that perfect oversized drape.",
-  wardrobe:
-    "I'd love to analyze your wardrobe! Upload some photos of your current pieces and I'll identify gaps, suggest outfit combinations, and recommend secondhand finds from our Thrift Shop that complement what you already own. Your style quiz says you lean Streetwear + Vintage — let's build on that.",
-};
-
-function getAIResponse(input: string): string {
-  const lower = input.toLowerCase();
-  if (lower.includes("wedding") || lower.includes("formal"))
-    return AI_RESPONSES.wedding;
-  if (lower.includes("street") || lower.includes("summer"))
-    return AI_RESPONSES.streetwear;
-  if (lower.includes("wardrobe") || lower.includes("analyze") || lower.includes("closet"))
-    return AI_RESPONSES.wardrobe;
-  return AI_RESPONSES.default;
-}
-
-function getTime(): string {
-  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
 export default function AIStylistPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "ai",
-      text: "Hey! I'm your AI Stylist, powered by Gemini. I know your measurements, style preferences, and what's trending. Ask me anything about fashion, outfit planning, or wardrobe building.",
-      timestamp: getTime(),
-    },
-  ]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeTool, setActiveTool] = useState<ToolId | null>(null);
+  const [inputVal, setInputVal] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, isTyping]);
+  const activeDef = TOOLS.find(t => t.id === activeTool);
 
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return;
-
-    const userMsg: Message = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      text: text.trim(),
-      timestamp: getTime(),
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Quick compression/base64 conversion client-side
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImageBase64(event.target?.result as string);
+      setImageFile(file);
     };
-
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
-    setIsTyping(true);
-
-    // Simulate AI thinking
-    setTimeout(() => {
-      const aiMsg: Message = {
-        id: `ai-${Date.now()}`,
-        role: "ai",
-        text: getAIResponse(text),
-        timestamp: getTime(),
-      };
-      setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 1200 + Math.random() * 800);
+    reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    sendMessage(input);
+  const handleSubmit = async () => {
+    if (!inputVal.trim() && !imageBase64) return;
+    if (!activeTool) return;
+
+    setLoading(true);
+    setResult(null);
+
+    const res = await generateStylistResponse(activeTool, inputVal, imageBase64 || undefined);
+    
+    if (res.success && res.text) {
+      setResult(res.text);
+    } else {
+      setResult("❌ **Error:** " + (res.error || "Something went wrong."));
+    }
+    
+    setLoading(false);
   };
 
-  const clearChat = () => {
-    setMessages([
-      {
-        id: "welcome",
-        role: "ai",
-        text: "Fresh start! What would you like style help with today?",
-        timestamp: getTime(),
-      },
-    ]);
+  const resetState = () => {
+    setActiveTool(null);
+    setInputVal("");
+    setImageFile(null);
+    setImageBase64(null);
+    setResult(null);
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto flex flex-col h-[calc(100vh-140px)] md:h-[80vh]">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={SP}
-        className="flex items-center justify-between mb-6"
-      >
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center shadow-lg">
-            <Sparkles className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold flex items-center gap-2 text-slate-900">
-              AI Stylist
-              <span className="px-2 py-0.5 bg-white border border-slate-200 shadow-sm rounded-md text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                Gemini
-              </span>
-            </h1>
-            <p className="text-sm text-slate-500">
-              Your personal fashion advisor · Knows your measurements
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={clearChat}
-          className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all shadow-sm"
-          title="Clear chat"
-        >
-          <RotateCcw className="w-4 h-4" />
-        </button>
-      </motion.div>
+    <div className="w-full max-w-6xl mx-auto py-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+          AI Stylist Suite
+          <span className="px-2 py-0.5 bg-gradient-to-r from-[#FF4D94] to-[#B8005C] text-white rounded-md text-[10px] font-bold uppercase tracking-widest shadow-sm">
+            Powered by Gemini
+          </span>
+        </h1>
+        <p className="text-slate-500 mt-2 font-medium">
+          Select a specialized style tool below to get started. Complete removal of generic chatbots—welcome to precision styling.
+        </p>
+      </div>
 
-      {/* Chat Area */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-sm p-4 md:p-6 space-y-5 mb-4 scrollbar-hide"
-      >
-        {messages.map((msg) => (
-          <motion.div
-            key={msg.id}
-            initial={{ opacity: 0, y: 10 }}
+      <AnimatePresence mode="wait">
+        {!activeTool ? (
+          // BENTO GRID
+          <motion.div 
+            key="grid"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
           >
-            <div
-              className={`h-8 w-8 rounded-full shrink-0 flex items-center justify-center ${
-                msg.role === "ai"
-                  ? "bg-gradient-to-br from-[#FF4D94] to-[#B8005C]"
-                  : "bg-white/10"
-              }`}
-            >
-              {msg.role === "ai" ? (
-                <Bot className="w-4 h-4 text-white" />
-              ) : (
-                <User className="w-4 h-4 text-slate-600" />
-              )}
-            </div>
-            <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                msg.role === "ai"
-                  ? "bg-slate-50 border border-slate-200"
-                  : "bg-pink-50 border border-pink-100"
-              }`}
-            >
-              <p className="text-sm text-slate-800 leading-relaxed">{msg.text}</p>
-              <span className="text-[10px] text-slate-400 mt-2 block">
-                {msg.timestamp}
-              </span>
-            </div>
-          </motion.div>
-        ))}
-
-        {/* Typing indicator */}
-        {isTyping && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex gap-3"
-          >
-            <div className="h-8 w-8 rounded-full shrink-0 flex items-center justify-center bg-gradient-to-br from-[#FF4D94] to-[#B8005C]">
-              <Bot className="w-4 h-4 text-white" />
-            </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-1 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-slate-500 animate-bounce [animation-delay:0ms]" />
-              <span className="w-2 h-2 rounded-full bg-slate-500 animate-bounce [animation-delay:150ms]" />
-              <span className="w-2 h-2 rounded-full bg-slate-500 animate-bounce [animation-delay:300ms]" />
-            </div>
-          </motion.div>
-        )}
-
-        {/* Suggestions (only when 1 message) */}
-        {messages.length === 1 && !isTyping && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-wrap gap-2 pt-2"
-          >
-            {SUGGESTIONS.map((s) => {
-              const Icon = s.icon;
+            {TOOLS.map((tool) => {
+              const Icon = tool.icon;
               return (
-                <button
-                  key={s.label}
-                  onClick={() => sendMessage(s.label)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 shadow-sm bg-white text-sm text-slate-700 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50 transition-all"
+                <motion.div
+                  key={tool.id}
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveTool(tool.id)}
+                  className="bg-white border border-slate-200 rounded-3xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] cursor-pointer hover:shadow-xl transition-all flex flex-col justify-between"
+                  style={{ minHeight: "220px" }}
                 >
-                  <Icon className="w-3.5 h-3.5 text-[#FF4D94]" />
-                  {s.label}
-                </button>
+                  <div>
+                    <div 
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
+                      style={{ background: \`\${tool.color}15\`, color: tool.color }}
+                    >
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">{tool.title}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                      {tool.description}
+                    </p>
+                  </div>
+                  <div className="mt-6 flex justify-end">
+                    <span 
+                      className="text-xs font-bold uppercase tracking-wider"
+                      style={{ color: tool.color }}
+                    >
+                      Launch Tool →
+                    </span>
+                  </div>
+                </motion.div>
               );
             })}
           </motion.div>
-        )}
-      </div>
+        ) : (
+          // ACTIVE TOOL VIEW
+          <motion.div 
+            key="tool-view"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="bg-white border border-slate-200 rounded-3xl shadow-xl overflow-hidden flex flex-col min-h-[600px]"
+          >
+            {/* Header */}
+            <div 
+              className="px-6 py-5 border-b border-slate-100 flex items-center justify-between"
+              style={{ borderTop: \`4px solid \${activeDef?.color}\` }}
+            >
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={resetState}
+                  className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-500"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <div className="flex items-center gap-3">
+                  {activeDef && (() => {
+                    const ActiveIcon = activeDef.icon;
+                    return <ActiveIcon className="w-6 h-6" style={{ color: activeDef.color }} />;
+                  })()}
+                  <h2 className="text-xl font-bold text-slate-900">{activeDef?.title}</h2>
+                </div>
+              </div>
+            </div>
 
-      {/* Input */}
-      <form onSubmit={handleSubmit} className="flex gap-3">
-        <div className="flex-1 relative">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about outfits, trends, styling..."
-            className="w-full bg-white border border-slate-200 shadow-sm rounded-xl px-5 py-3.5 text-sm text-slate-900 focus:outline-none focus:border-[#FF4D94]/50 transition-colors pr-12"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={!input.trim() || isTyping}
-          className={`px-5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-sm ${
-            input.trim() && !isTyping
-              ? "bg-[#FF4D94] text-white hover:scale-105"
-              : "bg-slate-100 text-slate-400 cursor-not-allowed"
-          }`}
-        >
-          <Send className="w-4 h-4" />
-        </button>
-      </form>
+            {/* Content Area */}
+            <div className="flex-1 p-6 flex flex-col md:flex-row gap-8 bg-slate-50/50">
+              
+              {/* Left Column: Input Form */}
+              <div className="w-full md:w-[400px] flex-shrink-0 flex flex-col gap-4">
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4">
+                  <label className="text-sm font-bold text-slate-700 uppercase tracking-widest">
+                    Your Input
+                  </label>
+                  
+                  <textarea 
+                    value={inputVal}
+                    onChange={(e) => setInputVal(e.target.value)}
+                    placeholder={activeDef?.placeholder}
+                    className="w-full min-h-[160px] p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 resize-none transition-all placeholder:text-slate-400"
+                    style={{ focusRingColor: activeDef?.color }}
+                  />
+
+                  {activeDef?.allowImage && (
+                    <div className="w-full relative">
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        id="image-upload" 
+                        className="hidden" 
+                        onChange={handleImageUpload}
+                      />
+                      <label 
+                        htmlFor="image-upload"
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+                      >
+                        {imageBase64 ? (
+                          <div className="w-full h-full p-2 relative">
+                            <img src={imageBase64} className="w-full h-full object-cover rounded-lg" alt="Upload preview" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity rounded-xl">
+                              <span className="text-white text-xs font-bold">Replace Image</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-slate-500">
+                            <ImagePlus className="w-6 h-6" />
+                            <span className="text-xs font-bold">Upload Reference Image</span>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading || (!inputVal.trim() && !imageBase64)}
+                    className="mt-2 w-full py-3.5 rounded-xl text-white font-bold text-sm tracking-wide transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: activeDef?.color }}
+                  >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                    {loading ? "Generating Output..." : "Generate Insights"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column: AI Output */}
+              <div className="flex-1 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm overflow-y-auto max-h-[600px] flex flex-col">
+                {loading ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-4">
+                    <Loader2 className="w-8 h-8 animate-spin" style={{ color: activeDef?.color }} />
+                    <p className="text-sm font-medium animate-pulse">Gemini 2.5 Flash is analyzing...</p>
+                  </div>
+                ) : result ? (
+                  <motion.div 
+                    initial={{ opacity: 0 }} 
+                    animate={{ opacity: 1 }} 
+                    className="markdown-body"
+                  >
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {result}
+                    </ReactMarkdown>
+                  </motion.div>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-slate-300 gap-3">
+                    {activeDef && (() => {
+                      const ActiveIcon = activeDef.icon;
+                      return <ActiveIcon className="w-12 h-12 opacity-20" />;
+                    })()}
+                    <p className="text-sm font-medium text-center max-w-sm">
+                      Submit your inputs on the left to see your personalized 
+                      <strong className="text-slate-400 ml-1 block mt-1">{activeDef?.title}</strong>
+                    </p>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
