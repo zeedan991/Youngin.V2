@@ -355,7 +355,7 @@ export default function StudioPage() {
       const newX = Math.max(0, Math.min(100, dragState.current.initialX + dx));
       const newY = Math.max(0, Math.min(100, dragState.current.initialY + dy));
       
-      setElements(prev => prev.map(p => p.id === dragState.current!.id ? { ...p, x: newX, y: newY } : p));
+      setElements(prev => prev.map(p => p?.id === dragState.current?.id ? { ...p, x: newX, y: newY } : p));
     };
 
     const handleUp = () => {
@@ -598,12 +598,12 @@ export default function StudioPage() {
                 <button onClick={searchUnsplash} className="px-5 rounded-xl bg-black text-white hover:scale-105 active:scale-95 transition-all"><Search className="w-4 h-4" /></button>
               </div>
               <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
-                 {unsplashResults.map(img => (
-                   <button key={img.id} onClick={() => addUnsplashImage(img.urls.regular)} className="rounded-xl overflow-hidden aspect-square border-2 border-transparent hover:border-black transition-all shadow-sm bg-gray-100 group relative">
-                     <img src={img.urls.thumb} className="w-full h-full object-cover group-hover:opacity-60 transition-opacity" alt="" />
+                 {unsplashResults.map(img => img ? (
+                   <button key={img.id} onClick={() => addUnsplashImage(img.urls?.regular)} className="rounded-xl overflow-hidden aspect-square border-2 border-transparent hover:border-black transition-all shadow-sm bg-gray-100 group relative">
+                     <img src={img.urls?.thumb} className="w-full h-full object-cover group-hover:opacity-60 transition-opacity" alt="" />
                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40"><Plus className="w-8 h-8 text-white drop-shadow-md" /></div>
                    </button>
-                 ))}
+                 ) : null)}
                  {unsplashResults.length === 0 && !unsplashLoading && (
                      <div className="col-span-2 py-10 flex flex-col items-center justify-center text-gray-300 border-2 border-dashed border-gray-200 rounded-xl"><ImageIcon className="w-10 h-10 mb-2 opacity-50" /><span className="text-[10px] font-black uppercase tracking-widest text-center">Search Library</span></div>
                  )}
@@ -657,7 +657,7 @@ export default function StudioPage() {
                   {currentSide === 'back' && backPaintData && <img src={backPaintData} className="absolute inset-0 w-full h-full opacity-90 mix-blend-multiply pointer-events-none" alt=""/>}
                   
                   {/* Generated Draggable Elements */}
-                  {elements.filter(e => e.side === currentSide).map(el => (
+                  {elements.filter(e => e && e.side === currentSide).map(el => el ? (
                     <div 
                       key={el.id} 
                       className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-move hover:ring-2 hover:ring-black hover:ring-offset-2 transition-shadow"
@@ -680,7 +680,7 @@ export default function StudioPage() {
                         </span>
                       )}
                     </div>
-                  ))}
+                  ) : null)}
               </div>
            </div>
 
@@ -706,7 +706,7 @@ export default function StudioPage() {
                     <div key={side} className="mb-6">
                       <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 pl-1">{side} Decals</p>
                       <div className="space-y-3">
-                        {sideEls.map((el, i) => (
+                        {sideEls.map((el, i) => el ? (
                           <div key={el.id} className="p-3 border-2 border-gray-100 rounded-xl bg-white flex flex-col gap-3 shadow-sm group hover:border-gray-300 transition-all">
                             <div className="flex items-center gap-3">
                               <span className="text-[9px] font-black bg-gray-100 text-gray-500 w-5 h-5 flex items-center justify-center rounded-md uppercase shrink-0">{i+1}</span>
@@ -719,14 +719,14 @@ export default function StudioPage() {
                                 <span className="text-[9px] font-black text-gray-400 uppercase w-6">SCL</span>
                                 <input type="range" className="flex-1 accent-black h-1.5" min={10} max={el.type === 'image' ? 100 : 200} value={el.size} 
                                   onChange={e => {
-                                    setElements(prev => prev.map(p => p.id === el.id ? {...p, size: Number(e.target.value)} : p));
+                                    setElements(prev => prev.map(p => p?.id === el.id ? {...p, size: Number(e.target.value)} : p));
                                   }} 
                                   onMouseUp={commitCurrentStateToHistory}
                                 />
                               </div>
                             </div>
                           </div>
-                        ))}
+                        ) : null)}
                       </div>
                     </div>
                  )
@@ -743,7 +743,7 @@ export default function StudioPage() {
                   myDesigns.length === 0 ? (
                     <div className="text-center py-12"><p className="text-[10px] font-black uppercase tracking-widest text-gray-400">No collections</p></div>
                   ) :
-                  myDesigns.map(d => (
+                  myDesigns.map(d => d ? (
                     <div key={d.id} className="border-2 border-transparent bg-white p-4 rounded-xl hover:border-black cursor-pointer transition-all shadow-sm group" onClick={() => loadDesign(d)}>
                        <div className="flex justify-between items-start mb-2">
                           <p className="text-[13px] font-black text-gray-900 truncate tracking-tight">{d.title || (d as any).name}</p>
@@ -752,7 +752,7 @@ export default function StudioPage() {
                        <p className="text-[9px] text-gray-400 font-black uppercase tracking-[0.2em]">{d.type || (d as any).garment_type}</p>
                        {d.storage_url && <img src={d.storage_url} className="w-full h-24 object-cover rounded-md mt-2 opacity-50" />}
                     </div>
-                  ))
+                  ) : null)
                 }
               </div>
             )}
