@@ -159,7 +159,7 @@ export default function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 rounded-xl text-[12px] font-semibold outline-none transition-all focus:w-[200px] xl:focus:w-[240px]"
                   style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${borderColor}`, color: textActive }}
-                  onFocus={(e) => { e.target.style.borderColor = accentColor; setIsSearching(true); }}
+                  onFocus={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.2)"; setIsSearching(true); }}
                   onBlur={(e) => { e.target.style.borderColor = borderColor; setTimeout(() => setIsSearching(false), 200); }}
                 />
               </div>

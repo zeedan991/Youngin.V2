@@ -1,23 +1,17 @@
 "use client";
 
-import { motion, type Transition } from "framer-motion";
-import { Settings, CreditCard, Clock, Shirt, Edit3, LogOut, ChevronRight, Trophy, Lock, AtSign, Globe, User } from "lucide-react";
+import { motion } from "framer-motion";
+import { Settings, CreditCard, Clock, Shirt, Camera, Edit3, LogOut, Trophy, Link as LinkIcon, Instagram, MapPin, Calendar, CheckCircle2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { signout } from "@/app/login/actions";
 import { fetchLiveProfile, updateProfile } from "./actions";
 import { ACHIEVEMENTS, computeUnlockedAchievements, RARITY_COLORS, RARITY_LABELS } from "@/lib/achievements";
-
-const SP: Transition = { duration: 0.6, ease: "easeOut" };
-
-const surf = "rgba(255,255,255,0.05)";
-const border = "rgba(255,255,255,0.08)";
-const textMain = "#F0EBE3";
-const textMuted = "rgba(240,235,227,0.45)";
-const accent = "#FF4D94";
+import Link from "next/link";
+import Image from "next/image";
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState<"settings" | "history" | "achievements" | "designs">("settings");
+  const [activeTab, setActiveTab] = useState<"designs" | "achievements" | "history" | "settings">("designs");
   const [designs, setDesigns] = useState<any[]>([]);
   const [loadingDesigns, setLoadingDesigns] = useState(false);
   const [profile, setProfile] = useState<any>(null);
@@ -26,12 +20,28 @@ export default function ProfilePage() {
   const [imageError, setImageError] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [unlockedIds, setUnlockedIds] = useState<string[]>([]);
+  
+  // Local form state
+  const [formData, setFormData] = useState({
+    full_name: "",
+    username: "",
+    bio: "",
+    instagram: "",
+    website: "",
+  });
 
   useEffect(() => {
     fetchLiveProfile()
       .then((res) => {
         if (res.success && res.data) {
           setProfile(res.data);
+          setFormData({
+            full_name: res.data.full_name || "",
+            username: res.data.username || "",
+            bio: res.data.bio || "",
+            instagram: res.data.instagram || "",
+            website: res.data.website || "",
+          });
           setUnlockedIds(computeUnlockedAchievements({
             username: (res.data as any).username,
             designs_count: (res.data as any).designs_count,
@@ -66,30 +76,20 @@ export default function ProfilePage() {
     }
   }, [activeTab]);
 
-  const tabs = [
-    { id: "settings", label: "Account Settings", icon: Settings },
-    { id: "achievements", label: "Achievements", icon: Trophy },
-    { id: "history", label: "Order History", icon: Clock },
-    { id: "designs", label: "Saved Designs", icon: Shirt },
-  ] as const;
-
   const initials = (profile?.username || profile?.full_name || "YU")
     .split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase();
 
-  const handleSave = async (formData: FormData) => {
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSaving(true);
-    const result = await updateProfile(formData);
+    
+    const data = new FormData();
+    Object.entries(formData).forEach(([key, value]) => data.append(key, value));
+    data.append("avatar_url", profile.avatar_url || "");
+    
+    const result = await updateProfile(data);
     if (result.success) {
-      setProfile((prev: any) => ({
-        ...prev,
-        full_name: formData.get("full_name") as string,
-        username: formData.get("username") as string,
-        bio: formData.get("bio") as string,
-        instagram: formData.get("instagram") as string,
-        website: formData.get("website") as string,
-        avatar_url: formData.get("avatar_url") as string,
-      }));
-      setImageError(false);
+      setProfile((prev: any) => ({ ...prev, ...formData }));
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } else {
@@ -107,47 +107,25 @@ export default function ProfilePage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
-        alert("Authentication error");
-        setUploadingAvatar(false);
-        return;
-      }
+      if (!user) throw new Error("Not authenticated");
 
-      // Generate random string to prevent caching issues if overwriting
       const filename = `${user.id}-${Math.random().toString(36).substring(7)}`; 
+      const { data, error } = await supabase.storage.from('avatars').upload(filename, file, { upsert: true });
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(data.path);
+
+      const fData = new FormData();
+      fData.append("avatar_url", publicUrl);
+      Object.entries(formData).forEach(([key, value]) => fData.append(key, value));
       
-      const { data, error } = await supabase.storage
-        .from('avatars')
-        .upload(filename, file, { upsert: true });
-
-      if (error) {
-        throw error;
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(data.path);
-
-      // Instantly save to profile as well for perfect UX
-      const formData = new FormData();
-      formData.append("full_name", profile.full_name || "");
-      formData.append("username", profile.username || "");
-      formData.append("bio", profile.bio || "");
-      formData.append("instagram", profile.instagram || "");
-      formData.append("website", profile.website || "");
-      formData.append("avatar_url", publicUrl);
-      
-      const res = await updateProfile(formData);
+      const res = await updateProfile(fData);
       if (res.success) {
         setProfile((prev: any) => ({ ...prev, avatar_url: publicUrl }));
         setImageError(false);
-      } else {
-        alert("Failed to save avatar details");
       }
     } catch (error: any) {
-      console.error("Upload error:", error);
-      alert("Failed to upload image. Make sure the 'avatars' storage bucket exists and is public.");
+      alert("Failed to upload image.");
     } finally {
       setUploadingAvatar(false);
     }
@@ -157,407 +135,290 @@ export default function ProfilePage() {
     ? new Date(profile.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : "—";
 
-  return (
-    <div className="w-full max-w-6xl mx-auto">
-      {/* ── Skeleton Loader ── */}
-      {!profile ? (
-        <div className="animate-pulse">
-          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="flex items-center gap-6">
-              <div className="w-24 h-24 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }} />
-              <div className="space-y-3">
-                <div className="h-10 w-52 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }} />
-                <div className="h-4 w-36 rounded-lg" style={{ background: "rgba(255,255,255,0.05)" }} />
-                <div className="h-4 w-48 rounded-lg" style={{ background: "rgba(255,255,255,0.05)" }} />
-              </div>
-            </div>
-            <div className="h-10 w-28 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }} />
-          </div>
-          <div className="flex gap-6">
-            <div className="w-56 shrink-0 flex flex-col gap-2">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-14 rounded-2xl" style={{ background: "rgba(255,255,255,0.06)" }} />
-              ))}
-            </div>
-            <div className="flex-1 rounded-3xl border p-8 min-h-[420px]" style={{ background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)" }}>
-              <div className="h-6 w-40 rounded-lg mb-6" style={{ background: "rgba(255,255,255,0.08)" }} />
-              <div className="grid grid-cols-2 gap-4">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-12 rounded-xl" style={{ background: "rgba(255,255,255,0.06)" }} />
-                ))}
-              </div>
-            </div>
-          </div>
+  if (!profile) {
+    return (
+      <div className="w-full max-w-[1000px] mx-auto animate-pulse pb-20">
+        <div className="h-48 md:h-64 rounded-b-3xl bg-white/5 w-full mb-20" />
+        <div className="px-6 grid grid-cols-3 gap-6 opacity-30 mt-8">
+           <div className="col-span-1 space-y-4"><div className="h-12 bg-white/10 rounded-xl" /></div>
+           <div className="col-span-2 space-y-4"><div className="h-40 bg-white/10 rounded-xl" /></div>
         </div>
-      ) : (
-      <>
-      <motion.header
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={SP}
-        className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6"
-      >
-        <div className="flex items-center gap-6">
-          {/* Avatar */}
-          <div className="relative group cursor-pointer">
-            <div className={`w-24 h-24 rounded-full p-[3px] transition-all ${uploadingAvatar ? 'animate-pulse opacity-50' : 'group-hover:scale-105'}`} style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>
-              <div
-                className="w-full h-full rounded-full flex items-center justify-center text-2xl font-black overflow-hidden relative"
-                style={{ background: "#1A1A1A", color: textMain }}
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-[1000px] mx-auto pb-20">
+      {/* ── PROFILE HEADER & BANNER ── */}
+      <div className="relative mb-6">
+         {/* Banner */}
+         <div 
+           className="h-40 md:h-56 w-full rounded-b-3xl overflow-hidden relative"
+           style={{ background: "linear-gradient(120deg, #1A1A24, #2D1A29)" }}
+         >
+           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+         </div>
+
+         {/* Avatar & Actions */}
+         <div className="px-6 sm:px-10 relative flex justify-between items-end -mt-16 md:-mt-20">
+           <div className="relative group cursor-pointer border-4 rounded-full border-[#0A0909]">
+              <div 
+                className={`w-32 h-32 md:w-40 md:h-40 rounded-full flex items-center justify-center text-4xl font-black overflow-hidden relative z-10 transition-all ${uploadingAvatar ? 'animate-pulse opacity-50' : 'group-hover:opacity-90'}`}
+                style={{ background: "#1F1F26", color: "var(--dash-text)" }}
               >
-                {(profile?.avatar_url && !imageError) ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt="Profile"
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover"
-                    onError={() => setImageError(true)}
-                  />
+                {(profile.avatar_url && !imageError) ? (
+                  <img src={profile.avatar_url} referrerPolicy="no-referrer" alt="" className="w-full h-full object-cover" onError={() => setImageError(true)} />
                 ) : (
                   initials
                 )}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Edit3 className="w-6 h-6 text-white" />
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="w-8 h-8 text-white" />
                 </div>
               </div>
-            </div>
-            
-            <input 
-              type="file" 
-              accept="image/*" 
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              onChange={handleAvatarUpload}
-              disabled={uploadingAvatar}
-            />
-          </div>
+              <input type="file" accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+           </div>
 
-          {/* Name */}
-          <div>
-            <h1
-              className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2"
-              style={{ color: textMain, fontFamily: "var(--font-syne)" }}
-            >
-              {profile?.username || profile?.full_name || "Loading..."}
-            </h1>
-            {profile?.bio && (
-              <p className="max-w-lg text-sm mb-3 leading-relaxed" style={{ color: textMain }}>
-                {profile.bio}
-              </p>
-            )}
-            <div className="flex items-center gap-4 mb-3">
-              {profile?.instagram && (
-                <a href={`https://instagram.com/${profile.instagram.replace('@','')}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-bold transition-all hover:scale-105" style={{ color: accent }}>
-                  <AtSign className="w-3.5 h-3.5" /> {profile.instagram.replace('@','')}
-                </a>
-              )}
-              {profile?.website && (
-                <a href={profile.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-bold transition-all hover:scale-105" style={{ color: accent }}>
-                  <Globe className="w-3.5 h-3.5" /> Portfolio Site
-                </a>
-              )}
-            </div>
-
-            <div className="flex items-center gap-6 mb-3">
-              <div className="flex items-center gap-1.5">
-                <span className="font-black text-sm" style={{ color: textMain }}>{profile?.followers || 0}</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: textMuted }}>Followers</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-black text-sm" style={{ color: textMain }}>{profile?.following || 0}</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: textMuted }}>Following</span>
-              </div>
-            </div>
-
-            <p className="text-sm flex items-center gap-2 flex-wrap" style={{ color: textMuted }}>
-              {profile?.username && <span className="font-bold" style={{ color: textMain }}>{profile?.full_name}</span>}
-              {profile?.username && <span>•</span>}
-              <span className="font-bold">Level {profile?.level || 1}</span>
-              <span>•</span>
-              <span className="font-bold" style={{ color: accent }}>Member since {memberSince}</span>
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={() => signout()}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105"
-          style={{ background: "rgba(255,77,77,0.1)", border: "1px solid rgba(255,77,77,0.2)", color: "#FF6B6B" }}
-        >
-          <LogOut className="w-4 h-4" /> Sign Out
-        </button>
-      </motion.header>
-
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* ── Nav Tabs ── */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ ...SP, delay: 0.1 }}
-          className="w-full md:w-56 shrink-0 flex flex-col gap-2"
-        >
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className="flex items-center justify-between p-4 rounded-2xl border transition-all text-left"
-                style={{
-                  background: isActive ? "rgba(255,77,148,0.1)" : surf,
-                  borderColor: isActive ? "rgba(255,77,148,0.3)" : border,
-                  color: isActive ? textMain : textMuted,
-                }}
-              >
-                <div className="flex items-center gap-3 font-semibold text-sm">
-                  <Icon className="w-4 h-4" style={{ color: isActive ? accent : "inherit" }} />
-                  {tab.label}
-                </div>
-                <ChevronRight className="w-4 h-4 opacity-40" />
-              </button>
-            );
-          })}
-        </motion.div>
-
-        {/* ── Content Panel ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SP, delay: 0.2 }}
-          className="flex-1 rounded-3xl border p-8 min-h-[420px]"
-          style={{ background: surf, borderColor: border }}
-        >
-          {/* Account Settings */}
-          {activeTab === "settings" && (
-            <form action={handleSave} className="space-y-8 animate-in fade-in duration-300">
-              <h2 className="text-xl font-extrabold" style={{ color: textMain }}>Personal Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest" style={{ color: textMuted }}>Username</label>
-                  <input
-                    type="text" name="username"
-                    defaultValue={profile?.username || ""}
-                    placeholder="your_username"
-                    className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all"
-                    style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
-                    onFocus={(e) => (e.target.style.borderColor = accent)}
-                    onBlur={(e) => (e.target.style.borderColor = border)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest" style={{ color: textMuted }}>Full Name</label>
-                  <input
-                    type="text" name="full_name"
-                    defaultValue={profile?.full_name || ""}
-                    className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all"
-                    style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
-                    onFocus={(e) => (e.target.style.borderColor = accent)}
-                    onBlur={(e) => (e.target.style.borderColor = border)}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-xs font-black uppercase tracking-widest" style={{ color: textMuted }}>Email Address</label>
-                  <input
-                    type="email" disabled
-                    defaultValue={profile?.email || ""}
-                    className="w-full rounded-xl px-4 py-3 text-sm font-medium cursor-not-allowed"
-                    style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${border}`, color: textMuted }}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-8 pt-8" style={{ borderTop: `1px solid ${border}` }}>
-                <h2 className="text-xl font-extrabold mb-6" style={{ color: textMain }}>Public Profile</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-xs font-black uppercase tracking-widest" style={{ color: textMuted }}>Bio</label>
-                    <textarea
-                      name="bio"
-                      defaultValue={profile?.bio || ""}
-                      placeholder="Tell the world about your design aesthetic..."
-                      className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all resize-none min-h-[100px]"
-                      style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
-                      onFocus={(e) => (e.target.style.borderColor = accent)}
-                      onBlur={(e) => (e.target.style.borderColor = border)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest flex items-center gap-2" style={{ color: textMuted }}>
-                      <AtSign className="w-3.5 h-3.5" /> Instagram
-                    </label>
-                    <input
-                      type="text" name="instagram"
-                      defaultValue={profile?.instagram || ""}
-                      placeholder="@yourhandle"
-                      className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all"
-                      style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
-                      onFocus={(e) => (e.target.style.borderColor = accent)}
-                      onBlur={(e) => (e.target.style.borderColor = border)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest flex items-center gap-2" style={{ color: textMuted }}>
-                      <Globe className="w-3.5 h-3.5" /> Portfolio Site
-                    </label>
-                    <input
-                      type="url" name="website"
-                      defaultValue={profile?.website || ""}
-                      placeholder="https://myportfolio.com"
-                      className="w-full rounded-xl px-4 py-3 text-sm font-medium outline-none transition-all"
-                      style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${border}`, color: textMain }}
-                      onFocus={(e) => (e.target.style.borderColor = accent)}
-                      onBlur={(e) => (e.target.style.borderColor = border)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-6 flex items-center justify-between" style={{ borderTop: `1px solid ${border}` }}>
-                <button
-                  type="submit" disabled={isSaving}
-                  className="px-7 py-3 rounded-2xl font-black text-sm text-white hover:scale-105 transition-transform disabled:opacity-50"
-                  style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}
-                >
-                  {isSaving ? "Saving..." : "Save Changes"}
+           <div className="flex gap-3 mb-2 md:mb-6">
+              {activeTab !== "settings" && (
+                <button onClick={() => setActiveTab("settings")} className="px-5 py-2 rounded-xl text-sm font-bold border transition-colors hover:bg-white/5" style={{ borderColor: "var(--dash-border)", color: "var(--dash-text)" }}>
+                  Edit Profile
                 </button>
-                {saveSuccess && (
-                  <span className="text-sm font-bold animate-in fade-in" style={{ color: "#4ade80" }}>
-                    ✓ Changes saved!
-                  </span>
-                )}
-              </div>
-            </form>
-          )}
+              )}
+              <button onClick={() => signout()} className="h-10 w-10 flex items-center justify-center rounded-xl border transition-colors hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30" style={{ borderColor: "var(--dash-border)", color: "var(--dash-muted)" }}>
+                <LogOut className="w-4 h-4" />
+              </button>
+           </div>
+         </div>
 
-          {/* Achievements */}
-          {activeTab === "achievements" && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-extrabold" style={{ color: textMain }}>Achievements</h2>
-                <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ background: "rgba(255,77,148,0.1)", color: accent }}>
-                  {unlockedIds.length} / {ACHIEVEMENTS.length} unlocked
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {ACHIEVEMENTS.map((achievement) => {
-                  const isUnlocked = unlockedIds.includes(achievement.id);
-                  return (
-                    <div
-                      key={achievement.id}
-                      className="flex items-center gap-4 p-4 rounded-2xl border transition-all"
-                      style={{
-                        background: isUnlocked ? "rgba(255,77,148,0.06)" : "rgba(255,255,255,0.02)",
-                        borderColor: isUnlocked ? "rgba(255,77,148,0.2)" : border,
-                        opacity: isUnlocked ? 1 : 0.45,
-                      }}
-                    >
-                      <div
-                        className={`h-12 w-12 shrink-0 rounded-xl flex items-center justify-center text-xl shadow-md ${isUnlocked ? `bg-gradient-to-br ${RARITY_COLORS[achievement.rarity]}` : "bg-white/5"}`}
-                      >
-                        {isUnlocked ? achievement.icon : <Lock className="w-5 h-5 text-white/30" />}
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="font-bold text-sm truncate" style={{ color: isUnlocked ? textMain : textMuted }}>
-                          {achievement.title}
-                        </h4>
-                        <p className="text-xs mt-0.5 leading-snug" style={{ color: textMuted }}>
-                          {achievement.description}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          <span
-                            className="text-[10px] font-black uppercase tracking-widest"
-                            style={{ color: isUnlocked ? accent : textMuted }}
-                          >
-                            {RARITY_LABELS[achievement.rarity]}
-                          </span>
-                          {isUnlocked && (
-                            <span className="text-[10px] font-bold" style={{ color: "#4ade80" }}>
-                              +{achievement.xpReward} XP ✓
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+         {/* Info Block */}
+         <div className="px-6 sm:px-10 mt-4">
+           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-1 flex items-center gap-3" style={{ color: "var(--dash-text)" }}>
+             {profile.full_name || profile.username}
+             {profile.level >= 2 && <CheckCircle2 className="w-6 h-6 text-blue-400 fill-blue-500/20" />}
+           </h1>
+           <p className="text-sm font-medium mb-4" style={{ color: "var(--dash-muted)" }}>@{profile.username}</p>
+           
+           {profile.bio && (
+             <p className="text-[15px] leading-relaxed max-w-2xl mb-4" style={{ color: "var(--dash-text)" }}>
+               {profile.bio}
+             </p>
+           )}
 
-          {/* Order History */}
-          {activeTab === "history" && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              <h2 className="text-xl font-extrabold" style={{ color: textMain }}>Order History</h2>
-              <div className="flex flex-col items-center justify-center py-16 gap-3" style={{ color: textMuted }}>
-                <Clock className="w-12 h-12 opacity-20" />
-                <p className="font-semibold">No orders yet</p>
-                <p className="text-sm">Your order history will appear here once you start ordering.</p>
+           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mb-6">
+              <div className="flex items-center gap-1.5 text-sm" style={{ color: "var(--dash-muted)" }}>
+                 <Calendar className="w-4 h-4" /> Joined {memberSince}
               </div>
-            </div>
-          )}
-
-          {/* Saved Designs */}
-          {activeTab === "designs" && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-extrabold" style={{ color: textMain }}>Your Designs</h2>
-                <a href="/studio" className="text-sm font-black uppercase tracking-wider hover:opacity-70 transition-opacity" style={{ color: accent }}>
-                  + New Design
+              {profile.website && (
+                <a href={profile.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm hover:underline" style={{ color: "var(--dash-accent)" }}>
+                   <LinkIcon className="w-4 h-4" /> {profile.website.replace(/^https?:\/\//,'')}
                 </a>
+              )}
+              {profile.instagram && (
+                <a href={`https://instagram.com/${profile.instagram.replace('@','')}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm hover:underline" style={{ color: "var(--dash-accent)" }}>
+                   <Instagram className="w-4 h-4" /> {profile.instagram.replace('@','')}
+                </a>
+              )}
+           </div>
+
+           <div className="flex gap-6">
+              <div className="flex gap-1.5">
+                 <span className="font-bold text-[15px]" style={{ color: "var(--dash-text)" }}>{profile.following || 0}</span>
+                 <span className="text-[15px]" style={{ color: "var(--dash-muted)" }}>Following</span>
               </div>
+              <div className="flex gap-1.5">
+                 <span className="font-bold text-[15px]" style={{ color: "var(--dash-text)" }}>{profile.followers || 0}</span>
+                 <span className="text-[15px]" style={{ color: "var(--dash-muted)" }}>Followers</span>
+              </div>
+           </div>
+         </div>
+      </div>
+
+      {/* ── TABS ── */}
+      <div className="px-6 md:px-10 border-b mb-8 flex gap-6 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ borderColor: "var(--dash-border)" }}>
+         {[
+           { id: "designs", label: "Designs" },
+           { id: "achievements", label: "Achievements" },
+           { id: "history", label: "Order History" },
+           { id: "settings", label: "Settings" }
+         ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className="py-4 text-sm font-bold border-b-2 transition-all whitespace-nowrap"
+              style={{
+                color: activeTab === tab.id ? "var(--dash-text)" : "var(--dash-muted)",
+                borderColor: activeTab === tab.id ? "var(--dash-text)" : "transparent"
+              }}
+            >
+              {tab.label}
+              {tab.id === "designs" && <span className="ml-2 bg-white/10 px-2 py-0.5 rounded-full text-xs">{designs.length || 0}</span>}
+            </button>
+         ))}
+      </div>
+
+      {/* ── CONTENT AREA ── */}
+      <div className="px-6 md:px-10 min-h-[400px]">
+         
+         {/* DESIGNS */}
+         {activeTab === "designs" && (
+           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
               {loadingDesigns ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="w-8 h-8 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: accent, borderTopColor: "transparent" }} />
-                </div>
+                <div className="flex justify-center py-20"><div className="w-8 h-8 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: "var(--dash-accent)" }} /></div>
               ) : designs.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 gap-3 rounded-2xl border border-dashed" style={{ borderColor: border, color: textMuted }}>
-                  <Shirt className="w-12 h-12 opacity-20" />
-                  <p className="font-semibold">No designs saved yet</p>
-                  <p className="text-sm text-center max-w-xs">Head to the 3D Studio to create your first design and unlock your first achievement!</p>
+                <div className="py-20 flex flex-col items-center justify-center border border-dashed rounded-3xl" style={{ borderColor: "var(--dash-border)" }}>
+                   <Shirt className="w-12 h-12 mb-4 opacity-20" style={{ color: "var(--dash-text)" }} />
+                   <h3 className="text-lg font-bold mb-2" style={{ color: "var(--dash-text)" }}>No designs yet</h3>
+                   <p className="text-sm mb-6" style={{ color: "var(--dash-muted)" }}>Create your first 3D garment in the studio.</p>
+                   <Link href="/studio">
+                     <button className="px-6 py-2 rounded-xl text-sm font-bold text-white transition-transform hover:scale-105" style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>Open Studio</button>
+                   </Link>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {designs.map((design) => (
-                    <div
-                      key={design.id}
-                      className="group rounded-2xl overflow-hidden border"
-                      style={{ background: "rgba(255,255,255,0.03)", borderColor: border }}
-                    >
-                      <div className="aspect-[4/5] relative overflow-hidden">
-                        <img src={design.storage_url} alt={design.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute top-2 right-2 text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider" style={{ background: "rgba(0,0,0,0.6)", color: textMuted }}>
-                          {design.type}
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <h4 className="font-bold text-sm truncate" style={{ color: textMain }}>{design.title}</h4>
-                        <p className="text-[10px] mt-1" style={{ color: textMuted }}>{new Date(design.created_at).toLocaleDateString()}</p>
-                        <div className="flex gap-2 mt-3">
-                          <button
-                            onClick={() => alert("Routing to manufacturing pipeline...")}
-                            className="flex-1 py-2 rounded-xl text-xs font-bold text-white hover:scale-105 transition-transform"
-                            style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}
-                          >
-                            Order Print
-                          </button>
-                          <button
-                            className="p-2 border rounded-xl transition-colors hover:opacity-80"
-                            style={{ borderColor: border, color: textMuted }}
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                        </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {designs.map(design => (
+                    <div key={design.id} className="group relative aspect-[4/5] rounded-2xl overflow-hidden bg-white/5 border" style={{ borderColor: "var(--dash-border)" }}>
+                      <img src={design.storage_url} alt={design.title} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0">
+                         <h4 className="text-white font-bold text-sm truncate">{design.title}</h4>
+                         <p className="text-white/70 text-[10px] uppercase tracking-wider mt-1 mb-3">{design.type}</p>
+                         <button className="w-full py-2 bg-white text-black rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors">Order Print</button>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
-          )}
-        </motion.div>
+           </motion.div>
+         )}
+
+         {/* ACHIEVEMENTS */}
+         {activeTab === "achievements" && (
+           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {ACHIEVEMENTS.map(achievement => {
+                  const isUnlocked = unlockedIds.includes(achievement.id);
+                  return (
+                    <div key={achievement.id} className="p-4 rounded-2xl border flex gap-4" style={{ borderColor: isUnlocked ? "var(--dash-border)" : "transparent", background: isUnlocked ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.01)", opacity: isUnlocked ? 1 : 0.4 }}>
+                       <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-xl shadow-sm ${isUnlocked ? `bg-gradient-to-br ${RARITY_COLORS[achievement.rarity]}` : "bg-white/5"}`}>
+                          {achievement.icon}
+                       </div>
+                       <div>
+                          <h4 className="font-bold text-sm" style={{ color: "var(--dash-text)" }}>{achievement.title}</h4>
+                          <p className="text-xs leading-snug mt-1 mb-2" style={{ color: "var(--dash-muted)" }}>{achievement.description}</p>
+                          <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded border" style={{ color: isUnlocked ? "var(--dash-accent)" : "var(--dash-muted)", borderColor: "var(--dash-border)" }}>
+                             {RARITY_LABELS[achievement.rarity]}
+                          </span>
+                       </div>
+                    </div>
+                  );
+                })}
+              </div>
+           </motion.div>
+         )}
+
+         {/* HISTORY */}
+         {activeTab === "history" && (
+           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="py-20 flex flex-col items-center justify-center border border-dashed rounded-3xl" style={{ borderColor: "var(--dash-border)" }}>
+              <Clock className="w-12 h-12 mb-4 opacity-20" style={{ color: "var(--dash-text)" }} />
+              <h3 className="text-lg font-bold mb-2" style={{ color: "var(--dash-text)" }}>No past orders</h3>
+              <p className="text-sm" style={{ color: "var(--dash-muted)" }}>Your purchase history will appear here.</p>
+           </motion.div>
+         )}
+
+         {/* SETTINGS */}
+         {activeTab === "settings" && (
+           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl">
+              <form onSubmit={handleSave} className="space-y-8">
+                 
+                 {/* Basic Info */}
+                 <div className="space-y-4">
+                    <h3 className="font-bold text-lg" style={{ color: "var(--dash-text)" }}>Basic Information</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div className="space-y-1.5">
+                         <label className="text-xs font-semibold" style={{ color: "var(--dash-muted)" }}>Full Name</label>
+                         <input
+                           type="text" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})}
+                           className="w-full rounded-xl px-4 py-3 text-sm transition-colors border outline-none"
+                           style={{ background: "rgba(255,255,255,0.02)", borderColor: "var(--dash-border)", color: "var(--dash-text)" }}
+                           onFocus={e => e.target.style.borderColor = "var(--dash-text)"}
+                           onBlur={e => e.target.style.borderColor = "var(--dash-border)"}
+                         />
+                       </div>
+                       <div className="space-y-1.5">
+                         <label className="text-xs font-semibold" style={{ color: "var(--dash-muted)" }}>Username</label>
+                         <input
+                           type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value.replace(/[^a-zA-Z0-9_]/g, '')})}
+                           className="w-full rounded-xl px-4 py-3 text-sm transition-colors border outline-none"
+                           style={{ background: "rgba(255,255,255,0.02)", borderColor: "var(--dash-border)", color: "var(--dash-text)" }}
+                           onFocus={e => e.target.style.borderColor = "var(--dash-text)"}
+                           onBlur={e => e.target.style.borderColor = "var(--dash-border)"}
+                         />
+                       </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold" style={{ color: "var(--dash-muted)" }}>Bio</label>
+                      <textarea
+                        value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})}
+                        className="w-full rounded-xl px-4 py-3 text-sm transition-colors border outline-none resize-none min-h-[100px]"
+                        style={{ background: "rgba(255,255,255,0.02)", borderColor: "var(--dash-border)", color: "var(--dash-text)" }}
+                        onFocus={e => e.target.style.borderColor = "var(--dash-text)"}
+                        onBlur={e => e.target.style.borderColor = "var(--dash-border)"}
+                        placeholder="Tell us a little about yourself..."
+                      />
+                    </div>
+                 </div>
+
+                 <hr style={{ borderColor: "var(--dash-border)" }} />
+
+                 {/* Social Links */}
+                 <div className="space-y-4">
+                    <h3 className="font-bold text-lg" style={{ color: "var(--dash-text)" }}>Social Profiles</h3>
+                    
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold" style={{ color: "var(--dash-muted)" }}>Instagram</label>
+                      <div className="relative">
+                        <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--dash-muted)" }} />
+                        <input
+                          type="text" value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})}
+                          placeholder="yourhandle"
+                          className="w-full rounded-xl pl-10 pr-4 py-3 text-sm transition-colors border outline-none"
+                          style={{ background: "rgba(255,255,255,0.02)", borderColor: "var(--dash-border)", color: "var(--dash-text)" }}
+                          onFocus={e => e.target.style.borderColor = "var(--dash-text)"}
+                          onBlur={e => e.target.style.borderColor = "var(--dash-border)"}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold" style={{ color: "var(--dash-muted)" }}>Website / Portfolio</label>
+                      <div className="relative">
+                        <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--dash-muted)" }} />
+                        <input
+                          type="url" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})}
+                          placeholder="https://example.com"
+                          className="w-full rounded-xl pl-10 pr-4 py-3 text-sm transition-colors border outline-none"
+                          style={{ background: "rgba(255,255,255,0.02)", borderColor: "var(--dash-border)", color: "var(--dash-text)" }}
+                          onFocus={e => e.target.style.borderColor = "var(--dash-text)"}
+                          onBlur={e => e.target.style.borderColor = "var(--dash-border)"}
+                        />
+                      </div>
+                    </div>
+                 </div>
+
+                 <div className="pt-4 flex items-center justify-between">
+                    <button type="submit" disabled={isSaving} className="px-6 py-3 rounded-xl font-bold text-sm text-black hover:bg-white/90 transition-colors disabled:opacity-50" style={{ background: "var(--dash-text)" }}>
+                      {isSaving ? "Saving..." : "Save Profile Information"}
+                    </button>
+                    {saveSuccess && <span className="text-sm font-bold text-green-500 animate-in fade-in">✓ Saved Successfully</span>}
+                 </div>
+
+              </form>
+           </motion.div>
+         )}
+
       </div>
-      </>
-      )}
     </div>
   );
 }
