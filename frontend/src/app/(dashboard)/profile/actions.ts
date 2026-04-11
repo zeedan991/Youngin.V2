@@ -233,3 +233,66 @@ export async function awardDailyLoginXP(): Promise<{
     return { success: true, awarded: false };
   }
 }
+
+/**
+ * ─── RETROACTIVE XP SYNCHRONIZATION ────────────────────────────
+ * This sweeps the user's stats, checks if they qualify for any
+ * achievements that haven't been claimed yet, adds the XP, and saves it.
+ */
+import { ACHIEVEMENTS, computeUnlockedAchievements } from "@/lib/achievements";
+
+export async function syncAchievementsXP() {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, noChange: true };
+
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    if (!profile) return { success: false, noChange: true };
+
+    const [followersRes, followingRes, designsRes] = await Promise.all([
+      supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", user.id),
+      supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", user.id),
+      supabase.from("designs").select("id").eq("user_id", user.id)
+    ]);
+
+    const profileContext = {
+      ...profile,
+      followers: followersRes.count || 0,
+      following: followingRes.count || 0,
+      designs_count: designsRes.data?.length || profile.designs_count || 0,
+    };
+
+    const unlockedIds = computeUnlockedAchievements(profileContext);
+    const previouslyUnlocked = profile.achievements || [];
+    
+    // Find newly unlocked
+    const newUnlocks = unlockedIds.filter(id => !previouslyUnlocked.includes(id));
+    
+    if (newUnlocks.length > 0) {
+      // Calculate total new XP
+      let newXpEarned = 0;
+      for (const id of newUnlocks) {
+        const ach = ACHIEVEMENTS.find(a => a.id === id);
+        if (ach) newXpEarned += ach.xpReward;
+      }
+
+      const newXP = (profile.xp || 0) + newXpEarned;
+      const newLevel = computeLevel(newXP);
+      
+      // Update profile
+      await supabase.from('profiles').update({
+        achievements: unlockedIds,
+        xp: newXP,
+        level: newLevel
+      }).eq('id', user.id);
+
+      return { success: true, noChange: false, newXP, newLevel, newUnlocks };
+    }
+
+    return { success: true, noChange: true };
+  } catch (err) {
+    console.error("Sync XR Error:", err);
+    return { success: false, noChange: true };
+  }
+}
