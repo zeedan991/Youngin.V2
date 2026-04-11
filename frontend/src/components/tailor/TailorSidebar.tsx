@@ -56,16 +56,16 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
 
   return (
     <aside
-      className={`h-screen flex flex-col border-r border-white/5 transition-all duration-300 sticky top-0 shrink-0 z-30 ${collapsed ? "w-[72px]" : "w-[220px]"}`}
-      style={{ background: "#0A0A0F" }}
+      className={`h-screen flex flex-col transition-all duration-300 sticky top-0 shrink-0 z-30 ${collapsed ? "w-[72px]" : "w-[240px]"}`}
+      style={{ background: "#FFFFFF", borderRight: "1px solid #e2e8f0" }}
     >
       {/* Logo */}
-      <div className={`flex items-center gap-3 px-4 py-5 border-b border-white/5 ${collapsed ? "justify-center" : ""}`}>
-        <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#3730A3] flex items-center justify-center">
+      <div className={`flex items-center gap-3 px-4 py-5 border-b border-slate-100 ${collapsed ? "justify-center" : ""}`}>
+        <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#3730A3] flex items-center justify-center shadow-lg shadow-indigo-600/20">
           <Scissors className="w-4 h-4 text-white" />
         </div>
         {!collapsed && (
-          <span className="font-black text-[#F0EBE3] tracking-wider text-sm" style={{ fontFamily: "var(--font-syne), sans-serif" }}>
+          <span className="font-black text-slate-900 tracking-wider text-sm" style={{ fontFamily: "var(--font-syne), sans-serif" }}>
             YOUNGIN
           </span>
         )}
@@ -81,7 +81,7 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
       )}
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-1">
+      <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-1">
         {NAV.map((item) => {
           const active = pathname === item.href;
           return (
@@ -91,11 +91,11 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
               title={collapsed ? item.label : undefined}
               className={`flex items-center gap-3 px-3 py-3 rounded-xl text-xs font-bold transition-all ${
                 active
-                  ? "bg-[#4F46E5]/15 text-[#4F46E5]"
-                  : "text-white/40 hover:text-white/80 hover:bg-white/5"
+                  ? "bg-[#4F46E5]/10 text-[#4F46E5]"
+                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
               } ${collapsed ? "justify-center" : ""}`}
             >
-              <item.icon className="w-4 h-4 shrink-0" />
+              <item.icon className="w-4 h-4 shrink-0 transition-colors" style={{ color: active ? "#4F46E5" : "inherit" }} />
               {!collapsed && <span className="tracking-wider uppercase">{item.label}</span>}
             </Link>
           );
@@ -103,21 +103,21 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
       </nav>
 
       {/* Collapse toggle */}
-      <div className="px-2 py-2 border-t border-white/5">
+      <div className="px-3 py-2 border-t border-slate-100">
         <button
           onClick={() => setCollapsed((c) => !c)}
-          className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-white/30 hover:text-white/60 hover:bg-white/5 transition-all text-xs font-bold uppercase tracking-wider ${collapsed ? "justify-center" : ""}`}
+          className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all text-xs font-bold uppercase tracking-wider ${collapsed ? "justify-center" : ""}`}
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <><ChevronLeft className="w-4 h-4" /><span>Collapse</span></>}
         </button>
       </div>
 
       {/* Logout button — always visible */}
-      <div className="px-2 pb-2">
+      <div className="px-3 pb-3">
         <button
           onClick={handleLogout}
           title="Sign Out"
-          className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs font-bold uppercase tracking-wider ${collapsed ? "justify-center" : ""}`}
+          className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-red-500/80 hover:text-red-600 hover:bg-red-50 transition-all text-xs font-bold uppercase tracking-wider ${collapsed ? "justify-center" : ""}`}
         >
           <LogOut className="w-4 h-4 shrink-0" />
           {!collapsed && <span>Sign Out</span>}
@@ -125,8 +125,8 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
       </div>
 
       {/* User */}
-      <div className={`flex items-center gap-3 px-3 py-4 border-t border-white/5 ${collapsed ? "justify-center" : ""}`}>
-        <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#3730A3] flex items-center justify-center text-white font-black text-sm overflow-hidden">
+      <div className={`flex items-center gap-3 px-4 py-4 border-t border-slate-100 bg-slate-50/50 ${collapsed ? "justify-center" : ""}`}>
+        <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#3730A3] flex items-center justify-center text-white font-black text-sm overflow-hidden shadow-sm">
           {profile.avatar_url ? (
             <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" />
           ) : (
@@ -135,7 +135,7 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
         </div>
         {!collapsed && (
           <div className="flex-1 min-w-0">
-            <p className="text-[#F0EBE3] font-black text-xs truncate">{profile.full_name}</p>
+            <p className="text-slate-900 font-black text-xs truncate">{profile.full_name}</p>
             <p className="text-[#4F46E5] text-[9px] font-black uppercase tracking-wider">LV. {profile.level || 1} CREATOR</p>
           </div>
         )}
@@ -143,4 +143,3 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
     </aside>
   );
 }
-

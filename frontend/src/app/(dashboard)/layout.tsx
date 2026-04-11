@@ -24,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       <UsernameOnboarding />
       <Navbar initialProfile={initialProfile} />
       
-      <main className="flex-1 flex flex-col transition-all pb-[70px] lg:pb-0 relative">
+      <main className="flex-1 flex flex-col transition-all pb-[70px] lg:pb-0 pt-[80px] relative">
         <div className="flex-1 w-full max-w-[1700px] mx-auto p-4 md:p-6 lg:p-8">
           {children}
         </div>

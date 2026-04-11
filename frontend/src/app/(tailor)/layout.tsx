@@ -16,7 +16,7 @@ export default async function TailorLayout({ children }: { children: ReactNode }
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#0D0D12", color: "#F0EBE3" }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: "var(--dash-bg)", color: "var(--dash-text)" }}>
       <TailorSidebar initialProfile={initialProfile} />
       <main className="flex-1 overflow-y-auto">
         {children}
