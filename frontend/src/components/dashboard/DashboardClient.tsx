@@ -260,7 +260,7 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
           <div className="flex flex-col gap-3 flex-1 justify-center">
              {unlockedAchievements.length > 0
                 ? unlockedAchievements.map((achievement) => (
-                    <div key={achievement.id} className="rounded-xl border p-3 flex items-center gap-3 bg-white/[0.02]" style={{ borderColor: "var(--dash-border)" }}>
+                    <div key={achievement.id} className="rounded-xl border p-3 flex items-center gap-3" style={{ background: "rgba(0,0,0,0.02)", borderColor: "var(--dash-border)" }}>
                       <div className={`h-8 w-8 shrink-0 rounded-[10px] bg-gradient-to-br ${RARITY_COLORS[achievement.rarity]} flex items-center justify-center text-sm shadow-md`}>
                         {achievement.icon}
                       </div>
@@ -271,13 +271,13 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
                     </div>
                   ))
                 : ACHIEVEMENTS.slice(0, 3).map((achievement) => (
-                    <div key={achievement.id} className="rounded-xl border p-3 flex items-center gap-3 opacity-40 grayscale" style={{ borderColor: "var(--dash-border)" }}>
-                      <div className="h-8 w-8 shrink-0 rounded-[10px] bg-white/10 flex items-center justify-center text-sm">
+                    <div key={achievement.id} className="rounded-xl border p-3 flex items-center gap-3 opacity-50 grayscale" style={{ borderColor: "var(--dash-border)", background: "var(--dash-surface-hover)" }}>
+                      <div className="h-8 w-8 shrink-0 rounded-[10px] flex items-center justify-center text-sm" style={{ background: "rgba(0,0,0,0.05)" }}>
                         {achievement.icon}
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="text-[12px] font-bold truncate leading-none mb-1" style={{ color: "var(--dash-text)" }}>{achievement.title}</h4>
-                        <p className="text-[9px] leading-none text-white/50">Locked</p>
+                        <p className="text-[9px] leading-none" style={{ color: "var(--dash-muted)" }}>Locked</p>
                       </div>
                     </div>
                   ))}

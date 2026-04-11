@@ -20,13 +20,13 @@
   --background: #ffffff;
   --foreground: #0f172a;
 
-  /* ── Dashboard Dark Theme ── */
-  --dash-bg: #0D0C0C;
-  --dash-surface: rgba(255, 255, 255, 0.04);
-  --dash-surface-hover: rgba(255, 255, 255, 0.07);
-  --dash-border: rgba(255, 255, 255, 0.08);
-  --dash-text: #F0EBE3;
-  --dash-muted: rgba(240, 235, 227, 0.45);
+  /* ── Dashboard Light Theme Overhaul ── */
+  --dash-bg: #F9FAFB;
+  --dash-surface: #FFFFFF;
+  --dash-surface-hover: #F3F4F6;
+  --dash-border: rgba(0, 0, 0, 0.06);
+  --dash-text: #111827;
+  --dash-muted: #6B7280;
   --dash-accent: #FF4D94;
   --dash-accent-dim: rgba(255, 77, 148, 0.15);
 }

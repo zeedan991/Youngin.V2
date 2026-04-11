@@ -174,7 +174,7 @@ export default function VirtualTryOnPage() {
     <div
       className="min-h-screen w-full"
       style={{
-        background: "linear-gradient(135deg, #0D0C0C 0%, #130a1a 50%, #0a0d18 100%)",
+        background: "var(--dash-bg)", color: "var(--dash-text)"
       }}
     >
       <div className="max-w-[1300px] mx-auto px-4 py-10">
@@ -186,11 +186,11 @@ export default function VirtualTryOnPage() {
               <Shirt className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-white tracking-tight">Virtual Try-On</h1>
-              <p className="text-xs text-slate-500 font-semibold uppercase tracking-widest">Powered by IDM-VTON · AI Diffusion</p>
+              <h1 className="text-2xl font-black tracking-tight" style={{ color: "var(--dash-text)" }}>Virtual Try-On</h1>
+              <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--dash-muted)" }}>Powered by IDM-VTON · AI Diffusion</p>
             </div>
           </div>
-          <p className="text-slate-400 max-w-xl leading-relaxed">
+          <p className="max-w-xl leading-relaxed" style={{ color: "var(--dash-muted)" }}>
             Upload your photo and a garment. Choose whether it's a shirt or pants, and watch AI seamlessly dress you in it.
           </p>
         </div>
@@ -204,9 +204,9 @@ export default function VirtualTryOnPage() {
             {/* Step 1: Garment Type */}
             <div
               className="rounded-3xl p-6"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ background: "var(--dash-surface)", border: `1px solid var(--dash-border)` }}
             >
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400 mb-4">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] mb-4" style={{ color: "var(--dash-muted)" }}>
                 Step 1 — What are you trying on?
               </p>
               <div className="grid grid-cols-2 gap-3">
@@ -219,14 +219,14 @@ export default function VirtualTryOnPage() {
                     onClick={() => setGarmentType(g.id as GarmentType)}
                     className="flex flex-col items-start p-4 rounded-2xl text-left transition-all"
                     style={{
-                      background: garmentType === g.id ? g.accent + "22" : "rgba(255,255,255,0.03)",
-                      border: garmentType === g.id ? `2px solid ${g.accent}` : "2px solid rgba(255,255,255,0.08)",
+                      background: garmentType === g.id ? g.accent + "22" : "var(--dash-bg)",
+                      border: garmentType === g.id ? `2px solid ${g.accent}` : `2px solid var(--dash-border)`,
                       boxShadow: garmentType === g.id ? `0 0 20px ${g.accent}33` : "none",
                     }}
                   >
                     <span className="text-2xl mb-2">{g.emoji}</span>
-                    <p className="font-bold text-sm text-white mb-0.5">{g.label}</p>
-                    <p className="text-xs text-slate-500 leading-tight">{g.desc}</p>
+                    <p className="font-bold text-sm mb-0.5" style={{ color: "var(--dash-text)" }}>{g.label}</p>
+                    <p className="text-xs leading-tight" style={{ color: "var(--dash-muted)" }}>{g.desc}</p>
                     {garmentType === g.id && (
                       <div className="mt-2 flex items-center gap-1" style={{ color: g.accent }}>
                         <CheckCircle2 className="w-3.5 h-3.5" />
@@ -241,9 +241,9 @@ export default function VirtualTryOnPage() {
             {/* Step 2: Upload Images */}
             <div
               className="rounded-3xl p-6 flex flex-col gap-5"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{ background: "var(--dash-surface)", border: `1px solid var(--dash-border)` }}
             >
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+              <p className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: "var(--dash-muted)" }}>
                 Step 2 — Upload Photos
               </p>
               <UploadZone
@@ -301,14 +301,14 @@ export default function VirtualTryOnPage() {
               className="w-full relative rounded-[2rem] overflow-hidden flex items-center justify-center"
               style={{
                 minHeight: 620,
-                background: "linear-gradient(160deg, #1a1124 0%, #0e0e1a 100%)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                boxShadow: "0 30px 80px rgba(0,0,0,0.6)",
+                background: "linear-gradient(160deg, #FFFFFF 0%, #F1F5F9 100%)",
+                border: "1px solid var(--dash-border)",
+                boxShadow: "0 20px 40px rgba(0,0,0,0.05)",
               }}
             >
               {/* Ambient glows */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(255,77,148,0.08), transparent 70%)" }} />
-              <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(99,102,241,0.07), transparent 70%)" }} />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(255,77,148,0.15), transparent 70%)" }} />
+              <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(99,102,241,0.15), transparent 70%)" }} />
 
               <AnimatePresence mode="wait">
                 {loading ? (
@@ -327,8 +327,8 @@ export default function VirtualTryOnPage() {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-white font-bold text-xl mb-2">AI is styling you…</h3>
-                      <p className="text-slate-400 text-sm max-w-xs">
+                      <h3 className="font-bold text-xl mb-2" style={{ color: "var(--dash-text)" }}>AI is styling you…</h3>
+                      <p className="text-sm max-w-xs" style={{ color: "var(--dash-muted)" }}>
                         IDM-VTON is analyzing garment physics &amp; drape mapping.<br />
                         <span className="text-[#FF4D94] font-semibold">Usually takes 20–40 seconds.</span>
                       </p>
@@ -380,7 +380,7 @@ export default function VirtualTryOnPage() {
                       <button
                         onClick={() => { setResultImg(null); setHumanImg(null); setGarmentImg(null); setGarmentType(null); }}
                         className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider transition-all hover:scale-105"
-                        style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", color: "white" }}
+                        style={{ background: "rgba(255,255,255,0.8)", backdropFilter: "blur(8px)", color: "#111827", border: "1px solid rgba(0,0,0,0.1)" }}
                       >
                         <RefreshCcw className="w-4 h-4" /> Try Another
                       </button>
@@ -397,8 +397,8 @@ export default function VirtualTryOnPage() {
                       <Shirt className="w-10 h-10 text-[#FF4D94] opacity-60" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-black text-white mb-2">Your studio is ready</h3>
-                      <p className="text-slate-500 text-sm max-w-xs leading-relaxed">
+                      <h3 className="text-xl font-black mb-2" style={{ color: "var(--dash-text)" }}>Your studio is ready</h3>
+                      <p className="text-sm max-w-xs leading-relaxed" style={{ color: "var(--dash-muted)" }}>
                         Choose a garment type, upload your photos, and hit generate. The AI will dress you in seconds.
                       </p>
                     </div>
@@ -412,13 +412,14 @@ export default function VirtualTryOnPage() {
                         <div
                           className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0"
                           style={{
-                            background: step.done ? "linear-gradient(135deg, #FF4D94, #B8005C)" : "rgba(255,255,255,0.07)",
-                            color: step.done ? "white" : "rgba(255,255,255,0.3)",
+                            background: step.done ? "linear-gradient(135deg, #FF4D94, #B8005C)" : "var(--dash-bg)",
+                            border: `1px solid var(--dash-border)`,
+                            color: step.done ? "white" : "var(--dash-muted)",
                           }}
                         >
                           {step.done ? "✓" : step.n}
                         </div>
-                        <p className="text-sm font-medium" style={{ color: step.done ? "#e2e8f0" : "rgba(255,255,255,0.3)" }}>
+                        <p className="text-sm font-medium" style={{ color: step.done ? "var(--dash-text)" : "var(--dash-muted)" }}>
                           {step.t}
                         </p>
                       </div>
