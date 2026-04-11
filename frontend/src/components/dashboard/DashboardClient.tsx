@@ -40,6 +40,7 @@ type ProfileData = {
   level?: number;
   xp?: number;
   designs_count?: number;
+  designs?: any[];
   created_at?: string;
   achievements?: string[];
   followers?: number;
@@ -316,9 +317,16 @@ export default function DashboardClient({
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {Array.from({ length: Math.min(designsCount, 4) }).map((_, i) => (
-                  <div key={i} className="aspect-square rounded-xl border flex items-center justify-center text-2xl" style={{ background: "rgba(255,255,255,0.03)", borderColor: "var(--dash-border)" }}>
-                    <ImageIcon className="w-6 h-6 opacity-20" />
+                {profile?.designs?.slice(0, 4).map((d: any) => (
+                  <div key={d.id} className="aspect-square rounded-xl border relative overflow-hidden bg-slate-900 shadow-sm" style={{ borderColor: "var(--dash-border)" }}>
+                    {d.storage_url ? (
+                      <img src={d.storage_url} alt={d.title || "Design"} className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center">
+                        <ImageIcon className="w-6 h-6 opacity-20 mb-1 text-white" />
+                        <span className="text-[9px] font-bold text-white/50">{d.title?.slice(0, 10)}</span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

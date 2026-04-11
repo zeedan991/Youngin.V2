@@ -45,7 +45,7 @@ export async function processVirtualTryOn(
       garmentBlob,
       garmentDescription,
       isShirt,   // is_checked: auto-mask ON for shirts, OFF for pants (use our supplied mask)
-      false,     // is_checked_crop: Disabled to prevent blurry, distorted upscaled crops 
+      true,      // is_checked_crop: Enabled to allow IDM-VTON to auto-crop and focus resolution on the garment area, preventing blurry faces/full-body downscaling
       30,        // denoise_steps
       42,        // seed
     ]);

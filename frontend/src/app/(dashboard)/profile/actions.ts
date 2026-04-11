@@ -16,9 +16,10 @@ export async function fetchLiveProfile() {
   const fallbackName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || "User";
 
   if (profileData) {
-    const [followersRes, followingRes] = await Promise.all([
+    const [followersRes, followingRes, designsRes] = await Promise.all([
       supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", user.id),
-      supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", user.id)
+      supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", user.id),
+      supabase.from("designs").select("id, title, type, storage_url, created_at").eq("user_id", user.id).order("created_at", { ascending: false })
     ]);
 
     return {
@@ -28,6 +29,8 @@ export async function fetchLiveProfile() {
         full_name: profileData.full_name || fallbackName,
         followers: followersRes.count || 0,
         following: followingRes.count || 0,
+        designs: designsRes.data || [],
+        designs_count: designsRes.data?.length || profileData.designs_count || 0,
       }
     };
   }

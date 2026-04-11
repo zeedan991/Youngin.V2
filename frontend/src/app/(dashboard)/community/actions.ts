@@ -3,65 +3,76 @@
 import { createClient } from "@/utils/supabase/server";
 
 export async function getUserProfile(username: string) {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  // 1. Fetch the user profile by username
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("username", username)
-    .single();
+    // 1. Fetch the user profile by username
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .ilike("username", username)
+      .limit(1)
+      .maybeSingle();
 
-  if (profileError || !profile) {
-    return { success: false, error: "Creator not found" };
-  }
+    if (profileError || !profile) {
+      console.error("Profile fetch error:", profileError);
+      return { success: false, error: profileError?.message || "Creator not found" };
+    }
 
-  // 2. Fetch their public designs
-  const { data: designs } = await supabase
-    .from("designs")
-    .select("*")
-    .eq("user_id", profile.id)
-    .order("created_at", { ascending: false });
-
-  // 3. Get follow stats
-  const { count: followersCount } = await supabase
-    .from("follows")
-    .select("*", { count: 'exact', head: true })
-    .eq("following_id", profile.id);
-
-  const { count: followingCount } = await supabase
-    .from("follows")
-    .select("*", { count: 'exact', head: true })
-    .eq("follower_id", profile.id);
-
-  // 4. Check if current user is following them
-  const { data: { user } } = await supabase.auth.getUser();
-  let isFollowing = false;
-  
-  if (user && user.id !== profile.id) {
-    const { data: followRecord } = await supabase
-      .from("follows")
-      .select("id")
-      .eq("follower_id", user.id)
-      .eq("following_id", profile.id)
-      .single();
+    // 2. Fetch their public designs (ONLY necessary fields, to avoid HUGE base64 strings crashing the server action)
+    const { data: designs, error: designsError } = await supabase
+      .from("designs")
+      .select("id, title, type, storage_url, created_at")
+      .eq("user_id", profile.id)
+      .order("created_at", { ascending: false });
       
-    if (followRecord) {
-      isFollowing = true;
+    if (designsError) {
+       console.error("Designs fetch error:", designsError);
     }
-  }
 
-  return { 
-    success: true, 
-    data: {
-      profile,
-      designs: designs || [],
-      followers: followersCount || 0,
-      following: followingCount || 0,
-      isFollowing,
-      isSelf: user?.id === profile.id
+    // 3. Get follow stats
+    const { count: followersCount } = await supabase
+      .from("follows")
+      .select("*", { count: 'exact', head: true })
+      .eq("following_id", profile.id);
+
+    const { count: followingCount } = await supabase
+      .from("follows")
+      .select("*", { count: 'exact', head: true })
+      .eq("follower_id", profile.id);
+
+    // 4. Check if current user is following them
+    const { data: { user } } = await supabase.auth.getUser();
+    let isFollowing = false;
+    
+    if (user && user.id !== profile.id) {
+      const { data: followRecord } = await supabase
+        .from("follows")
+        .select("id")
+        .eq("follower_id", user.id)
+        .eq("following_id", profile.id)
+        .single();
+        
+      if (followRecord) {
+        isFollowing = true;
+      }
     }
-  };
+
+    return { 
+      success: true, 
+      data: {
+        profile,
+        designs: designs || [],
+        followers: followersCount || 0,
+        following: followingCount || 0,
+        isFollowing,
+        isSelf: user?.id === profile.id
+      }
+    };
+  } catch (err: any) {
+    console.error("Critical Profile Fetch Error:", err);
+    return { success: false, error: "Failed to load creator: " + (err.message || "Unknown error") };
+  }
 }
 
 export async function toggleFollow(targetUserId: string) {
