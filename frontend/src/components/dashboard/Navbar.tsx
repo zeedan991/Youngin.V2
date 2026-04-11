@@ -14,6 +14,7 @@ import {
   Sparkles,
   MessageCircle,
   Search,
+  Shirt,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { label: "Thrift", href: "/thrift", icon: PackageSearch },
   { label: "Style Quiz", href: "/style-quiz", icon: Sparkles },
   { label: "AI Stylist", href: "/ai-stylist", icon: MessageCircle },
+  { label: "Virtual Try-On", href: "/vton", icon: Shirt },
 ];
 
 export default function Navbar({ initialProfile }: { initialProfile?: { name: string; level: number; avatar_url: string | null; role: string } }) {
