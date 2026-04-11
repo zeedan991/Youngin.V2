@@ -116,8 +116,8 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
       >
         {/* ── Brand Mark ── */}
         <Link href="/dashboard" className="flex items-center gap-3 shrink-0 mr-3 xl:mr-8">
-          <div className="relative h-10 w-10">
-            <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain" priority />
+          <div className="relative h-12 w-12">
+            <Image src="/youngin_blackbg.png" alt="YOUNGIN" fill className="object-contain" priority />
           </div>
           <span
             className="font-extrabold tracking-[2px] uppercase whitespace-nowrap hidden xl:block"
@@ -259,8 +259,8 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
         style={{ background: navbarBg, borderBottom: `1px solid ${borderColor}` }}
       >
          <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
-          <div className="relative h-8 w-8">
-            <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain" priority />
+          <div className="relative h-10 w-10">
+            <Image src="/youngin_blackbg.png" alt="YOUNGIN" fill className="object-contain" priority />
           </div>
           <span
             className="font-extrabold tracking-[1px] uppercase whitespace-nowrap"

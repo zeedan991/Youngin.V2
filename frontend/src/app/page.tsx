@@ -272,8 +272,8 @@ export default function LandingPage() {
         {isLoading && (
           <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6, ease: "easeInOut" }}
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white">
-            <div className="relative h-[250px] w-[600px] sm:h-[300px] sm:w-[800px] mb-12 flex justify-center">
-              <Image src="/youngin_whitebg.png?v=6" unoptimized={true} alt="YOUNGIN" fill className="object-contain" priority />
+            <div className="relative h-[300px] w-[700px] sm:h-[350px] sm:w-[900px] mb-12 flex justify-center">
+              <Image src="/youngin_whitebg.png?v=6" unoptimized={true} alt="YOUNGIN" fill className="object-contain scale-[1.2]" priority />
             </div>
             <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
               className="h-10 w-10 rounded-full border-[3px] border-slate-200 border-t-[#FF4D94]" />
@@ -589,8 +589,8 @@ export default function LandingPage() {
           <div className="flex flex-col gap-12 md:flex-row md:items-start md:justify-between mb-16">
             <div className="flex flex-col gap-4 max-w-xs">
               {/* Bigger footer logo */}
-              <div className="relative h-[160px] w-[350px] -my-4 -ml-4">
-                <Image src="/youngin_blackbg.png?v=7" unoptimized={true} alt="YOUNGIN logo" fill sizes="400px" className="object-contain object-left" />
+              <div className="relative h-[200px] w-[450px] -my-4 -ml-4 scale-110 origin-left">
+                <Image src="/youngin_blackbg.png?v=7" unoptimized={true} alt="YOUNGIN logo" fill sizes="500px" className="object-contain object-left" />
               </div>
               <p className="text-sm font-medium text-white/40 max-w-[240px] leading-relaxed">
                 AI-powered fashion infrastructure. Design it. Scan it. Own it.

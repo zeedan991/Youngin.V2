@@ -28,9 +28,9 @@ export default function LoadingScreen() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative h-32 w-80 md:h-36 md:w-96"
+            className="relative h-40 w-96 md:h-48 md:w-[28rem]"
           >
-            <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain scale-[1.6] origin-center" priority />
+            <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain scale-[2.0] origin-center" priority />
           </motion.div>
 
           {/* Tagline */}
