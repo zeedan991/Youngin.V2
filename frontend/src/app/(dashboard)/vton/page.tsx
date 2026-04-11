@@ -35,7 +35,7 @@ async function generateLowerBodyMask(humanBase64: string): Promise<string> {
 }
 
 // ── Client-side image resize & compress ─────────────────────────
-function compressImage(file: File, maxDim = 1024, quality = 0.82): Promise<string> {
+function compressImage(file: File, maxDim = 1536, quality = 0.98): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {

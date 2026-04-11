@@ -45,7 +45,7 @@ export async function processVirtualTryOn(
       garmentBlob,
       garmentDescription,
       isShirt,   // is_checked: auto-mask ON for shirts, OFF for pants (use our supplied mask)
-      true,      // is_checked_crop: Always crop for better output framing
+      false,     // is_checked_crop: Disabled to prevent blurry, distorted upscaled crops 
       30,        // denoise_steps
       42,        // seed
     ]);
