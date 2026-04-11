@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { getTailorOrders, getTailorTransactions, getTailorDesigns } from "@/app/(tailor)/tailor/actions";
 import { fetchLiveProfile } from "@/app/(dashboard)/profile/actions";
 import Link from "next/link";
@@ -14,7 +14,6 @@ import {
   Image as ImageIcon,
   Users,
   Scissors,
-  Plus,
 } from "lucide-react";
 
 const statusColor: Record<string, string> = {
@@ -59,18 +58,13 @@ export default function TailorDashboardPage() {
   return (
     <div className="p-6 lg:p-10 space-y-8 min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
+      <div>
           <p className="text-slate-500 text-xs font-black uppercase tracking-widest mb-1">Tailor Portal</p>
           <h1 className="text-3xl font-black text-slate-900" style={{ fontFamily: "var(--font-syne), sans-serif" }}>
             Welcome back, {profile?.full_name?.split(" ")[0] || "Tailor"} 🧵
           </h1>
           <p className="text-slate-500 text-sm mt-1">Here&apos;s what&apos;s happening with your business today.</p>
         </div>
-        <Link href="/studio" className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all hover:scale-105 shadow-xl shadow-indigo-600/20" style={{ background: "linear-gradient(135deg, #4F46E5, #3730A3)" }}>
-          <Plus className="w-3.5 h-3.5" /> New Design
-        </Link>
-      </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
