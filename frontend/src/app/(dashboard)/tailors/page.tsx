@@ -16,18 +16,18 @@ export default function TailorsPage() {
   return (
     <div className="w-full">
       {/* Demo Mode Banner */}
-      <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-2xl border" style={{ background: "rgba(251,191,36,0.08)", borderColor: "rgba(251,191,36,0.2)" }}>
-        <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#FBBF24" }}>⚠ Demo Mode</span>
-        <span className="text-xs" style={{ color: "rgba(251,191,36,0.7)" }}>This page displays sample tailors. Real tailor network coming soon.</span>
+      <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-2xl border bg-yellow-50 border-yellow-200">
+        <span className="text-xs font-black uppercase tracking-widest text-yellow-600">⚠ Demo Mode</span>
+        <span className="text-xs text-yellow-700">This page displays sample tailors. Real tailor network coming soon.</span>
       </div>
 
       <header className="mb-10">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={SP}>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-bold tracking-widest uppercase mb-4" style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.08)", color: "#22D3EE" }}>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-bold tracking-widest uppercase mb-4 bg-indigo-50 border-indigo-200 text-indigo-600">
             <Scissors className="w-4 h-4" /> Node Network Active
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3" style={{ color: "#F0EBE3" }}>Tailor Network</h1>
-          <p className="text-lg max-w-2xl" style={{ color: "rgba(240,235,227,0.45)" }}>
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 text-slate-900">Tailor Network</h1>
+          <p className="text-lg max-w-2xl text-slate-500">
             Push your customized 3D Studio designs directly to a verified local tailor near you.
           </p>
         </motion.div>
@@ -51,7 +51,7 @@ export default function TailorsPage() {
             
             <div className="p-6 flex-1 flex flex-col">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="text-xl font-bold text-slate-900 group-hover:text-cyan-600 transition-colors">{tailor.name}</h3>
+                <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{tailor.name}</h3>
                 <div className="flex items-center gap-1 text-yellow-500 font-bold text-sm">
                    <Star className="w-4 h-4 fill-yellow-500" /> {tailor.rating}
                 </div>
@@ -71,7 +71,7 @@ export default function TailorsPage() {
 
               <div className="mt-auto pt-4 border-t border-slate-200 flex items-center justify-between">
                 <span className="text-xs text-slate-500 flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-slate-400" /> {tailor.jobs} successful jobs</span>
-                <button className="text-xs font-bold tracking-widest uppercase text-slate-900 hover:text-cyan-600 transition-colors">
+                <button className="text-xs font-bold tracking-widest uppercase text-slate-900 hover:text-indigo-600 transition-colors">
                   View Profile
                 </button>
               </div>
