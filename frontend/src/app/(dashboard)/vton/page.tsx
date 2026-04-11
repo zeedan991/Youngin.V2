@@ -1,239 +1,432 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { UploadCloud, Shirt, Sparkles, Image as ImageIcon, Loader2, RefreshCcw, CheckCircle2 } from "lucide-react";
+import {
+  UploadCloud, Shirt, Sparkles, RefreshCcw, CheckCircle2, Download,
+  ChevronRight, Loader2, X
+} from "lucide-react";
 import { processVirtualTryOn } from "./actions";
-import Image from "next/image";
 
-export default function VirtualTryOnPage() {
-  const [humanImg, setHumanImg] = useState<string | null>(null);
-  const [garmentImg, setGarmentImg] = useState<string | null>(null);
-  const [description, setDescription] = useState("");
-  
-  const [loading, setLoading] = useState(false);
-  const [resultImg, setResultImg] = useState<string | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+type GarmentType = "shirt" | "pant" | null;
 
-  // Resize and compress image client-side to prevent Next.js 1MB Server Action limits
-  const processImage = (file: File, callback: (base64: string) => void) => {
+// ── Programmatic lower-body mask generator ──────────────────────
+// For pants mode: we draw a white rectangle over the bottom 60% of the image.
+// This signals to IDM-VTON "replace the clothing in this region".
+async function generateLowerBodyMask(humanBase64: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d")!;
+      // Black background (= keep this region)
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // White region = lower 58% of image (legs/pants area)
+      ctx.fillStyle = "#ffffff";
+      const startY = Math.floor(canvas.height * 0.42);
+      ctx.fillRect(0, startY, canvas.width, canvas.height - startY);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.src = humanBase64;
+  });
+}
+
+// ── Client-side image resize & compress ─────────────────────────
+function compressImage(file: File, maxDim = 1024, quality = 0.82): Promise<string> {
+  return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new window.Image();
       img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const MAX_DIM = 1024;
-        let width = img.width;
-        let height = img.height;
-
+        let { width, height } = img;
         if (width > height) {
-          if (width > MAX_DIM) {
-             height *= MAX_DIM / width;
-             width = MAX_DIM;
-          }
+          if (width > maxDim) { height = Math.round(height * maxDim / width); width = maxDim; }
         } else {
-          if (height > MAX_DIM) {
-             width *= MAX_DIM / height;
-             height = MAX_DIM;
-          }
+          if (height > maxDim) { width = Math.round(width * maxDim / height); height = maxDim; }
         }
-
+        const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx?.drawImage(img, 0, 0, width, height);
-        // Compress to JPEG to save bandwidth drastically
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-        callback(dataUrl);
+        canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
       };
-      img.src = e.target?.result as string;
+      img.src = e.target!.result as string;
     };
     reader.readAsDataURL(file);
-  };
+  });
+}
 
-  const handleUpload = (type: "human" | "garment", e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    processImage(file, (base64) => {
-      if (type === "human") setHumanImg(base64);
-      else setGarmentImg(base64);
-    });
-  };
+// ── Upload Zone Sub-component ────────────────────────────────────
+function UploadZone({
+  label, sublabel, icon: Icon, value, onChange, accent,
+}: {
+  label: string; sublabel: string; icon: any; value: string | null;
+  onChange: (v: string) => void; accent: string;
+}) {
+  const id = `upload-${label.replace(/\s+/g, "-").toLowerCase()}`;
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{label}</p>
+      <label
+        htmlFor={id}
+        className="relative flex flex-col items-center justify-center rounded-2xl cursor-pointer transition-all overflow-hidden group"
+        style={{
+          height: 200,
+          border: value ? `2px solid ${accent}` : "2px dashed rgba(255,255,255,0.12)",
+          background: value ? "transparent" : "rgba(255,255,255,0.03)",
+        }}
+      >
+        <input
+          id={id}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            if (f) onChange(await compressImage(f));
+            e.target.value = ""; // reset so same file can be re-uploaded
+          }}
+        />
+        {value ? (
+          <>
+            <img src={value} alt={label} className="w-full h-full object-contain" />
+            <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center gap-2">
+              <RefreshCcw className="w-6 h-6 text-white" />
+              <span className="text-white text-xs font-bold">Change</span>
+            </div>
+            <div
+              className="absolute top-2 right-2 rounded-full p-1"
+              style={{ background: accent }}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center gap-3 text-slate-500 px-4 text-center">
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center"
+              style={{ background: accent + "18" }}
+            >
+              <Icon className="w-6 h-6" style={{ color: accent }} />
+            </div>
+            <div>
+              <p className="font-bold text-sm text-slate-300">{sublabel}</p>
+              <p className="text-xs text-slate-500 mt-0.5">JPG, PNG — Max 10MB</p>
+            </div>
+            <div
+              className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
+              style={{ background: accent + "22", color: accent }}
+            >
+              Browse Files
+            </div>
+          </div>
+        )}
+      </label>
+    </div>
+  );
+}
 
-  const handlePredict = async () => {
-    if (!humanImg || !garmentImg || !description.trim()) return;
+// ── Main Page ────────────────────────────────────────────────────
+export default function VirtualTryOnPage() {
+  const [humanImg, setHumanImg] = useState<string | null>(null);
+  const [garmentImg, setGarmentImg] = useState<string | null>(null);
+  const [garmentType, setGarmentType] = useState<GarmentType>(null);
+
+  const [loading, setLoading] = useState(false);
+  const [resultImg, setResultImg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const canGenerate = !!humanImg && !!garmentImg && !!garmentType && !loading;
+
+  const handleGenerate = useCallback(async () => {
+    if (!humanImg || !garmentImg || !garmentType) return;
     setLoading(true);
-    setErrorMsg(null);
+    setError(null);
     setResultImg(null);
 
-    const res = await processVirtualTryOn(humanImg, garmentImg, description);
-    
+    let maskBase64: string | undefined;
+    if (garmentType === "pant") {
+      maskBase64 = await generateLowerBodyMask(humanImg);
+    }
+
+    const res = await processVirtualTryOn(humanImg, garmentImg, garmentType, maskBase64);
+
     if (res.success && res.imageUrl) {
       setResultImg(res.imageUrl);
     } else {
-      setErrorMsg(res.error || "An unknown error occurred during generation.");
+      setError(res.error || "An unknown error occurred.");
     }
-    
     setLoading(false);
+  }, [humanImg, garmentImg, garmentType]);
+
+  const handleDownload = () => {
+    if (!resultImg) return;
+    const a = document.createElement("a");
+    a.href = resultImg;
+    a.download = `YOUNGIN_TryOn_${garmentType}.png`;
+    a.click();
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto py-8">
-      {/* Header section */}
-      <div className="mb-10 text-center">
-        <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-4 mb-4">
-          <Shirt className="w-10 h-10 text-[#FF4D94]" />
-          Virtual Try-On Studio
-        </h1>
-        <p className="text-slate-500 font-medium text-lg max-w-2xl mx-auto">
-          Experience hyper-realistic AI fitting. Upload a photo of yourself, a photo of the garment you want to wear, and briefly describe it. We'll handle the rest.
-        </p>
-      </div>
+    <div
+      className="min-h-screen w-full"
+      style={{
+        background: "linear-gradient(135deg, #0D0C0C 0%, #130a1a 50%, #0a0d18 100%)",
+      }}
+    >
+      <div className="max-w-[1300px] mx-auto px-4 py-10">
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-        {/* LEFT COLUMN: INPUTS */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
-          
-          {/* Garment Description Input */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-[0_4px_25px_rgb(0,0,0,0.03)]">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              Describe the Garment
-            </h3>
-            <textarea 
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="E.g., A vintage black leather motorcycle jacket with silver hardware..."
-              className="w-full min-h-[100px] p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF4D94]/50 focus:border-[#FF4D94] resize-none transition-all placeholder:text-slate-400"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* Human Image Upload */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-[0_4px_25px_rgb(0,0,0,0.03)] flex flex-col relative h-[250px]">
-               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest mb-3 whitespace-nowrap overflow-hidden text-ellipsis">
-                  1. You (Full / Half Body)
-               </h3>
-               <label className="flex-1 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-50 transition-colors flex flex-col items-center justify-center overflow-hidden relative group">
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleUpload("human", e)} />
-                  {humanImg ? (
-                    <>
-                      <img src={humanImg} className="w-full h-full object-cover" alt="Human" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <RefreshCcw className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="absolute top-2 right-2 bg-emerald-500 text-white rounded-full p-1"><CheckCircle2 className="w-4 h-4" /></div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 text-slate-400 justify-center p-4 text-center">
-                      <ImageIcon className="w-8 h-8 opacity-50" />
-                      <span className="text-xs font-semibold">Upload Photo</span>
-                    </div>
-                  )}
-               </label>
+        {/* ── Header ── */}
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>
+              <Shirt className="w-5 h-5 text-white" />
             </div>
-
-             {/* Garment Image Upload */}
-             <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-[0_4px_25px_rgb(0,0,0,0.03)] flex flex-col relative h-[250px]">
-               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest mb-3 whitespace-nowrap overflow-hidden text-ellipsis">
-                  2. The Garment
-               </h3>
-               <label className="flex-1 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-50 transition-colors flex flex-col items-center justify-center overflow-hidden relative group">
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleUpload("garment", e)} />
-                  {garmentImg ? (
-                    <>
-                      <img src={garmentImg} className="w-full h-full object-contain bg-slate-100" alt="Garment" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <RefreshCcw className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="absolute top-2 right-2 bg-emerald-500 text-white rounded-full p-1"><CheckCircle2 className="w-4 h-4" /></div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 text-slate-400 justify-center p-4 text-center">
-                      <Shirt className="w-8 h-8 opacity-50" />
-                      <span className="text-xs font-semibold">Upload Garment</span>
-                    </div>
-                  )}
-               </label>
+            <div>
+              <h1 className="text-2xl font-black text-white tracking-tight">Virtual Try-On</h1>
+              <p className="text-xs text-slate-500 font-semibold uppercase tracking-widest">Powered by IDM-VTON · AI Diffusion</p>
             </div>
           </div>
-
-          <button
-             onClick={handlePredict}
-             disabled={loading || !humanImg || !garmentImg || !description.trim()}
-             className="w-full py-5 rounded-2xl text-white font-black text-lg tracking-wider transition-all shadow-xl hover:shadow-[#FF4D94]/30 hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-             style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}
-          >
-             {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <UploadCloud className="w-6 h-6" />}
-             {loading ? "Generating Magic..." : "Generate Magic Fit"}
-          </button>
-          
-          {errorMsg && (
-             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-semibold">
-                {errorMsg}
-             </div>
-          )}
+          <p className="text-slate-400 max-w-xl leading-relaxed">
+            Upload your photo and a garment. Choose whether it's a shirt or pants, and watch AI seamlessly dress you in it.
+          </p>
         </div>
 
-        {/* RIGHT COLUMN: OUTPUT */}
-        <div className="lg:col-span-7">
-          <div className="bg-slate-900 rounded-[2.5rem] p-3 shadow-2xl relative overflow-hidden h-[600px] lg:h-[800px] border-[8px] border-slate-100 flex flex-col items-center justify-center">
-             
-             {/* Studio Lighting Effects */}
-             <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
-             
-             <AnimatePresence mode="wait">
-                {loading ? (
-                  <motion.div 
-                    key="loading" 
-                    initial={{ opacity: 0 }} 
-                    animate={{ opacity: 1 }} 
-                    exit={{ opacity: 0 }} 
-                    className="flex flex-col items-center gap-6"
+        {/* ── Two-column layout ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+
+          {/* LEFT: Inputs */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            
+            {/* Step 1: Garment Type */}
+            <div
+              className="rounded-3xl p-6"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400 mb-4">
+                Step 1 — What are you trying on?
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { id: "shirt", label: "Shirt / Top", emoji: "👕", desc: "T-shirts, jackets, hoodies, tops", accent: "#6366f1" },
+                  { id: "pant", label: "Pants / Bottoms", emoji: "👖", desc: "Jeans, trousers, shorts, skirts", accent: "#FF4D94" },
+                ].map((g) => (
+                  <button
+                    key={g.id}
+                    onClick={() => setGarmentType(g.id as GarmentType)}
+                    className="flex flex-col items-start p-4 rounded-2xl text-left transition-all"
+                    style={{
+                      background: garmentType === g.id ? g.accent + "22" : "rgba(255,255,255,0.03)",
+                      border: garmentType === g.id ? `2px solid ${g.accent}` : "2px solid rgba(255,255,255,0.08)",
+                      boxShadow: garmentType === g.id ? `0 0 20px ${g.accent}33` : "none",
+                    }}
                   >
-                     <div className="relative w-24 h-24">
-                        <div className="absolute inset-0 border-4 border-slate-700/50 rounded-full animate-ping" />
-                        <div className="absolute inset-2 border-4 border-[#FF4D94] rounded-full border-t-transparent animate-spin" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                           <Shirt className="w-8 h-8 text-[#FF4D94]" />
-                        </div>
-                     </div>
-                     <div className="text-center">
-                        <h3 className="text-xl font-bold text-white tracking-wide mb-2">Analyzing Garment Physics</h3>
-                        <p className="text-slate-400 text-sm">Hugging Face IDM-VTON is processing.<br/>Usually takes 20-30 seconds.</p>
-                     </div>
+                    <span className="text-2xl mb-2">{g.emoji}</span>
+                    <p className="font-bold text-sm text-white mb-0.5">{g.label}</p>
+                    <p className="text-xs text-slate-500 leading-tight">{g.desc}</p>
+                    {garmentType === g.id && (
+                      <div className="mt-2 flex items-center gap-1" style={{ color: g.accent }}>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span className="text-xs font-bold">Selected</span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Step 2: Upload Images */}
+            <div
+              className="rounded-3xl p-6 flex flex-col gap-5"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                Step 2 — Upload Photos
+              </p>
+              <UploadZone
+                label="Your Photo"
+                sublabel="Full or half body photo of you"
+                icon={UploadCloud}
+                value={humanImg}
+                onChange={setHumanImg}
+                accent="#6366f1"
+              />
+              <UploadZone
+                label="The Garment"
+                sublabel="Flat-lay or product shot of garment"
+                icon={Shirt}
+                value={garmentImg}
+                onChange={setGarmentImg}
+                accent="#FF4D94"
+              />
+            </div>
+
+            {/* Generate Button */}
+            <motion.button
+              whileHover={canGenerate ? { scale: 1.02, y: -2 } : {}}
+              whileTap={canGenerate ? { scale: 0.98 } : {}}
+              onClick={handleGenerate}
+              disabled={!canGenerate}
+              className="w-full py-5 rounded-2xl text-white font-black text-base tracking-widest uppercase transition-all flex items-center justify-center gap-3 relative overflow-hidden"
+              style={{
+                background: canGenerate
+                  ? "linear-gradient(135deg, #FF4D94, #B8005C)"
+                  : "rgba(255,255,255,0.07)",
+                color: canGenerate ? "white" : "rgba(255,255,255,0.25)",
+                cursor: canGenerate ? "pointer" : "not-allowed",
+                boxShadow: canGenerate ? "0 8px 40px rgba(255,77,148,0.35)" : "none",
+              }}
+            >
+              {loading ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Generating…</>
+              ) : (
+                <><Sparkles className="w-5 h-5" /> Generate Try-On<ChevronRight className="w-4 h-4" /></>
+              )}
+            </motion.button>
+
+            {error && (
+              <div className="rounded-2xl p-4 flex items-start gap-3" style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)" }}>
+                <X className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+                <p className="text-red-400 text-sm font-medium">{error}</p>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT: Output Canvas */}
+          <div className="lg:col-span-3">
+            <div
+              className="w-full relative rounded-[2rem] overflow-hidden flex items-center justify-center"
+              style={{
+                minHeight: 620,
+                background: "linear-gradient(160deg, #1a1124 0%, #0e0e1a 100%)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                boxShadow: "0 30px 80px rgba(0,0,0,0.6)",
+              }}
+            >
+              {/* Ambient glows */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(255,77,148,0.08), transparent 70%)" }} />
+              <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(99,102,241,0.07), transparent 70%)" }} />
+
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex flex-col items-center gap-6 px-8 text-center z-10"
+                  >
+                    <div className="relative w-20 h-20">
+                      <div className="absolute inset-0 border-[3px] border-[#FF4D94]/20 rounded-full animate-ping" />
+                      <div className="absolute inset-1 border-[3px] border-[#FF4D94] rounded-full border-t-transparent animate-spin" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Shirt className="w-7 h-7 text-[#FF4D94]" />
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-bold text-xl mb-2">AI is styling you…</h3>
+                      <p className="text-slate-400 text-sm max-w-xs">
+                        IDM-VTON is analyzing garment physics &amp; drape mapping.<br />
+                        <span className="text-[#FF4D94] font-semibold">Usually takes 20–40 seconds.</span>
+                      </p>
+                    </div>
+                    <div className="flex gap-1.5 mt-2">
+                      {[0, 1, 2].map((i) => (
+                        <motion.div
+                          key={i}
+                          className="w-2 h-2 rounded-full bg-[#FF4D94]"
+                          animate={{ opacity: [0.3, 1, 0.3] }}
+                          transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }}
+                        />
+                      ))}
+                    </div>
                   </motion.div>
                 ) : resultImg ? (
-                  <motion.div 
+                  <motion.div
                     key="result"
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    initial={{ opacity: 0, scale: 0.96 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="w-full h-full relative rounded-[2rem] overflow-hidden group"
+                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                    className="w-full h-full absolute inset-0 flex flex-col"
                   >
-                     <img src={resultImg} className="w-full h-full object-cover" alt="Virtual Try On Result" />
-                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
-                        <button 
-                           onClick={() => {
-                              const a = document.createElement("a");
-                              a.href = resultImg;
-                              a.download = "YOUNGIN_VTON_Edit.png";
-                              a.click();
-                           }}
-                           className="bg-white/90 backdrop-blur text-slate-900 px-6 py-3 rounded-full font-black text-sm uppercase tracking-widest shadow-xl hover:bg-white hover:scale-105 transition-all"
-                        >
-                           Download Look
-                        </button>
-                     </div>
+                    {/* Full image — object-contain so nothing is cropped */}
+                    <img
+                      src={resultImg}
+                      alt="Virtual Try-On Result"
+                      className="w-full h-full object-contain"
+                      style={{ minHeight: 620 }}
+                    />
+
+                    {/* Overlay badges */}
+                    <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-1.5" style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", color: "#FF4D94", border: "1px solid rgba(255,77,148,0.3)" }}>
+                      <CheckCircle2 className="w-3 h-3" /> Try-On Complete
+                    </div>
+
+                    {/* Toolbar */}
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
+                      <button
+                        onClick={handleDownload}
+                        className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider text-white transition-all hover:scale-105"
+                        style={{
+                          background: "linear-gradient(135deg, #FF4D94, #B8005C)",
+                          boxShadow: "0 8px 20px rgba(255,77,148,0.4)",
+                        }}
+                      >
+                        <Download className="w-4 h-4" /> Download
+                      </button>
+                      <button
+                        onClick={() => { setResultImg(null); setHumanImg(null); setGarmentImg(null); setGarmentType(null); }}
+                        className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider transition-all hover:scale-105"
+                        style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", color: "white" }}
+                      >
+                        <RefreshCcw className="w-4 h-4" /> Try Another
+                      </button>
+                    </div>
                   </motion.div>
                 ) : (
-                  <motion.div key="empty" className="text-center text-slate-500 px-8">
-                     <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                     <h3 className="text-2xl font-bold text-slate-300 mb-2">The Studio is Ready</h3>
-                     <p className="max-w-md mx-auto">Upload yourself and a garment on the left, then click Generate to magically fuse them together using state-of-the-art diffusion modeling.</p>
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex flex-col items-center gap-5 text-center px-10 z-10"
+                  >
+                    <div className="w-24 h-24 rounded-3xl flex items-center justify-center mb-2" style={{ background: "rgba(255,77,148,0.1)", border: "2px dashed rgba(255,77,148,0.25)" }}>
+                      <Shirt className="w-10 h-10 text-[#FF4D94] opacity-60" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-white mb-2">Your studio is ready</h3>
+                      <p className="text-slate-500 text-sm max-w-xs leading-relaxed">
+                        Choose a garment type, upload your photos, and hit generate. The AI will dress you in seconds.
+                      </p>
+                    </div>
+                    {/* Step indicators */}
+                    {[
+                      { n: "1", t: garmentType ? `${garmentType === "shirt" ? "👕 Shirt" : "👖 Pants"} selected` : "Choose garment type", done: !!garmentType },
+                      { n: "2", t: humanImg ? "Your photo uploaded ✓" : "Upload your photo", done: !!humanImg },
+                      { n: "3", t: garmentImg ? "Garment photo uploaded ✓" : "Upload garment photo", done: !!garmentImg },
+                    ].map((step) => (
+                      <div key={step.n} className="flex items-center gap-3 mt-3">
+                        <div
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0"
+                          style={{
+                            background: step.done ? "linear-gradient(135deg, #FF4D94, #B8005C)" : "rgba(255,255,255,0.07)",
+                            color: step.done ? "white" : "rgba(255,255,255,0.3)",
+                          }}
+                        >
+                          {step.done ? "✓" : step.n}
+                        </div>
+                        <p className="text-sm font-medium" style={{ color: step.done ? "#e2e8f0" : "rgba(255,255,255,0.3)" }}>
+                          {step.t}
+                        </p>
+                      </div>
+                    ))}
                   </motion.div>
                 )}
-             </AnimatePresence>
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>
