@@ -26,9 +26,9 @@ import { createClient } from "@/utils/supabase/client";
 
 // Enforcing the requested Sidebar Order
 const NAV_ITEMS = [
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "3D Studio", href: "/studio", icon: Palette },
   { label: "AI Sizing", href: "/scan", icon: Scan },
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Brands", href: "/marketplace", icon: ShoppingBag },
   { label: "Tailors", href: "/tailors", icon: Scissors },
   { label: "Thrift", href: "/thrift", icon: PackageSearch },

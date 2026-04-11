@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { computeLevel, XP_REWARDS, type XPRewardKey } from "@/lib/achievements";
 
 export async function fetchLiveProfile() {
   const supabase = await createClient();
@@ -37,7 +38,8 @@ export async function fetchLiveProfile() {
       full_name: fallbackName,
       email: user.email,
       avatar_url: null,
-      level: 1
+      level: 1,
+      xp: 0,
     }
   };
 }
@@ -82,4 +84,149 @@ export async function updateProfile(formData: FormData) {
   }
 
   return { success: true };
+}
+
+// ═══════════════════════════════════════════
+//  XP SYSTEM — SERVER ACTIONS
+// ═══════════════════════════════════════════
+
+/**
+ * Awards XP for a specific action. Automatically recomputes and saves the level.
+ * Returns updated XP and level values.
+ * Safe to call multiple times — caller is responsible for rate limiting / one-time checks.
+ */
+export async function awardXP(reason: XPRewardKey): Promise<{
+  success: boolean;
+  awarded?: number;
+  newXP?: number;
+  newLevel?: number;
+  leveledUp?: boolean;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Not authenticated" };
+
+    const amount = XP_REWARDS[reason];
+
+    // Fetch current XP
+    const { data: profile, error: fetchErr } = await supabase
+      .from('profiles')
+      .select('xp, level')
+      .eq('id', user.id)
+      .single();
+
+    if (fetchErr) return { success: false, error: fetchErr.message };
+
+    const currentXP = profile?.xp || 0;
+    const currentLevel = profile?.level || 1;
+    const newXP = currentXP + amount;
+    const newLevel = computeLevel(newXP);
+    const leveledUp = newLevel > currentLevel;
+
+    const { error: updateErr } = await supabase
+      .from('profiles')
+      .update({ xp: newXP, level: newLevel })
+      .eq('id', user.id);
+
+    if (updateErr) return { success: false, error: updateErr.message };
+
+    return { success: true, awarded: amount, newXP, newLevel, leveledUp };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Awards daily login XP (+50) once per calendar day.
+ * Checks `last_login_date` to ensure idempotency.
+ * Also increments login_streak if consecutive days.
+ */
+export async function awardDailyLoginXP(): Promise<{
+  success: boolean;
+  awarded: boolean;
+  newXP?: number;
+  newLevel?: number;
+  leveledUp?: boolean;
+  streak?: number;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, awarded: false, error: "Not authenticated" };
+
+    const { data: profile, error: fetchErr } = await supabase
+      .from('profiles')
+      .select('xp, level, last_login_date, login_streak')
+      .eq('id', user.id)
+      .single();
+
+    if (fetchErr) {
+      // Column might not exist yet — silently skip
+      console.warn("Daily XP fetch failed (column may not exist yet):", fetchErr.message);
+      return { success: true, awarded: false };
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+    const lastLoginStr = profile?.last_login_date;
+
+    // Already awarded today — skip
+    if (lastLoginStr === todayStr) {
+      return { success: true, awarded: false };
+    }
+
+    const dailyAmount = XP_REWARDS.daily_login; // 50
+    const currentXP = profile?.xp || 0;
+    const currentLevel = profile?.level || 1;
+    const newXP = currentXP + dailyAmount;
+    const newLevel = computeLevel(newXP);
+    const leveledUp = newLevel > currentLevel;
+
+    // Calculate streak
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const currentStreak = profile?.login_streak || 0;
+    const newStreak = lastLoginStr === yesterdayStr ? currentStreak + 1 : 1;
+
+    const updatePayload: Record<string, any> = {
+      xp: newXP,
+      level: newLevel,
+      last_login_date: todayStr,
+    };
+
+    // login_streak column might not exist — try to update, fail gracefully
+    try {
+      updatePayload.login_streak = newStreak;
+    } catch {}
+
+    const { error: updateErr } = await supabase
+      .from('profiles')
+      .update(updatePayload)
+      .eq('id', user.id);
+
+    if (updateErr) {
+      // If streak column missing, retry without it
+      const { error: retryErr } = await supabase
+        .from('profiles')
+        .update({ xp: newXP, level: newLevel, last_login_date: todayStr })
+        .eq('id', user.id);
+      if (retryErr) return { success: false, awarded: false, error: retryErr.message };
+    }
+
+    return {
+      success: true,
+      awarded: true,
+      newXP,
+      newLevel,
+      leveledUp,
+      streak: newStreak,
+    };
+  } catch (err: any) {
+    // Never crash the page over XP
+    console.error("awardDailyLoginXP error:", err);
+    return { success: true, awarded: false };
+  }
 }

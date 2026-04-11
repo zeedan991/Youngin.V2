@@ -3,9 +3,9 @@
 import { motion, type Transition } from "framer-motion";
 import { useEffect, useState } from "react";
 import { use } from "react";
-import { Trophy, AtSign, Globe, Shirt, UserPlus, UserCheck, Flame } from "lucide-react";
+import { Trophy, AtSign, Globe, Shirt, UserPlus, UserCheck, Flame, ShieldCheck, Zap } from "lucide-react";
 import { getUserProfile, toggleFollow } from "@/app/(dashboard)/community/actions";
-import { RARITY_COLORS } from "@/lib/achievements";
+import { RARITY_COLORS, computeLevel } from "@/lib/achievements";
 import Image from "next/image";
 
 const SP: Transition = { duration: 0.6, ease: "easeOut" };
@@ -103,11 +103,22 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ usern
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2" style={{ color: textMain, fontFamily: "var(--font-syne)" }}>
               {profile?.full_name || `@${profile.username}`}
             </h1>
-            
-            <div className="flex items-center gap-4 mb-3">
+
+            <div className="flex items-center gap-3 mb-3 flex-wrap">
               <span className="text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full border" style={{ color: textMain, background: "rgba(255,255,255,0.05)", borderColor: border }}>
                 @{profile.username}
               </span>
+              {/* ── Level Badge ── */}
+              <span className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full border" style={{ background: "rgba(79,70,229,0.12)", borderColor: "rgba(79,70,229,0.3)", color: accent }}>
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Lv. {computeLevel(profile.xp || 0)} Creator
+              </span>
+              {(profile.xp || 0) > 0 && (
+                <span className="flex items-center gap-1 text-[10px] font-bold" style={{ color: textMuted }}>
+                  <Zap className="w-3 h-3" style={{ color: "#F59E0B" }} />
+                  {(profile.xp || 0).toLocaleString()} XP
+                </span>
+              )}
               {profile.instagram && (
                 <a href={`https://instagram.com/${profile.instagram.replace('@','')}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-bold transition-all hover:scale-105" style={{ color: accent }}>
                   <AtSign className="w-3.5 h-3.5" /> IG
