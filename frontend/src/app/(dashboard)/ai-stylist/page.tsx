@@ -9,7 +9,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { generateStylistResponse } from "./actions";
 
-// Types
 type ToolId = "planner" | "mood" | "budget" | "season" | "celebrity";
 
 interface ToolDef {
@@ -28,7 +27,7 @@ const TOOLS: ToolDef[] = [
     title: "Weekly Wardrobe Planner",
     description: "Input your week's schedule and let AI generate a 7-day outfit plan mixing items you already own.",
     icon: Calendar,
-    color: "#3b82f6", // blue-500
+    color: "#3b82f6",
     placeholder: "E.g., Monday: office meetings. Tuesday: gym then date night. Wednesday: wfh...",
   },
   {
@@ -36,7 +35,7 @@ const TOOLS: ToolDef[] = [
     title: "Mood Translator",
     description: "Type how you feel, and we'll map it to colors, fabrics, and silhouettes.",
     icon: Smile,
-    color: "#8b5cf6", // violet-500
+    color: "#8b5cf6",
     placeholder: "E.g., I'm feeling lethargic but want to look secretly powerful and mysterious...",
   },
   {
@@ -44,7 +43,7 @@ const TOOLS: ToolDef[] = [
     title: "Budget-Aware Advisor",
     description: "Set a budget and describe your wardrobe. We'll maximize outfit variety and calculate Cost-Per-Wear.",
     icon: HandCoins,
-    color: "#10b981", // emerald-500
+    color: "#10b981",
     placeholder: "E.g., I have $200. I own basic black jeans, a white tee, and old sneakers. What should I buy?",
   },
   {
@@ -52,7 +51,7 @@ const TOOLS: ToolDef[] = [
     title: "Color Season Analyser",
     description: "Upload a photo or describe your skin/hair/eyes to get your personal hex palette.",
     icon: Palette,
-    color: "#f59e0b", // amber-500
+    color: "#f59e0b",
     placeholder: "E.g., I have pale skin with cool undertones, dark brown hair, and hazel eyes...",
     allowImage: true,
   },
@@ -61,7 +60,7 @@ const TOOLS: ToolDef[] = [
     title: "Celebrity Alter-Ego",
     description: "Pick a celebrity or upload a red-carpet look. We'll deconstruct the aesthetic to wearable street style.",
     icon: Sparkles,
-    color: "#ec4899", // pink-500
+    color: "#ec4899",
     placeholder: "E.g., Zendaya at the Met Gala 2018 or 90s Bollywood...",
     allowImage: true,
   },
@@ -81,7 +80,6 @@ export default function AIStylistPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Quick compression/base64 conversion client-side
     const reader = new FileReader();
     reader.onload = (event) => {
       setImageBase64(event.target?.result as string);
@@ -132,7 +130,6 @@ export default function AIStylistPage() {
 
       <AnimatePresence mode="wait">
         {!activeTool ? (
-          // BENTO GRID
           <motion.div 
             key="grid"
             initial={{ opacity: 0, y: 20 }}
@@ -154,7 +151,7 @@ export default function AIStylistPage() {
                   <div>
                     <div 
                       className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
-                      style={{ background: \`\${tool.color}15\`, color: tool.color }}
+                      style={{ background: tool.color + "15", color: tool.color }}
                     >
                       <Icon className="w-6 h-6" />
                     </div>
@@ -176,7 +173,6 @@ export default function AIStylistPage() {
             })}
           </motion.div>
         ) : (
-          // ACTIVE TOOL VIEW
           <motion.div 
             key="tool-view"
             initial={{ opacity: 0, y: 20 }}
@@ -184,10 +180,9 @@ export default function AIStylistPage() {
             exit={{ opacity: 0, y: 20 }}
             className="bg-white border border-slate-200 rounded-3xl shadow-xl overflow-hidden flex flex-col min-h-[600px]"
           >
-            {/* Header */}
             <div 
               className="px-6 py-5 border-b border-slate-100 flex items-center justify-between"
-              style={{ borderTop: \`4px solid \${activeDef?.color}\` }}
+              style={{ borderTop: "4px solid " + (activeDef?.color || "transparent") }}
             >
               <div className="flex items-center gap-4">
                 <button 
@@ -206,10 +201,7 @@ export default function AIStylistPage() {
               </div>
             </div>
 
-            {/* Content Area */}
             <div className="flex-1 p-6 flex flex-col md:flex-row gap-8 bg-slate-50/50">
-              
-              {/* Left Column: Input Form */}
               <div className="w-full md:w-[400px] flex-shrink-0 flex flex-col gap-4">
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4">
                   <label className="text-sm font-bold text-slate-700 uppercase tracking-widest">
@@ -221,7 +213,6 @@ export default function AIStylistPage() {
                     onChange={(e) => setInputVal(e.target.value)}
                     placeholder={activeDef?.placeholder}
                     className="w-full min-h-[160px] p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 resize-none transition-all placeholder:text-slate-400"
-                    style={{ focusRingColor: activeDef?.color }}
                   />
 
                   {activeDef?.allowImage && (
@@ -258,7 +249,7 @@ export default function AIStylistPage() {
                     onClick={handleSubmit}
                     disabled={loading || (!inputVal.trim() && !imageBase64)}
                     className="mt-2 w-full py-3.5 rounded-xl text-white font-bold text-sm tracking-wide transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ background: activeDef?.color }}
+                    style={{ background: activeDef?.color || "#000" }}
                   >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                     {loading ? "Generating Output..." : "Generate Insights"}
@@ -266,7 +257,6 @@ export default function AIStylistPage() {
                 </div>
               </div>
 
-              {/* Right Column: AI Output */}
               <div className="flex-1 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm overflow-y-auto max-h-[600px] flex flex-col">
                 {loading ? (
                   <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-4">
@@ -296,7 +286,6 @@ export default function AIStylistPage() {
                   </div>
                 )}
               </div>
-
             </div>
           </motion.div>
         )}
