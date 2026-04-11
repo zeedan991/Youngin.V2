@@ -79,7 +79,7 @@ export default function TailorFinancialsPage() {
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
                   filter === f
-                    ? "bg-[#FF4D94]/20 text-[#FF4D94] border border-[#FF4D94]/30"
+                    ? "bg-[#4F46E5]/20 text-[#4F46E5] border border-[#4F46E5]/30"
                     : "text-white/30 hover:text-white/60 border border-transparent"
                 }`}
               >
@@ -117,3 +117,4 @@ export default function TailorFinancialsPage() {
     </div>
   );
 }
+

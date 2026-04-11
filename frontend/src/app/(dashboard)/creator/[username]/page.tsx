@@ -13,7 +13,7 @@ const surf = "rgba(255,255,255,0.04)";
 const border = "rgba(255,255,255,0.08)";
 const textMain = "#F0EBE3";
 const textMuted = "rgba(240,235,227,0.45)";
-const accent = "#FF4D94";
+const accent = "#4F46E5";
 
 export default function CreatorProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params);
@@ -85,7 +85,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ usern
       >
         <div className="flex items-center gap-6">
           <div className="relative">
-            <div className="w-28 h-28 rounded-full p-[3px] shadow-2xl" style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>
+            <div className="w-28 h-28 rounded-full p-[3px] shadow-2xl" style={{ background: "linear-gradient(135deg, #4F46E5, #3730A3)" }}>
               <div
                 className="w-full h-full rounded-full flex items-center justify-center text-3xl font-black overflow-hidden"
                 style={{ background: "#1A1A1A", color: textMain }}
@@ -149,7 +149,7 @@ export default function CreatorProfilePage({ params }: { params: Promise<{ usern
             disabled={followLoading}
             className="flex items-center gap-2 px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-widest transition-all hover:scale-105"
             style={{ 
-              background: isFollowing ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, #FF4D94, #B8005C)",
+              background: isFollowing ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, #4F46E5, #3730A3)",
               color: isFollowing ? textMain : "white",
               border: isFollowing ? `1px solid ${border}` : "none"
             }}

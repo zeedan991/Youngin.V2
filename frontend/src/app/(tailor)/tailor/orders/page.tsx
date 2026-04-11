@@ -61,7 +61,7 @@ export default function TailorOrdersPage() {
               onClick={() => setFilter(f.key)}
               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
                 filter === f.key
-                  ? "bg-[#FF4D94]/15 text-[#FF4D94] border-[#FF4D94]/30"
+                  ? "bg-[#4F46E5]/15 text-[#4F46E5] border-[#4F46E5]/30"
                   : "text-white/30 border-white/10 hover:border-white/20 hover:text-white/60"
               }`}
             >
@@ -75,7 +75,7 @@ export default function TailorOrdersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search client or garment..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-xs text-[#F0EBE3] font-bold placeholder:text-white/20 focus:outline-none focus:border-[#FF4D94] transition-colors"
+            className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-xs text-[#F0EBE3] font-bold placeholder:text-white/20 focus:outline-none focus:border-[#4F46E5] transition-colors"
           />
         </div>
       </div>
@@ -96,7 +96,7 @@ export default function TailorOrdersPage() {
             {filtered.map((o) => (
               <div key={o.id} className="grid grid-cols-[2fr_2fr_1fr_1fr_1fr] gap-4 items-center px-6 py-4 hover:bg-white/3 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF4D94]/30 to-[#B8005C]/30 flex items-center justify-center shrink-0 text-[#FF4D94] font-black text-xs">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4F46E5]/30 to-[#3730A3]/30 flex items-center justify-center shrink-0 text-[#4F46E5] font-black text-xs">
                     {o.client_name[0]}
                   </div>
                   <span className="text-[#F0EBE3] font-bold text-sm truncate">{o.client_name}</span>
@@ -121,3 +121,4 @@ export default function TailorOrdersPage() {
     </div>
   );
 }
+

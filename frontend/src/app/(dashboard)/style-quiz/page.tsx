@@ -134,7 +134,7 @@ export default function StyleQuizPage() {
             {/* Progress */}
             <div className="mb-10">
               <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2 text-[#FF4D94] text-xs font-bold uppercase tracking-widest">
+                <div className="flex items-center gap-2 text-[#4F46E5] text-xs font-bold uppercase tracking-widest">
                   <Sparkles className="w-4 h-4" /> Style Quiz
                 </div>
                 <span className="text-xs text-slate-500 font-medium">
@@ -145,7 +145,7 @@ export default function StyleQuizPage() {
                 <motion.div
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.5 }}
-                  className="h-full bg-gradient-to-r from-[#FF4D94] to-[#B8005C] rounded-full"
+                  className="h-full bg-gradient-to-r from-[#4F46E5] to-[#3730A3] rounded-full"
                 />
               </div>
             </div>
@@ -168,12 +168,12 @@ export default function StyleQuizPage() {
                     onClick={() => toggleAnswer(question.id, opt.value)}
                     className={`relative p-5 rounded-2xl border-2 text-left transition-all group ${
                       selected
-                        ? "border-[#FF4D94] bg-[#FF4D94]/10"
+                        ? "border-[#4F46E5] bg-[#4F46E5]/10"
                         : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 shadow-sm"
                     }`}
                   >
                     {selected && (
-                      <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#FF4D94] flex items-center justify-center">
+                      <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#4F46E5] flex items-center justify-center">
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     )}
@@ -208,7 +208,7 @@ export default function StyleQuizPage() {
                 disabled={!canAdvance}
                 className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${
                   canAdvance
-                    ? "bg-[#FF4D94] text-white hover:scale-105"
+                    ? "bg-[#4F46E5] text-white hover:scale-105"
                     : "bg-slate-100 text-slate-400 cursor-not-allowed"
                 }`}
               >
@@ -225,9 +225,9 @@ export default function StyleQuizPage() {
             transition={SP}
             className="flex-1 flex flex-col items-center justify-center text-center py-16"
           >
-            <div className="w-20 h-20 rounded-full bg-[#FF4D94]/20 flex items-center justify-center mb-8 relative">
-              <div className="absolute inset-0 rounded-full border-4 border-[#FF4D94] animate-ping opacity-20" />
-              <PartyPopper className="w-10 h-10 text-[#FF4D94]" />
+            <div className="w-20 h-20 rounded-full bg-[#4F46E5]/20 flex items-center justify-center mb-8 relative">
+              <div className="absolute inset-0 rounded-full border-4 border-[#4F46E5] animate-ping opacity-20" />
+              <PartyPopper className="w-10 h-10 text-[#4F46E5]" />
             </div>
             <h2 className="text-4xl font-black tracking-tight mb-4 text-slate-900">
               Style Profile Created
@@ -243,7 +243,7 @@ export default function StyleQuizPage() {
                 </button>
               </Link>
               <Link href="/dashboard">
-                <button className="px-6 py-2.5 rounded-full bg-[#FF4D94] text-white font-semibold hover:scale-105 transition-transform flex items-center gap-2 shadow-sm">
+                <button className="px-6 py-2.5 rounded-full bg-[#4F46E5] text-white font-semibold hover:scale-105 transition-transform flex items-center gap-2 shadow-sm">
                   Go to Dashboard <ArrowRight className="w-4 h-4" />
                 </button>
               </Link>
@@ -254,3 +254,4 @@ export default function StyleQuizPage() {
     </div>
   );
 }
+

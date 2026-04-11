@@ -21,7 +21,7 @@ export default function LoadingScreen() {
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 bg-white"
         >
           {/* Ambient glow behind logo */}
-          <div className="absolute w-[300px] h-[300px] rounded-full bg-[#FF4D94]/10 blur-[100px] pointer-events-none" />
+          <div className="absolute w-[300px] h-[300px] rounded-full bg-[#4F46E5]/10 blur-[100px] pointer-events-none" />
           
           {/* Logo — enlarged and premium */}
           <motion.div
@@ -49,7 +49,7 @@ export default function LoadingScreen() {
               initial={{ width: 0 }}
               animate={{ width: "100%" }}
               transition={{ duration: 1.8, ease: "easeInOut" }}
-              className="h-full bg-gradient-to-r from-[#FF4D94] to-white"
+              className="h-full bg-gradient-to-r from-[#4F46E5] to-white"
             />
           </div>
         </motion.div>
@@ -57,3 +57,4 @@ export default function LoadingScreen() {
     </AnimatePresence>
   );
 }
+

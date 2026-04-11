@@ -119,7 +119,7 @@ export default function AIStylistPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
           AI Stylist Suite
-          <span className="px-2 py-0.5 bg-gradient-to-r from-[#FF4D94] to-[#B8005C] text-white rounded-md text-[10px] font-bold uppercase tracking-widest shadow-sm">
+          <span className="px-2 py-0.5 bg-gradient-to-r from-[#4F46E5] to-[#3730A3] text-white rounded-md text-[10px] font-bold uppercase tracking-widest shadow-sm">
             Powered by Gemini
           </span>
         </h1>
@@ -293,3 +293,4 @@ export default function AIStylistPage() {
     </div>
   );
 }
+

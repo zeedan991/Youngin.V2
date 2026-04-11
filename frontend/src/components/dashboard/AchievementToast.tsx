@@ -35,9 +35,9 @@ export default function AchievementToast({ achievement, onClose }: AchievementTo
           className="fixed bottom-8 right-6 z-[9999] w-[340px] select-none"
         >
           {/* Glow halo */}
-          <div className="absolute -inset-1 rounded-3xl bg-[#FF4D94]/20 blur-lg" />
+          <div className="absolute -inset-1 rounded-3xl bg-[#4F46E5]/20 blur-lg" />
 
-          <div className="relative rounded-3xl bg-[#0F0E0E] border border-[#FF4D94]/30 shadow-2xl overflow-hidden">
+          <div className="relative rounded-3xl bg-[#0F0E0E] border border-[#4F46E5]/30 shadow-2xl overflow-hidden">
             {/* Top shimmer bar */}
             <div className={`h-1 w-full bg-gradient-to-r ${RARITY_COLORS[achievement.rarity]}`} />
 
@@ -50,7 +50,7 @@ export default function AchievementToast({ achievement, onClose }: AchievementTo
 
                 {/* Text */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[3px] text-[#FF4D94] mb-1">
+                  <p className="text-[10px] font-black uppercase tracking-[3px] text-[#4F46E5] mb-1">
                     Achievement Unlocked!
                   </p>
                   <h3 className="text-white font-extrabold text-base leading-tight mb-1">
@@ -59,8 +59,8 @@ export default function AchievementToast({ achievement, onClose }: AchievementTo
                   <p className="text-white/50 text-xs leading-relaxed">
                     {achievement.description}
                   </p>
-                  <div className="mt-2 inline-flex items-center gap-1.5 bg-[#FF4D94]/10 border border-[#FF4D94]/20 rounded-full px-3 py-1">
-                    <span className="text-[10px] font-black text-[#FF4D94]">+{achievement.xpReward} XP</span>
+                  <div className="mt-2 inline-flex items-center gap-1.5 bg-[#4F46E5]/10 border border-[#4F46E5]/20 rounded-full px-3 py-1">
+                    <span className="text-[10px] font-black text-[#4F46E5]">+{achievement.xpReward} XP</span>
                   </div>
                 </div>
 
@@ -84,3 +84,4 @@ export default function AchievementToast({ achievement, onClose }: AchievementTo
     </AnimatePresence>
   );
 }
+

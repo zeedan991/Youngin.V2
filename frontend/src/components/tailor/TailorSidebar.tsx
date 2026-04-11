@@ -61,7 +61,7 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
     >
       {/* Logo */}
       <div className={`flex items-center gap-3 px-4 py-5 border-b border-white/5 ${collapsed ? "justify-center" : ""}`}>
-        <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center">
+        <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#3730A3] flex items-center justify-center">
           <Scissors className="w-4 h-4 text-white" />
         </div>
         {!collapsed && (
@@ -74,7 +74,7 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
       {/* Role badge */}
       {!collapsed && (
         <div className="px-4 pt-4 pb-2">
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#FF4D94] bg-[#FF4D94]/10 px-2 py-1 rounded-md">
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#4F46E5] bg-[#4F46E5]/10 px-2 py-1 rounded-md">
             🧵 Tailor Portal
           </span>
         </div>
@@ -91,7 +91,7 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
               title={collapsed ? item.label : undefined}
               className={`flex items-center gap-3 px-3 py-3 rounded-xl text-xs font-bold transition-all ${
                 active
-                  ? "bg-[#FF4D94]/15 text-[#FF4D94]"
+                  ? "bg-[#4F46E5]/15 text-[#4F46E5]"
                   : "text-white/40 hover:text-white/80 hover:bg-white/5"
               } ${collapsed ? "justify-center" : ""}`}
             >
@@ -126,7 +126,7 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
 
       {/* User */}
       <div className={`flex items-center gap-3 px-3 py-4 border-t border-white/5 ${collapsed ? "justify-center" : ""}`}>
-        <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center text-white font-black text-sm overflow-hidden">
+        <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#3730A3] flex items-center justify-center text-white font-black text-sm overflow-hidden">
           {profile.avatar_url ? (
             <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" />
           ) : (
@@ -136,10 +136,11 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
         {!collapsed && (
           <div className="flex-1 min-w-0">
             <p className="text-[#F0EBE3] font-black text-xs truncate">{profile.full_name}</p>
-            <p className="text-[#FF4D94] text-[9px] font-black uppercase tracking-wider">LV. {profile.level || 1} CREATOR</p>
+            <p className="text-[#4F46E5] text-[9px] font-black uppercase tracking-wider">LV. {profile.level || 1} CREATOR</p>
           </div>
         )}
       </div>
     </aside>
   );
 }
+

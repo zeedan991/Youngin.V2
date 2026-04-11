@@ -486,6 +486,28 @@ export default function StudioPage() {
 
   return (
     <div className="flex flex-col h-screen bg-[#F0F0F0] font-sans selection:bg-black selection:text-white">
+      <style>{`
+        .studio-dark-panel {
+          background-color: #0f172a !important;
+          border-color: #1e293b !important;
+          color: #f8fafc !important;
+        }
+        .studio-dark-panel .bg-white { background-color: #1e293b !important; }
+        .studio-dark-panel .bg-\\[\\#F8F8F8\\] { background-color: #0f172a !important; }
+        .studio-dark-panel .bg-gray-100 { background-color: #334155 !important; }
+        .studio-dark-panel .bg-gray-50 { background-color: #1e293b !important; }
+        .studio-dark-panel .text-black { color: #f8fafc !important; }
+        .studio-dark-panel .text-gray-900 { color: #f1f5f9 !important; }
+        .studio-dark-panel .text-gray-800 { color: #e2e8f0 !important; }
+        .studio-dark-panel .text-gray-700 { color: #cbd5e1 !important; }
+        .studio-dark-panel .text-gray-500 { color: #94a3b8 !important; }
+        .studio-dark-panel .text-gray-400 { color: #64748b !important; }
+        .studio-dark-panel .border-gray-200 { border-color: #334155 !important; }
+        .studio-dark-panel .border-gray-100 { border-color: #1e293b !important; }
+        .studio-dark-panel .text-\\[\\#1A1A1A\\] { color: #f1f5f9 !important; }
+        .studio-dark-panel .hover\\:bg-gray-50:hover { background-color: #334155 !important; }
+        .studio-dark-panel .hover\\:text-black:hover { color: #fff !important; }
+      `}</style>
       {/* ── TOP BAR ─────────────────────────────────────── */}
       <div className="flex items-center justify-between px-6 py-2 border-b border-gray-200 z-40 shrink-0 bg-white h-[60px] shadow-sm">
         <div className="flex items-center gap-4">
@@ -510,7 +532,7 @@ export default function StudioPage() {
 
       <div className="flex flex-1 overflow-hidden relative">
         {/* ── LEFT PANEL (TOOLS) ────────────────────────────────────────── */}
-        <div className="w-[320px] shrink-0 bg-white border-r border-gray-200 flex flex-col overflow-hidden shadow-xl z-20">
+        <div className="studio-dark-panel w-[320px] shrink-0 bg-white border-r border-gray-200 flex flex-col overflow-hidden shadow-2xl shadow-indigo-900/10 z-20">
           
           <div className="flex bg-[#F8F8F8] p-1.5 border-b border-gray-200">
              <button onClick={() => setCurrentSide('front')} className={`flex-1 py-2 text-[10px] font-black uppercase tracking-[0.2em] rounded-md transition-all ${currentSide === 'front' ? 'bg-white shadow-sm text-black' : 'text-gray-400 hover:text-gray-700'}`}>Front View</button>
@@ -701,7 +723,7 @@ export default function StudioPage() {
         </div>
 
         {/* ── RIGHT PANEL ──────────────────────────────────────────────────── */}
-        <div className="w-[300px] shrink-0 bg-white border-l border-gray-200 flex flex-col overflow-hidden shadow-xl z-20">
+        <div className="studio-dark-panel w-[300px] shrink-0 bg-white border-l border-gray-200 flex flex-col overflow-hidden shadow-2xl shadow-indigo-900/10 z-20">
           <div className="flex border-b border-gray-100">
             {[{ id: "layers", label: "Object Layers", Icon: Layers }, { id: "mydesigns", label: "Saved Works", Icon: FolderOpen }].map(t => (
               <button key={t.id} onClick={() => t.id === "mydesigns" ? openMyDesigns() : setRightTab("layers")} className="flex-1 py-4 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all" style={{ color: rightTab === t.id ? "#1A1A1A" : "#BBB", borderBottom: rightTab === t.id ? "3px solid #1A1A1A" : "3px solid transparent", background: rightTab === t.id ? "#FAFAFA" : "#fff" }}>

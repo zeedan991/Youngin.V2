@@ -21,7 +21,7 @@ export default function TailorPortfolioPage() {
           <h1 className="text-3xl font-black text-[#F0EBE3]" style={{ fontFamily: "var(--font-syne), sans-serif" }}>Portfolio</h1>
           <p className="text-white/40 text-sm mt-1">Showcase your craft to potential clients.</p>
         </div>
-        <Link href="/studio" className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all hover:scale-105" style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>
+        <Link href="/studio" className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all hover:scale-105" style={{ background: "linear-gradient(135deg, #4F46E5, #3730A3)" }}>
           <Plus className="w-3.5 h-3.5" /> Create New
         </Link>
       </div>
@@ -39,14 +39,14 @@ export default function TailorPortfolioPage() {
           </div>
           <h3 className="text-[#F0EBE3] font-black text-lg mb-2">No designs yet</h3>
           <p className="text-white/30 text-sm max-w-sm mb-6">Create your first garment in the 2D Studio and it will appear here automatically.</p>
-          <Link href="/studio" className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest text-white" style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>
+          <Link href="/studio" className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest text-white" style={{ background: "linear-gradient(135deg, #4F46E5, #3730A3)" }}>
             <Plus className="w-4 h-4" /> Open Studio
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {designs.map((d) => (
-            <div key={d.id} className="group relative rounded-2xl overflow-hidden border border-white/5 hover:border-[#FF4D94]/40 transition-all cursor-pointer" style={{ background: "#111118" }}>
+            <div key={d.id} className="group relative rounded-2xl overflow-hidden border border-white/5 hover:border-[#4F46E5]/40 transition-all cursor-pointer" style={{ background: "#111118" }}>
               <div className="aspect-square flex items-center justify-center overflow-hidden bg-white/3">
                 {d.storage_url ? (
                   <img src={d.storage_url} alt={d.title} className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105" />
@@ -69,3 +69,4 @@ export default function TailorPortfolioPage() {
     </div>
   );
 }
+

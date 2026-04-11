@@ -270,7 +270,7 @@ export default function ProfilePage() {
                    <h3 className="text-lg font-bold mb-2" style={{ color: "var(--dash-text)" }}>No designs yet</h3>
                    <p className="text-sm mb-6" style={{ color: "var(--dash-muted)" }}>Create your first 3D garment in the studio.</p>
                    <Link href="/studio">
-                     <button className="px-6 py-2 rounded-xl text-sm font-bold text-white transition-transform hover:scale-105" style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>Open Studio</button>
+                     <button className="px-6 py-2 rounded-xl text-sm font-bold text-white transition-transform hover:scale-105" style={{ background: "linear-gradient(135deg, #4F46E5, #3730A3)" }}>Open Studio</button>
                    </Link>
                 </div>
               ) : (
@@ -443,3 +443,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

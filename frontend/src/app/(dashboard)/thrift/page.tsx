@@ -7,11 +7,11 @@ import Link from "next/link";
 import { useState } from "react";
 
 const SP: Transition = { duration: 0.7, ease: [0.22, 1, 0.36, 1] };
-const surf = "rgba(255,255,255,0.04)";
-const border = "rgba(255,255,255,0.08)";
-const textMain = "#F0EBE3";
-const textMuted = "rgba(240,235,227,0.45)";
-const accent = "#FF4D94";
+const surf = "var(--dash-surface)";
+const border = "var(--dash-border)";
+const textMain = "var(--dash-text)";
+const textMuted = "var(--dash-muted)";
+const accent = "#4F46E5";
 
 const CATEGORIES = ["All", "Jackets", "Hoodies", "Denim", "Vintage Tees", "Trousers"];
 
@@ -27,7 +27,7 @@ const THRIFT_ITEMS = [
 const RARITY_STYLES: Record<string, { gradient: string; label: string }> = {
   "Archive": { gradient: "from-purple-500 to-purple-800", label: "Archive Piece" },
   "Rare Find": { gradient: "from-amber-500 to-orange-600", label: "Rare Find" },
-  "Collector": { gradient: "from-[#FF4D94] to-[#B8005C]", label: "Collector's Item" },
+  "Collector": { gradient: "from-[#4F46E5] to-[#3730A3]", label: "Collector's Item" },
 };
 
 export default function ThriftShopPage() {
@@ -143,7 +143,7 @@ export default function ThriftShopPage() {
         {THRIFT_ITEMS.map((item) => (
           <div key={item.id} className="group block">
             <Link href={`/product/${item.id}`}>
-              <div className="rounded-3xl border overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl cursor-pointer" style={{ background: surf, borderColor: border }}>
+              <div className="rounded-3xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-indigo-900/10 cursor-pointer shadow-xl shadow-slate-200/50" style={{ background: surf, border: `1px solid ${border}` }}>
                 {/* Image */}
                 <div className="relative aspect-[3/4] overflow-hidden">
                   <Image
@@ -168,18 +168,18 @@ export default function ThriftShopPage() {
                     className="absolute top-4 right-4 h-9 w-9 rounded-full flex items-center justify-center border backdrop-blur-md transition-all hover:scale-110"
                     style={{ background: "rgba(0,0,0,0.4)", borderColor: "rgba(255,255,255,0.15)" }}
                   >
-                    <Heart className={`w-4 h-4 transition-colors ${liked[item.id] ? "fill-[#FF4D94] text-[#FF4D94]" : "text-white/60"}`} />
+                    <Heart className={`w-4 h-4 transition-colors ${liked[item.id] ? "fill-[#4F46E5] text-[#4F46E5]" : "text-white/60"}`} />
                   </button>
 
                   {/* Era + condition */}
                   <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: "rgba(240,235,227,0.5)" }}>{item.era}</p>
-                      <p className="text-xl font-black" style={{ color: textMain }}>{item.price}</p>
+                      <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: "var(--dash-muted)" }}>{item.era}</p>
+                      <p className="text-xl font-black text-white drop-shadow-md">{item.price}</p>
                     </div>
                     <span
-                      className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md"
-                      style={{ background: "rgba(0,0,0,0.4)", borderColor: "rgba(255,255,255,0.1)", color: item.condition === "Excellent" || item.condition === "Like New" ? "#4ade80" : "#FBBF24", border: "1px solid" }}
+                      className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest"
+                      style={{ background: item.condition === "Excellent" || item.condition === "Like New" ? "#4ade80" : "#FBBF24", color: "#0f172a" }}
                     >
                       {item.condition}
                     </span>
@@ -202,3 +202,4 @@ export default function ThriftShopPage() {
     </div>
   );
 }
+

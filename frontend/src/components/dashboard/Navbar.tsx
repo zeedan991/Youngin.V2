@@ -105,7 +105,7 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
   const borderColor = "rgba(255,255,255,0.07)";
   const textMuted = "rgba(255,255,255,0.4)";
   const textActive = "#F0EBE3";
-  const accentColor = "#FF4D94";
+  const accentColor = "#4F46E5";
 
   return (
     <>
@@ -193,7 +193,7 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
                       onClick={() => { router.push(`/creator/${user.username}`); setIsSearching(false); setSearchQuery(''); }}
                       className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors text-left"
                     >
-                      <div className="w-7 h-7 rounded-full shrink-0 overflow-hidden" style={{ background: "#FF4D94" }}>
+                      <div className="w-7 h-7 rounded-full shrink-0 overflow-hidden" style={{ background: "#4F46E5" }}>
                         {user.avatar_url
                           ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
                           : <span className="flex items-center justify-center w-full h-full text-[9px] font-black text-white">{(user.username || 'YU').substring(0,2).toUpperCase()}</span>}
@@ -203,7 +203,7 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
                         <div className="flex items-center gap-2 mt-0.5">
                           <p className="text-[10px] truncate" style={{ color: textMuted }}>@{user.username}</p>
                           {user.role === "tailor" && (
-                            <span className="text-[8px] font-black text-[#FF4D94] bg-[#FF4D94]/15 px-1.5 py-0.5 rounded tracking-wider">🧵 TAILOR</span>
+                            <span className="text-[8px] font-black text-[#4F46E5] bg-[#4F46E5]/15 px-1.5 py-0.5 rounded tracking-wider">🧵 TAILOR</span>
                           )}
                         </div>
                       </div>
@@ -216,7 +216,7 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
           <div className="h-6 w-px" style={{ background: borderColor }} />
 
           {profile.role === "tailor" && (
-            <Link href="/tailor/dashboard" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#FF4D94] border border-[#FF4D94]/20 hover:bg-[#FF4D94]/10 transition-all">
+            <Link href="/tailor/dashboard" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#4F46E5] border border-[#4F46E5]/20 hover:bg-[#4F46E5]/10 transition-all">
               🧵 Tailor Portal
             </Link>
           )}
@@ -233,7 +233,7 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
             <div
               className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center overflow-hidden shadow-lg border-2 transition-transform group-hover:scale-105"
               style={{
-                background: "linear-gradient(135deg, #FF4D94, #B8005C)",
+                background: "linear-gradient(135deg, #4F46E5, #3730A3)",
                 borderColor: pathname === "/profile" ? accentColor : "rgba(255,255,255,0.15)",
               }}
             >
@@ -275,7 +275,7 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
             <div
               className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center overflow-hidden border"
               style={{
-                background: "linear-gradient(135deg, #FF4D94, #B8005C)",
+                background: "linear-gradient(135deg, #4F46E5, #3730A3)",
                 borderColor: pathname === "/profile" ? accentColor : "rgba(255,255,255,0.15)",
               }}
             >
@@ -329,3 +329,4 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
     </>
   );
 }
+

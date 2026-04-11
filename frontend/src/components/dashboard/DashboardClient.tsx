@@ -73,7 +73,7 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
       desc: "Design your next piece",
       href: "/studio",
       icon: Palette,
-      gradient: "from-[#FF4D94] to-[#B8005C]",
+      gradient: "from-[#4F46E5] to-[#3730A3]",
     },
     {
       label: "AI Stylist",
@@ -103,7 +103,7 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={SP}
-          className="md:col-span-12 lg:col-span-8 flex flex-col justify-between rounded-[24px] p-6 border"
+          className="md:col-span-12 lg:col-span-8 flex flex-col justify-between rounded-[24px] p-6 border shadow-xl shadow-slate-200/50"
           style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}
         >
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 w-full">
@@ -123,7 +123,7 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
                   <ShieldCheck className="w-3.5 h-3.5" style={{ color: "var(--dash-accent)" }} /> Level {level}
                 </div>
                 <Link href="/studio">
-                  <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs text-white transition-all hover:scale-105" style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>
+                  <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs text-white transition-all hover:scale-105" style={{ background: "linear-gradient(135deg, #4F46E5, #3730A3)" }}>
                     Open Studio <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </Link>
@@ -141,7 +141,7 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
              </div>
              <div className="flex items-center gap-4">
                 <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${xpPercent}%` }} transition={{ duration: 1, ease: "easeOut", delay: 0.2 }} className="h-full rounded-full" style={{ background: "linear-gradient(90deg, #FF4D94, #B8005C)" }} />
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${xpPercent}%` }} transition={{ duration: 1, ease: "easeOut", delay: 0.2 }} className="h-full rounded-full" style={{ background: "linear-gradient(90deg, #4F46E5, #3730A3)" }} />
                 </div>
                 <p className="text-xs font-extrabold shrink-0" style={{ color: "var(--dash-text)" }}>
                   {xp.toLocaleString()} <span style={{ color: "var(--dash-muted)" }}>/ {xpNext.toLocaleString()}</span>
@@ -164,7 +164,7 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
             { label: "Since", value: memberSince, icon: Calendar },
           ].map((stat, i) => {
              return (
-               <div key={stat.label} className="rounded-[24px] p-4 border flex flex-col justify-between" style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}>
+               <div key={stat.label} className="rounded-[24px] p-4 border flex flex-col justify-between shadow-xl shadow-slate-200/50" style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}>
                  <div className="h-8 w-8 rounded-lg flex items-center justify-center mb-3" style={{ background: "var(--dash-accent-dim)" }}>
                     <stat.icon className="w-4 h-4" style={{ color: "var(--dash-accent)" }} />
                  </div>
@@ -182,7 +182,7 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
           {quickActions.map((action, i) => (
             <motion.div key={action.href} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SP, delay: 0.15 + i * 0.05 }}>
               <Link href={action.href}>
-                <div className="group rounded-[24px] p-5 border cursor-pointer border-transparent hover:border-[#FF4D94] transition-all flex items-center gap-4" style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}>
+                <div className="group rounded-[24px] p-5 border cursor-pointer border-transparent shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-[#4F46E5]/10 hover:border-[#4F46E5]/40 transition-all flex items-center gap-4" style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}>
                   <div className={`h-12 w-12 shrink-0 rounded-[14px] bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform`}>
                     <action.icon className="w-5 h-5 text-white" />
                   </div>
@@ -201,7 +201,7 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
            initial={{ opacity: 0, y: 15 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ ...SP, delay: 0.2 }}
-           className="md:col-span-12 lg:col-span-8 rounded-[24px] border p-6 flex flex-col"
+           className="md:col-span-12 lg:col-span-8 rounded-[24px] border p-6 flex flex-col shadow-xl shadow-slate-200/50"
            style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}
         >
            <div className="flex items-center justify-between mb-4">
@@ -222,7 +222,7 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
                   <div className="h-12 w-12 rounded-2xl flex items-center justify-center text-xl" style={{ background: "var(--dash-accent-dim)" }}>🎨</div>
                   <h3 className="text-sm font-extrabold" style={{ color: "var(--dash-text)" }}>No designs yet</h3>
                   <Link href="/studio">
-                    <button className="mt-1 px-4 py-2 rounded-xl font-bold text-[11px] text-white hover:scale-105 transition-transform" style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>Start Creating</button>
+                    <button className="mt-1 px-4 py-2 rounded-xl font-bold text-[11px] text-white hover:scale-105 transition-transform" style={{ background: "linear-gradient(135deg, #4F46E5, #3730A3)" }}>Start Creating</button>
                   </Link>
                 </div>
               ) : (
@@ -242,7 +242,7 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
            initial={{ opacity: 0, y: 15 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ ...SP, delay: 0.25 }}
-           className="md:col-span-12 lg:col-span-4 rounded-[24px] border p-6 flex flex-col"
+           className="md:col-span-12 lg:col-span-4 rounded-[24px] border p-6 flex flex-col shadow-xl shadow-slate-200/50"
            style={{ background: "var(--dash-surface)", borderColor: "var(--dash-border)" }}
         >
           <div className="flex items-center justify-between mb-4 mt-[2px]">
@@ -288,3 +288,4 @@ export default function DashboardClient({ initialProfile }: { initialProfile: Pr
     </div>
   );
 }
+

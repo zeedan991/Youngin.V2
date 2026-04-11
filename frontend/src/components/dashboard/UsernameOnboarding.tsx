@@ -97,7 +97,7 @@ export default function UsernameOnboarding() {
             className="w-full max-w-md bg-[#0F0F14] border border-white/10 rounded-3xl p-8 shadow-2xl"
           >
             <div className="flex justify-center mb-6">
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center text-3xl shadow-lg shadow-pink-500/20">
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#3730A3] flex items-center justify-center text-3xl shadow-lg shadow-pink-500/20">
                 👋
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function UsernameOnboarding() {
 
             {/* Progress */}
             <div className="flex gap-2 mb-8">
-              <div className="flex-1 h-1 rounded-full bg-gradient-to-r from-[#FF4D94] to-[#B8005C]" />
+              <div className="flex-1 h-1 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#3730A3]" />
               <div className="flex-1 h-1 rounded-full bg-white/10" />
             </div>
 
@@ -126,17 +126,17 @@ export default function UsernameOnboarding() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
                     placeholder="creator_99"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-9 pr-4 text-[#F0EBE3] font-bold placeholder:text-white/20 focus:outline-none focus:border-[#FF4D94] transition-colors"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-9 pr-4 text-[#F0EBE3] font-bold placeholder:text-white/20 focus:outline-none focus:border-[#4F46E5] transition-colors"
                     autoFocus
                   />
                 </div>
-                {error && <p className="text-[#FF4D94] text-xs font-bold mt-2 ml-1">{error}</p>}
+                {error && <p className="text-[#4F46E5] text-xs font-bold mt-2 ml-1">{error}</p>}
               </div>
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full py-4 rounded-xl mt-4 transition-all disabled:opacity-50 flex items-center justify-center gap-2 font-bold text-sm text-white"
-                style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}
+                style={{ background: "linear-gradient(135deg, #4F46E5, #3730A3)" }}
               >
                 {isSubmitting ? "Saving..." : <><span>Continue</span><ArrowRight className="w-4 h-4" /></>}
               </button>
@@ -152,8 +152,8 @@ export default function UsernameOnboarding() {
           >
             {/* Progress */}
             <div className="flex gap-2 mb-8">
-              <div className="flex-1 h-1 rounded-full bg-gradient-to-r from-[#FF4D94] to-[#B8005C]" />
-              <div className="flex-1 h-1 rounded-full bg-gradient-to-r from-[#FF4D94] to-[#B8005C]" />
+              <div className="flex-1 h-1 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#3730A3]" />
+              <div className="flex-1 h-1 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#3730A3]" />
             </div>
 
             <h2 className="text-2xl font-extrabold text-[#F0EBE3] text-center mb-2" style={{ fontFamily: "var(--font-syne), sans-serif" }}>
@@ -169,12 +169,12 @@ export default function UsernameOnboarding() {
                 onClick={() => setSelectedRole("user")}
                 className={`relative p-5 rounded-2xl border-2 text-left transition-all group ${
                   selectedRole === "user"
-                    ? "border-[#FF4D94] bg-[#FF4D94]/10"
+                    ? "border-[#4F46E5] bg-[#4F46E5]/10"
                     : "border-white/10 bg-white/5 hover:border-white/30"
                 }`}
               >
                 {selectedRole === "user" && (
-                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#FF4D94] flex items-center justify-center">
+                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#4F46E5] flex items-center justify-center">
                     <Check className="w-3 h-3 text-white" />
                   </div>
                 )}
@@ -190,17 +190,17 @@ export default function UsernameOnboarding() {
                 onClick={() => setSelectedRole("tailor")}
                 className={`relative p-5 rounded-2xl border-2 text-left transition-all group ${
                   selectedRole === "tailor"
-                    ? "border-[#FF4D94] bg-[#FF4D94]/10"
+                    ? "border-[#4F46E5] bg-[#4F46E5]/10"
                     : "border-white/10 bg-white/5 hover:border-white/30"
                 }`}
               >
                 {selectedRole === "tailor" && (
-                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#FF4D94] flex items-center justify-center">
+                  <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#4F46E5] flex items-center justify-center">
                     <Check className="w-3 h-3 text-white" />
                   </div>
                 )}
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FF4D94]/20 to-[#B8005C]/20 border border-[#FF4D94]/20 flex items-center justify-center mb-4">
-                  <Scissors className="w-6 h-6 text-[#FF4D94]" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4F46E5]/20 to-[#3730A3]/20 border border-[#4F46E5]/20 flex items-center justify-center mb-4">
+                  <Scissors className="w-6 h-6 text-[#4F46E5]" />
                 </div>
                 <h3 className="font-black text-[#F0EBE3] text-sm mb-1">I&apos;m a Tailor</h3>
                 <p className="text-white/40 text-[11px] leading-tight">Showcase your work, get orders & manage clients</p>
@@ -211,7 +211,7 @@ export default function UsernameOnboarding() {
               onClick={handleRoleSubmit}
               disabled={!selectedRole || isSubmitting}
               className="w-full py-4 rounded-xl transition-all disabled:opacity-40 flex items-center justify-center gap-2 font-bold text-sm text-white"
-              style={{ background: selectedRole ? "linear-gradient(135deg, #FF4D94, #B8005C)" : "rgba(255,255,255,0.1)" }}
+              style={{ background: selectedRole ? "linear-gradient(135deg, #4F46E5, #3730A3)" : "rgba(255,255,255,0.1)" }}
             >
               {isSubmitting ? "Setting up your workspace..." : <><span>Get Started</span><ArrowRight className="w-4 h-4" /></>}
             </button>
@@ -221,3 +221,4 @@ export default function UsernameOnboarding() {
     </div>
   );
 }
+

@@ -27,7 +27,7 @@
   --dash-border: rgba(0, 0, 0, 0.06);
   --dash-text: #111827;
   --dash-muted: #6B7280;
-  --dash-accent: #FF4D94;
+  --dash-accent: #4F46E5;
   --dash-accent-dim: rgba(255, 77, 148, 0.15);
 }
 
@@ -48,7 +48,7 @@ body {
 
 /* Focus styles for accessibility */
 :focus-visible {
-  outline: 2px solid #FF4D94;
+  outline: 2px solid #4F46E5;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -111,9 +111,9 @@ html {
 .markdown-body ol { list-style-type: decimal; }
 .markdown-body li { margin-bottom: 0.25em; }
 .markdown-body strong { font-weight: 700; color: #1e293b; }
-.markdown-body a { color: #FF4D94; text-decoration: underline; font-weight: 600; }
+.markdown-body a { color: #4F46E5; text-decoration: underline; font-weight: 600; }
 .markdown-body blockquote {
-  border-left: 4px solid #FF4D94;
+  border-left: 4px solid #4F46E5;
   padding-left: 1em;
   color: #64748b;
   font-style: italic;
@@ -128,3 +128,4 @@ html {
   font-size: 0.875em;
   color: #0f172a;
 }
+

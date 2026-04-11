@@ -29,7 +29,7 @@ export default function ChatbotWidget() {
             {/* Header */}
             <div className="bg-slate-900 px-4 py-4 flex items-center justify-between text-white">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-[#FF4D94] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-[#4F46E5] flex items-center justify-center">
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
                 <div>
@@ -69,12 +69,12 @@ export default function ChatbotWidget() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Ask me anything..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-full py-2.5 pl-4 pr-12 text-sm text-slate-900 focus:outline-none focus:border-[#FF4D94]/50 focus:ring-1 focus:ring-[#FF4D94]/50 transition-all font-medium"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-full py-2.5 pl-4 pr-12 text-sm text-slate-900 focus:outline-none focus:border-[#4F46E5]/50 focus:ring-1 focus:ring-[#4F46E5]/50 transition-all font-medium"
                 />
                 <button 
                   type="submit"
                   disabled={!message.trim()}
-                  className="absolute right-1 w-8 h-8 rounded-full bg-[#FF4D94] flex items-center justify-center text-white disabled:opacity-50 disabled:bg-slate-300 transition-colors"
+                  className="absolute right-1 w-8 h-8 rounded-full bg-[#4F46E5] flex items-center justify-center text-white disabled:opacity-50 disabled:bg-slate-300 transition-colors"
                 >
                   <Send className="w-4 h-4 -ml-0.5" />
                 </button>
@@ -89,7 +89,7 @@ export default function ChatbotWidget() {
         onClick={() => setIsOpen(!isOpen)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-8 right-6 w-14 h-14 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center z-[100] border border-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF4D94] focus:ring-offset-2"
+        className="fixed bottom-8 right-6 w-14 h-14 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center z-[100] border border-slate-800 focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-2"
         aria-label="Toggle chat"
       >
         <AnimatePresence mode="wait">
@@ -119,3 +119,4 @@ export default function ChatbotWidget() {
     </>
   );
 }
+

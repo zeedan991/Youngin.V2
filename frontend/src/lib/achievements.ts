@@ -142,7 +142,7 @@ export const RARITY_COLORS: Record<Achievement["rarity"], string> = {
   common: "from-slate-500 to-slate-600",
   rare: "from-blue-500 to-blue-700",
   epic: "from-purple-500 to-purple-700",
-  legendary: "from-[#FF4D94] to-[#B8005C]",
+  legendary: "from-[#4F46E5] to-[#3730A3]",
 };
 
 export const RARITY_LABELS: Record<Achievement["rarity"], string> = {
@@ -151,3 +151,4 @@ export const RARITY_LABELS: Record<Achievement["rarity"], string> = {
   epic: "Epic",
   legendary: "Legendary",
 };
+

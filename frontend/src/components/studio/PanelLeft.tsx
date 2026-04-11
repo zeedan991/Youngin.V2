@@ -4,7 +4,7 @@ import { useStudioStore } from "@/store/useStudioStore";
 import { Search, X, Upload, Loader2, ImageIcon } from "lucide-react";
 
 const COLORS = [
-  "#FFFFFF","#000000","#FF4D94","#00E5FF","#F5C842","#9B5DE5",
+  "#FFFFFF","#000000","#4F46E5","#00E5FF","#F5C842","#9B5DE5",
   "#FF6B6B","#CCFF00","#4ECDC4","#E8D5B7","#2D6A4F","#1A1A1A",
   "#FF8C00","#87CEEB","#DDA0DD","#F0E68C","#7FFFD4","#DC143C",
   "#4169E1","#32CD32","#8B4513","#708090","#FF1493","#00CED1",
@@ -198,3 +198,4 @@ export function PanelLeft() {
     </div>
   );
 }
+

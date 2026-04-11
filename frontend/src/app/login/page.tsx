@@ -62,7 +62,7 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center overflow-hidden bg-[#000] relative selection:bg-[#FF4D94] selection:text-white">
+    <main className="min-h-screen flex items-center justify-center overflow-hidden bg-[#000] relative selection:bg-[#4F46E5] selection:text-white">
       {/* WOW FACTOR: Fashion Editorial Layout */}
       <div className="absolute inset-0 z-0 bg-[#000]">
         <motion.div animate={{ opacity: [0.4, 0, 0, 0.4] }} transition={{ duration: 20, times: [0, 0.33, 0.66, 1], repeat: Infinity, ease: "easeInOut" }} className="absolute inset-0">
@@ -115,7 +115,7 @@ export default function AuthPage() {
             {(["signin", "signup"] as const).map((m) => (
               <button key={m} onClick={() => setMode(m)}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all capitalize ${
-                  mode === m ? "bg-[#FF4D94] text-white shadow-lg" : "text-[#555] hover:text-white"
+                  mode === m ? "bg-[#4F46E5] text-white shadow-lg" : "text-[#555] hover:text-white"
                 }`}>
                 {m === "signin" ? "Sign In" : "Sign Up"}
               </button>
@@ -170,21 +170,21 @@ export default function AuthPage() {
                   <div>
                     <label htmlFor="fullname" className="block text-[10px] text-[#555] font-bold uppercase tracking-[3px] mb-2">Full Name</label>
                     <input id="fullname" type="text" name="name" placeholder="Your name" required autoComplete="name"
-                      className="w-full bg-[#111] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm placeholder:text-[#333] focus:outline-none focus:border-[#FF4D94]/40 transition-colors" />
+                      className="w-full bg-[#111] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm placeholder:text-[#333] focus:outline-none focus:border-[#4F46E5]/40 transition-colors" />
                   </div>
                 )}
 
                 <div>
                   <label htmlFor="email" className="block text-[10px] text-[#555] font-bold uppercase tracking-[3px] mb-2">Email</label>
                   <input id="email" type="email" name="email" placeholder="you@example.com" required autoComplete="email"
-                    className="w-full bg-[#111] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm placeholder:text-[#333] focus:outline-none focus:border-[#FF4D94]/40 transition-colors" />
+                    className="w-full bg-[#111] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-sm placeholder:text-[#333] focus:outline-none focus:border-[#4F46E5]/40 transition-colors" />
                 </div>
 
                 <div>
                   <label htmlFor="password" className="block text-[10px] text-[#555] font-bold uppercase tracking-[3px] mb-2">Password</label>
                   <div className="relative">
                     <input id="password" type={showPass ? "text" : "password"} name="password" placeholder="••••••••" required autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                      className="w-full bg-[#111] border border-white/[0.08] rounded-xl px-4 py-3.5 pr-12 text-white text-sm placeholder:text-[#333] focus:outline-none focus:border-[#FF4D94]/40 transition-colors" />
+                      className="w-full bg-[#111] border border-white/[0.08] rounded-xl px-4 py-3.5 pr-12 text-white text-sm placeholder:text-[#333] focus:outline-none focus:border-[#4F46E5]/40 transition-colors" />
                     <button type="button" onClick={() => setShowPass(!showPass)} aria-label="Toggle password visibility"
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-[#444] hover:text-white transition-colors">
                       {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -194,13 +194,13 @@ export default function AuthPage() {
 
                 {mode === "signin" && (
                   <div className="text-right">
-                    <a href="#" className="text-xs font-bold text-[#555] hover:text-[#FF4D94] transition-colors">Forgot password?</a>
+                    <a href="#" className="text-xs font-bold text-[#555] hover:text-[#4F46E5] transition-colors">Forgot password?</a>
                   </div>
                 )}
 
                 <motion.button type="submit" disabled={isLoading}
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                  className="w-full mt-2 flex items-center justify-center gap-2 bg-[#FF4D94] hover:bg-[#ff3382] text-white font-bold py-3.5 rounded-xl transition-colors disabled:opacity-60">
+                  className="w-full mt-2 flex items-center justify-center gap-2 bg-[#4F46E5] hover:bg-[#ff3382] text-white font-bold py-3.5 rounded-xl transition-colors disabled:opacity-60">
                   {isLoading ? (
                     <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
                       className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white" />
@@ -212,9 +212,9 @@ export default function AuthPage() {
 
               <p className="text-center text-[#444] text-xs mt-6 leading-relaxed">
                 By continuing, you agree to our{" "}
-                <Link href="#" className="text-[#FF4D94] hover:underline">Terms of Service</Link>{" "}
+                <Link href="#" className="text-[#4F46E5] hover:underline">Terms of Service</Link>{" "}
                 and{" "}
-                <Link href="#" className="text-[#FF4D94] hover:underline">Privacy Policy</Link>.
+                <Link href="#" className="text-[#4F46E5] hover:underline">Privacy Policy</Link>.
               </p>
             </motion.div>
           </AnimatePresence>
@@ -223,3 +223,4 @@ export default function AuthPage() {
     </main>
   );
 }
+

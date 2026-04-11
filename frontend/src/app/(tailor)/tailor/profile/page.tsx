@@ -107,7 +107,7 @@ export default function TailorProfilePage() {
       <label className="block text-[10px] font-black text-white/30 uppercase tracking-widest mb-1.5">{label}</label>
       {editing ? (
         <input type={type} value={form[field]} onChange={set(field)} placeholder={placeholder}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[#F0EBE3] font-bold text-sm placeholder:text-white/15 focus:outline-none focus:border-[#FF4D94] transition-colors" />
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[#F0EBE3] font-bold text-sm placeholder:text-white/15 focus:outline-none focus:border-[#4F46E5] transition-colors" />
       ) : (
         <p className="text-[#F0EBE3] font-bold text-sm py-2.5 border-b border-white/5 min-h-[40px]">
           {(form[field] as string) || <span className="text-white/20 italic text-xs">Not set</span>}
@@ -121,7 +121,7 @@ export default function TailorProfilePage() {
       <label className="block text-[10px] font-black text-white/30 uppercase tracking-widest mb-1.5">{label}</label>
       {editing ? (
         <textarea value={form[field]} onChange={set(field) as any} placeholder={placeholder} rows={3}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[#F0EBE3] font-bold text-sm placeholder:text-white/15 focus:outline-none focus:border-[#FF4D94] transition-colors resize-none" />
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[#F0EBE3] font-bold text-sm placeholder:text-white/15 focus:outline-none focus:border-[#4F46E5] transition-colors resize-none" />
       ) : (
         <p className="text-[#F0EBE3] text-sm py-2.5 border-b border-white/5 min-h-[40px] leading-relaxed">
           {(form[field] as string) || <span className="text-white/20 italic text-xs">Not set</span>}
@@ -135,7 +135,7 @@ export default function TailorProfilePage() {
       <label className="block text-[10px] font-black text-white/30 uppercase tracking-widest mb-1.5">{label}</label>
       {editing ? (
         <select value={form[field]} onChange={set(field) as any}
-          className="w-full bg-[#0D0D12] border border-white/10 rounded-xl px-4 py-3 text-[#F0EBE3] font-bold text-sm focus:outline-none focus:border-[#FF4D94] transition-colors">
+          className="w-full bg-[#0D0D12] border border-white/10 rounded-xl px-4 py-3 text-[#F0EBE3] font-bold text-sm focus:outline-none focus:border-[#4F46E5] transition-colors">
           <option value="">Select...</option>
           {options.map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
@@ -167,7 +167,7 @@ export default function TailorProfilePage() {
               <button onClick={() => setEditing(false)} className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white/40 border border-white/10 hover:border-white/20 transition-all">
                 Cancel
               </button>
-              <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all hover:scale-105" style={{ background: "linear-gradient(135deg, #FF4D94, #B8005C)" }}>
+              <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all hover:scale-105" style={{ background: "linear-gradient(135deg, #4F46E5, #3730A3)" }}>
                 {saving ? "Saving..." : <><Save className="w-3.5 h-3.5" /> Save Changes</>}
               </button>
             </>
@@ -181,15 +181,15 @@ export default function TailorProfilePage() {
 
       {/* Cover + Avatar banner */}
       <div className="rounded-2xl overflow-hidden border border-white/5" style={{ background: "#111118" }}>
-        <div className="h-28 bg-gradient-to-br from-[#FF4D94]/20 via-[#7B2FBE]/15 to-[#0D0D12]" />
+        <div className="h-28 bg-gradient-to-br from-[#4F46E5]/20 via-[#7B2FBE]/15 to-[#0D0D12]" />
         <div className="px-6 pb-6 -mt-10 flex items-end gap-4 flex-wrap">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#FF4D94] to-[#B8005C] flex items-center justify-center text-3xl border-4 border-[#111118] font-black text-white shadow-xl overflow-hidden shrink-0">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#3730A3] flex items-center justify-center text-3xl border-4 border-[#111118] font-black text-white shadow-xl overflow-hidden shrink-0">
             {profile?.avatar_url ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" /> : profile?.full_name?.[0]?.toUpperCase() || "T"}
           </div>
           <div className="flex-1 min-w-0 mb-1">
             <h2 className="text-[#F0EBE3] font-black text-xl truncate">{form.full_name || "Your Name"}</h2>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-[9px] font-black text-[#FF4D94] bg-[#FF4D94]/10 px-2 py-0.5 rounded-md uppercase tracking-widest flex items-center gap-1">
+              <span className="text-[9px] font-black text-[#4F46E5] bg-[#4F46E5]/10 px-2 py-0.5 rounded-md uppercase tracking-widest flex items-center gap-1">
                 <Scissors className="w-2.5 h-2.5" /> Tailor
               </span>
               {form.tailor_specialty && <span className="text-white/40 text-[10px] font-bold">{form.tailor_specialty}</span>}
@@ -228,7 +228,7 @@ export default function TailorProfilePage() {
         {/* Col 1: Personal */}
         <div className="rounded-2xl border border-white/5 p-6 space-y-5" style={{ background: "#111118" }}>
           <h3 className="text-[#F0EBE3] font-black text-[10px] uppercase tracking-widest flex items-center gap-2 border-b border-white/5 pb-3">
-            <User className="w-3.5 h-3.5 text-[#FF4D94]" /> Personal Info
+            <User className="w-3.5 h-3.5 text-[#4F46E5]" /> Personal Info
           </h3>
           <TextInput label="Full Name" field="full_name" placeholder="Your full name" />
           <TextArea label="Bio / About" field="bio" placeholder="Tell clients about your craft, style, and experience..." />
@@ -239,7 +239,7 @@ export default function TailorProfilePage() {
         {/* Col 2: Business */}
         <div className="rounded-2xl border border-white/5 p-6 space-y-5" style={{ background: "#111118" }}>
           <h3 className="text-[#F0EBE3] font-black text-[10px] uppercase tracking-widest flex items-center gap-2 border-b border-white/5 pb-3">
-            <Briefcase className="w-3.5 h-3.5 text-[#FF4D94]" /> Business Info
+            <Briefcase className="w-3.5 h-3.5 text-[#4F46E5]" /> Business Info
           </h3>
           <SelectInput label="Primary Specialty" field="tailor_specialty" options={SPECIALTIES} />
           <TextInput label="Location / City" field="tailor_location" placeholder="e.g. Lagos, London, New York" />
@@ -250,7 +250,7 @@ export default function TailorProfilePage() {
         {/* Col 3: Contact */}
         <div className="rounded-2xl border border-white/5 p-6 space-y-5" style={{ background: "#111118" }}>
           <h3 className="text-[#F0EBE3] font-black text-[10px] uppercase tracking-widest flex items-center gap-2 border-b border-white/5 pb-3">
-            <Phone className="w-3.5 h-3.5 text-[#FF4D94]" /> Contact Details
+            <Phone className="w-3.5 h-3.5 text-[#4F46E5]" /> Contact Details
           </h3>
           <TextInput label="Email Address" field="contact_email" placeholder="your@email.com" type="email" />
           <TextInput label="Phone Number" field="contact_phone" placeholder="+1 234 567 8900" type="tel" />
@@ -263,7 +263,7 @@ export default function TailorProfilePage() {
       {/* Stats row */}
       <div className="rounded-2xl border border-white/5 p-6" style={{ background: "#111118" }}>
         <h3 className="text-[#F0EBE3] font-black text-[10px] uppercase tracking-widest flex items-center gap-2 border-b border-white/5 pb-3 mb-5">
-          <Star className="w-3.5 h-3.5 text-[#FF4D94]" /> Profile Stats
+          <Star className="w-3.5 h-3.5 text-[#4F46E5]" /> Profile Stats
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
@@ -282,3 +282,4 @@ export default function TailorProfilePage() {
     </div>
   );
 }
+
