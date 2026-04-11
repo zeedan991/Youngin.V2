@@ -1,6 +1,5 @@
 import Navbar from "@/components/dashboard/Navbar";
 import LoadingScreen from "@/components/LoadingScreen";
-import ChatbotWidget from "@/components/dashboard/ChatbotWidget";
 import UsernameOnboarding from "@/components/dashboard/UsernameOnboarding";
 import { ReactNode } from "react";
 import { fetchLiveProfile } from "@/app/(dashboard)/profile/actions";
@@ -31,7 +30,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         </div>
       </main>
 
-      <ChatbotWidget />
+
     </div>
   );
 }

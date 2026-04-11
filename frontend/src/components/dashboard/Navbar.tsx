@@ -132,14 +132,14 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
         </Link>
 
         {/* ── Nav Items ── */}
-        <nav className="flex-1 flex items-center justify-center gap-0.5 xl:gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <nav className="flex-1 flex items-center justify-center lg:gap-0 xl:gap-1 overflow-hidden">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
               <Link key={item.label} href={item.href}>
                 <div
-                  className="flex items-center gap-1.5 xl:gap-2 px-2 xl:px-3 py-1.5 xl:py-2 rounded-xl transition-all cursor-pointer group whitespace-nowrap relative"
+                  className="flex items-center gap-1.5 xl:gap-2 px-1.5 xl:px-2 py-1.5 xl:py-2 rounded-xl transition-all cursor-pointer group whitespace-nowrap relative"
                   style={{
                     color: isActive ? textActive : textMuted,
                   }}
@@ -151,7 +151,7 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
                   }}
                 >
                   <Icon className="w-3.5 h-3.5 xl:w-4 xl:h-4 transition-colors" style={{ color: isActive ? accentColor : "inherit" }} />
-                  <span className="text-[11px] xl:text-[12px] font-bold tracking-wide hidden lg:block">
+                  <span className="text-[10px] xl:text-[11px] font-bold tracking-wide hidden lg:block">
                     {item.label}
                   </span>
                   
