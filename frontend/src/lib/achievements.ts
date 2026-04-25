@@ -5,17 +5,22 @@
 // ═══════════════════════════════════════════════════════════
 
 export type AchievementRarity = "common" | "rare" | "epic" | "legendary";
-export type AchievementCategory = "creative" | "social" | "milestone" | "explorer" | "loyalty";
+export type AchievementCategory =
+  | "creative"
+  | "social"
+  | "milestone"
+  | "explorer"
+  | "loyalty";
 
 export type Achievement = {
   id: string;
   title: string;
   description: string;
-  icon: string;        // emoji
+  icon: string; // emoji
   xpReward: number;
   rarity: AchievementRarity;
   category: AchievementCategory;
-  hidden?: boolean;    // hidden achievements only reveal after unlock
+  hidden?: boolean; // hidden achievements only reveal after unlock
 };
 
 // ─── XP ECONOMY ────────────────────────────────────────────
@@ -39,7 +44,7 @@ export const XP_REWARDS = {
   gain_follower: 10,
 
   // One-time achievement bonuses
-  achievement_common: 0,    // built into xpReward on the achievement itself
+  achievement_common: 0, // built into xpReward on the achievement itself
   achievement_rare: 0,
   achievement_epic: 0,
   achievement_legendary: 0,
@@ -69,7 +74,6 @@ export function xpProgressPercent(xp: number): number {
 
 // ─── ACHIEVEMENTS REGISTRY ─────────────────────────────────
 export const ACHIEVEMENTS: Achievement[] = [
-
   // ══ MILESTONE ══════════════════════════════════════════
   {
     id: "first_login",

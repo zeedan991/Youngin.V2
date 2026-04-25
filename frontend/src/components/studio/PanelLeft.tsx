@@ -4,14 +4,40 @@ import { useStudioStore } from "@/store/useStudioStore";
 import { Search, X, Upload, Loader2, ImageIcon } from "lucide-react";
 
 const COLORS = [
-  "#FFFFFF","#000000","#4F46E5","#00E5FF","#F5C842","#9B5DE5",
-  "#FF6B6B","#CCFF00","#4ECDC4","#E8D5B7","#2D6A4F","#1A1A1A",
-  "#FF8C00","#87CEEB","#DDA0DD","#F0E68C","#7FFFD4","#DC143C",
-  "#4169E1","#32CD32","#8B4513","#708090","#FF1493","#00CED1",
+  "#FFFFFF",
+  "#000000",
+  "#4F46E5",
+  "#00E5FF",
+  "#F5C842",
+  "#9B5DE5",
+  "#FF6B6B",
+  "#CCFF00",
+  "#4ECDC4",
+  "#E8D5B7",
+  "#2D6A4F",
+  "#1A1A1A",
+  "#FF8C00",
+  "#87CEEB",
+  "#DDA0DD",
+  "#F0E68C",
+  "#7FFFD4",
+  "#DC143C",
+  "#4169E1",
+  "#32CD32",
+  "#8B4513",
+  "#708090",
+  "#FF1493",
+  "#00CED1",
 ];
 
 export function PanelLeft() {
-  const { garmentColor, setGarmentColor, fabricCanvas, activeTool, setActiveTool } = useStudioStore();
+  const {
+    garmentColor,
+    setGarmentColor,
+    fabricCanvas,
+    activeTool,
+    setActiveTool,
+  } = useStudioStore();
   const [unsplashQuery, setUnsplashQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
@@ -24,7 +50,9 @@ export function PanelLeft() {
     setSearching(true);
     setResults([]);
     try {
-      const res = await fetch(`/api/unsplash?q=${encodeURIComponent(unsplashQuery)}`);
+      const res = await fetch(
+        `/api/unsplash?q=${encodeURIComponent(unsplashQuery)}`,
+      );
       const data = await res.json();
       setResults(data.results || []);
     } catch {
@@ -73,10 +101,11 @@ export function PanelLeft() {
 
   return (
     <div className="w-72 bg-[#111] border-r border-[#1E1E1E] flex flex-col h-full overflow-hidden">
-      
       {/* Garment Color Section */}
       <div className="p-4 border-b border-[#1E1E1E]">
-        <p className="text-[10px] text-[#555] uppercase tracking-[3px] mb-3 font-bold">Garment Color</p>
+        <p className="text-[10px] text-[#555] uppercase tracking-[3px] mb-3 font-bold">
+          Garment Color
+        </p>
         <div className="grid grid-cols-6 gap-1.5">
           {COLORS.map((c) => (
             <button
@@ -115,7 +144,9 @@ export function PanelLeft() {
       {/* Drawing Tools (shown when draw mode active) */}
       {activeTool === "draw" && (
         <div className="p-4 border-b border-[#1E1E1E]">
-          <p className="text-[10px] text-[#555] uppercase tracking-[3px] mb-3 font-bold">Brush Settings</p>
+          <p className="text-[10px] text-[#555] uppercase tracking-[3px] mb-3 font-bold">
+            Brush Settings
+          </p>
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="text-[#555] text-xs w-10">Color</span>
@@ -123,7 +154,10 @@ export function PanelLeft() {
                 <input
                   type="color"
                   value={drawColor}
-                  onChange={(e) => { setDrawColor(e.target.value); updateDrawBrush(e.target.value, drawSize); }}
+                  onChange={(e) => {
+                    setDrawColor(e.target.value);
+                    updateDrawBrush(e.target.value, drawSize);
+                  }}
                   className="w-full h-full cursor-pointer"
                 />
               </div>
@@ -131,8 +165,14 @@ export function PanelLeft() {
             <div className="flex items-center gap-2">
               <span className="text-[#555] text-xs w-10">Size</span>
               <input
-                type="range" min={1} max={50} value={drawSize}
-                onChange={(e) => { setDrawSize(+e.target.value); updateDrawBrush(drawColor, +e.target.value); }}
+                type="range"
+                min={1}
+                max={50}
+                value={drawSize}
+                onChange={(e) => {
+                  setDrawSize(+e.target.value);
+                  updateDrawBrush(drawColor, +e.target.value);
+                }}
                 className="flex-1 accent-[#00E5FF]"
               />
               <span className="text-white text-xs w-6">{drawSize}</span>
@@ -143,10 +183,18 @@ export function PanelLeft() {
 
       {/* Image Upload & Search */}
       <div className="p-4 flex flex-col gap-3 flex-1 overflow-y-auto">
-        <p className="text-[10px] text-[#555] uppercase tracking-[3px] font-bold">Add Image</p>
+        <p className="text-[10px] text-[#555] uppercase tracking-[3px] font-bold">
+          Add Image
+        </p>
 
         {/* Upload button */}
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileUpload}
+        />
         <button
           onClick={() => fileRef.current?.click()}
           className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-dashed border-[#2A2A2A] text-[#555] hover:border-[#00E5FF]/40 hover:text-[#00E5FF] transition-all text-sm font-bold"
@@ -169,7 +217,11 @@ export function PanelLeft() {
             disabled={searching}
             className="p-2 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] text-[#555] hover:text-[#00E5FF] hover:border-[#00E5FF]/40 transition-all"
           >
-            {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            {searching ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Search className="w-4 h-4" />
+            )}
           </button>
         </div>
 
@@ -182,7 +234,11 @@ export function PanelLeft() {
                 onClick={() => addUnsplashToCanvas(photo.urls.regular)}
                 className="aspect-square rounded-lg overflow-hidden border border-[#2A2A2A] hover:border-[#00E5FF]/50 transition-all group relative"
               >
-                <img src={photo.urls.thumb} alt={photo.alt_description} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                <img
+                  src={photo.urls.thumb}
+                  alt={photo.alt_description}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <ImageIcon className="w-5 h-5 text-white" />
                 </div>
@@ -192,10 +248,11 @@ export function PanelLeft() {
         )}
 
         {results.length === 0 && unsplashQuery && !searching && (
-          <p className="text-center text-[#444] text-xs py-4">No results found</p>
+          <p className="text-center text-[#444] text-xs py-4">
+            No results found
+          </p>
         )}
       </div>
     </div>
   );
 }
-

@@ -32,13 +32,16 @@ export async function saveDesignToDb(payload: {
   storage_url?: string;
 }) {
   const supabase = await createClient();
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: authErr,
+  } = await supabase.auth.getUser();
   if (authErr || !user) return { success: false, error: "Not authenticated" };
 
   const row = {
-    user_id:     user.id,
-    title:       payload.name,
-    type:        payload.garmentType,
+    user_id: user.id,
+    title: payload.name,
+    type: payload.garmentType,
     storage_url: payload.storage_url || null,
   };
 
@@ -67,7 +70,9 @@ export async function saveDesignToDb(payload: {
 
 export async function loadUserDesigns() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { success: false, designs: [] };
 
   const { data, error } = await supabase
@@ -82,7 +87,9 @@ export async function loadUserDesigns() {
 
 export async function deleteDesign(id: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { success: false };
 
   const { error } = await supabase
@@ -96,7 +103,9 @@ export async function deleteDesign(id: string) {
 
 export async function loadDesignById(id: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return null;
 
   const { data } = await supabase
@@ -109,55 +118,78 @@ export async function loadDesignById(id: string) {
   return data as Design | null;
 }
 
-export async function uploadSnapshotBase64(base64Str: string, timestampId: string): Promise<{ success: boolean; url?: string; error?: string }> {
+export async function uploadSnapshotBase64(
+  base64Str: string,
+  timestampId: string,
+): Promise<{ success: boolean; url?: string; error?: string }> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not logged in" };
 
   try {
     const base64Data = base64Str.replace(/^data:image\/\w+;base64,/, "");
     const buffer = Buffer.from(base64Data, "base64");
-    
+
     // Upload to 'designs' bucket
     const filePath = `${user.id}/${timestampId}_snapshot.jpg`;
-    
+
     const { error: uploadError } = await supabase.storage
       .from("designs")
       .upload(filePath, buffer, {
         contentType: "image/jpeg",
-        upsert: true
+        upsert: true,
       });
-      
+
     if (uploadError) return { success: false, error: uploadError.message };
 
-    const { data: { publicUrl } } = supabase.storage.from("designs").getPublicUrl(filePath);
-    
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("designs").getPublicUrl(filePath);
+
     return { success: true, url: publicUrl };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
 }
 
-export async function uploadDesignConfig(configData: any, timestampId: string): Promise<{ success: boolean; url?: string }> {
+export async function uploadDesignConfig(
+  configData: any,
+  timestampId: string,
+): Promise<{ success: boolean; url?: string }> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { success: false };
-  
+
   try {
     const buffer = Buffer.from(JSON.stringify(configData), "utf-8");
     const filePath = `${user.id}/${timestampId}_config.json`;
-    await supabase.storage.from("designs").upload(filePath, buffer, { contentType: "application/json", upsert: true });
-    
-    const { data: { publicUrl } } = supabase.storage.from("designs").getPublicUrl(filePath);
+    await supabase.storage
+      .from("designs")
+      .upload(filePath, buffer, {
+        contentType: "application/json",
+        upsert: true,
+      });
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("designs").getPublicUrl(filePath);
     return { success: true, url: publicUrl };
-  } catch { return { success: false }; }
+  } catch {
+    return { success: false };
+  }
 }
 
 export async function fetchDesignConfig(storageUrl: string): Promise<any> {
-    try {
-        const configUrl = storageUrl.replace("_snapshot.jpg", "_config.json");
-        const res = await fetch(configUrl);
-        if (!res.ok) return null;
-        return await res.json();
-    } catch { return null; }
+  try {
+    const configUrl = storageUrl.replace("_snapshot.jpg", "_config.json");
+    const res = await fetch(configUrl);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
 }

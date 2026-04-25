@@ -34,10 +34,12 @@ export default function ChatbotWidget() {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm">Youngin Assistant</h3>
-                  <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">Online</p>
+                  <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">
+                    Online
+                  </p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setIsOpen(false)}
                 className="text-slate-400 hover:text-white transition-colors"
                 aria-label="Close chat"
@@ -55,7 +57,8 @@ export default function ChatbotWidget() {
                 </div>
                 <div className="bg-white border border-slate-200 shadow-sm p-3 rounded-2xl rounded-tl-none">
                   <p className="text-sm text-slate-600">
-                    Hello! I'm your Youngin assistant. Do you need help finding your fit or navigating the 3D studio?
+                    Hello! I'm your Youngin assistant. Do you need help finding
+                    your fit or navigating the 3D studio?
                   </p>
                 </div>
               </div>
@@ -63,7 +66,10 @@ export default function ChatbotWidget() {
 
             {/* Input Area */}
             <div className="p-3 bg-white border-t border-slate-100">
-              <form onSubmit={handleSend} className="relative flex items-center">
+              <form
+                onSubmit={handleSend}
+                className="relative flex items-center"
+              >
                 <input
                   type="text"
                   value={message}
@@ -71,7 +77,7 @@ export default function ChatbotWidget() {
                   placeholder="Ask me anything..."
                   className="w-full bg-slate-50 border border-slate-200 rounded-full py-2.5 pl-4 pr-12 text-sm text-slate-900 focus:outline-none focus:border-[#4F46E5]/50 focus:ring-1 focus:ring-[#4F46E5]/50 transition-all font-medium"
                 />
-                <button 
+                <button
                   type="submit"
                   disabled={!message.trim()}
                   className="absolute right-1 w-8 h-8 rounded-full bg-[#4F46E5] flex items-center justify-center text-white disabled:opacity-50 disabled:bg-slate-300 transition-colors"
@@ -119,4 +125,3 @@ export default function ChatbotWidget() {
     </>
   );
 }
-

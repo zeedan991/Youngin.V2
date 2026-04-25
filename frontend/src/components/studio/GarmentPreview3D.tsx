@@ -1,7 +1,13 @@
 "use client";
 import React, { Suspense, useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, ContactShadows, Environment, Float, PerspectiveCamera } from "@react-three/drei";
+import {
+  OrbitControls,
+  ContactShadows,
+  Environment,
+  Float,
+  PerspectiveCamera,
+} from "@react-three/drei";
 import * as THREE from "three";
 import { useStudioStore } from "@/store/useStudioStore";
 
@@ -26,7 +32,7 @@ function TShirtModel({ color }: { color: string }) {
         <cylinderGeometry args={[1.1, 1.2, 2.5, 32, 1, false]} />
         <FabricMaterial color={color} />
       </mesh>
-      
+
       {/* Shoulders / Top */}
       <mesh castShadow position={[0, 1.05, 0]}>
         <sphereGeometry args={[1.11, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
@@ -120,7 +126,7 @@ export function GarmentPreview3D() {
 
       <Canvas shadows dpr={[1, 2]}>
         <PerspectiveCamera makeDefault position={[0, 0, 8]} fov={35} />
-        
+
         {/* Lights */}
         <ambientLight intensity={0.4} />
         <pointLight position={[10, 10, 10]} intensity={1.5} castShadow />
@@ -132,7 +138,11 @@ export function GarmentPreview3D() {
           castShadow
           shadow-mapSize={1024}
         />
-        <directionalLight position={[-5, 5, -5]} intensity={0.5} color="#00E5FF" />
+        <directionalLight
+          position={[-5, 5, -5]}
+          intensity={0.5}
+          color="#00E5FF"
+        />
 
         <GarmentSwitcher />
 

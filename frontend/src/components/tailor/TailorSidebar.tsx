@@ -24,25 +24,46 @@ const NAV = [
   { label: "Business Profile", href: "/tailor/profile", icon: User },
 ];
 
-export default function TailorSidebar({ initialProfile }: { initialProfile?: { full_name: string; username: string; level: number; avatar_url: string | null } }) {
+export default function TailorSidebar({
+  initialProfile,
+}: {
+  initialProfile?: {
+    full_name: string;
+    username: string;
+    level: number;
+    avatar_url: string | null;
+  };
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
-  const [profile, setProfile] = useState<{ full_name: string; username: string; level: number; avatar_url: string | null }>(initialProfile || {
-    full_name: "Tailor",
-    username: "",
-    level: 1,
-    avatar_url: null,
-  });
+  const [profile, setProfile] = useState<{
+    full_name: string;
+    username: string;
+    level: number;
+    avatar_url: string | null;
+  }>(
+    initialProfile || {
+      full_name: "Tailor",
+      username: "",
+      level: 1,
+      avatar_url: null,
+    },
+  );
 
   useEffect(() => {
     if (!initialProfile) {
       const supabase = createClient();
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (user) {
-          supabase.from("profiles").select("full_name, username, level, avatar_url").eq("id", user.id).single().then(({ data }) => {
-            if (data) setProfile(data as any);
-          });
+          supabase
+            .from("profiles")
+            .select("full_name, username, level, avatar_url")
+            .eq("id", user.id)
+            .single()
+            .then(({ data }) => {
+              if (data) setProfile(data as any);
+            });
         }
       });
     }
@@ -60,12 +81,17 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
       style={{ background: "#FFFFFF", borderRight: "1px solid #e2e8f0" }}
     >
       {/* Logo */}
-      <div className={`flex items-center gap-3 px-4 py-5 border-b border-slate-100 ${collapsed ? "justify-center" : ""}`}>
+      <div
+        className={`flex items-center gap-3 px-4 py-5 border-b border-slate-100 ${collapsed ? "justify-center" : ""}`}
+      >
         <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#3730A3] flex items-center justify-center shadow-lg shadow-indigo-600/20">
           <Scissors className="w-4 h-4 text-white" />
         </div>
         {!collapsed && (
-          <span className="font-black text-slate-900 tracking-wider text-sm" style={{ fontFamily: "var(--font-syne), sans-serif" }}>
+          <span
+            className="font-black text-slate-900 tracking-wider text-sm"
+            style={{ fontFamily: "var(--font-syne), sans-serif" }}
+          >
             YOUNGIN
           </span>
         )}
@@ -95,8 +121,13 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
                   : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
               } ${collapsed ? "justify-center" : ""}`}
             >
-              <item.icon className="w-4 h-4 shrink-0 transition-colors" style={{ color: active ? "#4F46E5" : "inherit" }} />
-              {!collapsed && <span className="tracking-wider uppercase">{item.label}</span>}
+              <item.icon
+                className="w-4 h-4 shrink-0 transition-colors"
+                style={{ color: active ? "#4F46E5" : "inherit" }}
+              />
+              {!collapsed && (
+                <span className="tracking-wider uppercase">{item.label}</span>
+              )}
             </Link>
           );
         })}
@@ -108,7 +139,14 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
           onClick={() => setCollapsed((c) => !c)}
           className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all text-xs font-bold uppercase tracking-wider ${collapsed ? "justify-center" : ""}`}
         >
-          {collapsed ? <ChevronRight className="w-4 h-4" /> : <><ChevronLeft className="w-4 h-4" /><span>Collapse</span></>}
+          {collapsed ? (
+            <ChevronRight className="w-4 h-4" />
+          ) : (
+            <>
+              <ChevronLeft className="w-4 h-4" />
+              <span>Collapse</span>
+            </>
+          )}
         </button>
       </div>
 
@@ -125,18 +163,28 @@ export default function TailorSidebar({ initialProfile }: { initialProfile?: { f
       </div>
 
       {/* User */}
-      <div className={`flex items-center gap-3 px-4 py-4 border-t border-slate-100 bg-slate-50/50 ${collapsed ? "justify-center" : ""}`}>
+      <div
+        className={`flex items-center gap-3 px-4 py-4 border-t border-slate-100 bg-slate-50/50 ${collapsed ? "justify-center" : ""}`}
+      >
         <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#3730A3] flex items-center justify-center text-white font-black text-sm overflow-hidden shadow-sm">
           {profile.avatar_url ? (
-            <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" />
+            <img
+              src={profile.avatar_url}
+              className="w-full h-full object-cover"
+              alt=""
+            />
           ) : (
             profile.full_name?.[0]?.toUpperCase() || "T"
           )}
         </div>
         {!collapsed && (
           <div className="flex-1 min-w-0">
-            <p className="text-slate-900 font-black text-xs truncate">{profile.full_name}</p>
-            <p className="text-[#4F46E5] text-[9px] font-black uppercase tracking-wider">LV. {profile.level || 1} CREATOR</p>
+            <p className="text-slate-900 font-black text-xs truncate">
+              {profile.full_name}
+            </p>
+            <p className="text-[#4F46E5] text-[9px] font-black uppercase tracking-wider">
+              LV. {profile.level || 1} CREATOR
+            </p>
           </div>
         )}
       </div>

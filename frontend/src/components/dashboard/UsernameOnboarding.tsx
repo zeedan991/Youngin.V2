@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchLiveProfile, updateProfile } from "@/app/(dashboard)/profile/actions";
+import {
+  fetchLiveProfile,
+  updateProfile,
+} from "@/app/(dashboard)/profile/actions";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Scissors, ShoppingBag, ArrowRight, Check } from "lucide-react";
@@ -14,7 +17,9 @@ export default function UsernameOnboarding() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [username, setUsername] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"user" | "tailor" | null>(null);
+  const [selectedRole, setSelectedRole] = useState<"user" | "tailor" | null>(
+    null,
+  );
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -101,7 +106,10 @@ export default function UsernameOnboarding() {
                 👋
               </div>
             </div>
-            <h2 className="text-2xl font-extrabold text-[#F0EBE3] text-center mb-2" style={{ fontFamily: "var(--font-syne), sans-serif" }}>
+            <h2
+              className="text-2xl font-extrabold text-[#F0EBE3] text-center mb-2"
+              style={{ fontFamily: "var(--font-syne), sans-serif" }}
+            >
               Welcome to YOUNGIN
             </h2>
             <p className="text-white/40 text-sm text-center mb-8 font-medium">
@@ -120,25 +128,42 @@ export default function UsernameOnboarding() {
                   Choose Username
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 font-bold">@</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 font-bold">
+                    @
+                  </span>
                   <input
                     type="text"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
+                    onChange={(e) =>
+                      setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))
+                    }
                     placeholder="creator_99"
                     className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-9 pr-4 text-[#F0EBE3] font-bold placeholder:text-white/20 focus:outline-none focus:border-[#4F46E5] transition-colors"
                     autoFocus
                   />
                 </div>
-                {error && <p className="text-[#4F46E5] text-xs font-bold mt-2 ml-1">{error}</p>}
+                {error && (
+                  <p className="text-[#4F46E5] text-xs font-bold mt-2 ml-1">
+                    {error}
+                  </p>
+                )}
               </div>
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full py-4 rounded-xl mt-4 transition-all disabled:opacity-50 flex items-center justify-center gap-2 font-bold text-sm text-white"
-                style={{ background: "linear-gradient(135deg, #4F46E5, #3730A3)" }}
+                style={{
+                  background: "linear-gradient(135deg, #4F46E5, #3730A3)",
+                }}
               >
-                {isSubmitting ? "Saving..." : <><span>Continue</span><ArrowRight className="w-4 h-4" /></>}
+                {isSubmitting ? (
+                  "Saving..."
+                ) : (
+                  <>
+                    <span>Continue</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           </motion.div>
@@ -156,11 +181,15 @@ export default function UsernameOnboarding() {
               <div className="flex-1 h-1 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#3730A3]" />
             </div>
 
-            <h2 className="text-2xl font-extrabold text-[#F0EBE3] text-center mb-2" style={{ fontFamily: "var(--font-syne), sans-serif" }}>
+            <h2
+              className="text-2xl font-extrabold text-[#F0EBE3] text-center mb-2"
+              style={{ fontFamily: "var(--font-syne), sans-serif" }}
+            >
               How will you use YOUNGIN?
             </h2>
             <p className="text-white/40 text-sm text-center mb-8 font-medium">
-              This helps us personalise your experience. You can always switch later.
+              This helps us personalise your experience. You can always switch
+              later.
             </p>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
@@ -181,8 +210,12 @@ export default function UsernameOnboarding() {
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/20 flex items-center justify-center mb-4">
                   <ShoppingBag className="w-6 h-6 text-blue-400" />
                 </div>
-                <h3 className="font-black text-[#F0EBE3] text-sm mb-1">I&apos;m a Shopper</h3>
-                <p className="text-white/40 text-[11px] leading-tight">Discover fashion, try on clothes, and find tailors</p>
+                <h3 className="font-black text-[#F0EBE3] text-sm mb-1">
+                  I&apos;m a Shopper
+                </h3>
+                <p className="text-white/40 text-[11px] leading-tight">
+                  Discover fashion, try on clothes, and find tailors
+                </p>
               </button>
 
               {/* Tailor Card */}
@@ -202,8 +235,12 @@ export default function UsernameOnboarding() {
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4F46E5]/20 to-[#3730A3]/20 border border-[#4F46E5]/20 flex items-center justify-center mb-4">
                   <Scissors className="w-6 h-6 text-[#4F46E5]" />
                 </div>
-                <h3 className="font-black text-[#F0EBE3] text-sm mb-1">I&apos;m a Tailor</h3>
-                <p className="text-white/40 text-[11px] leading-tight">Showcase your work, get orders & manage clients</p>
+                <h3 className="font-black text-[#F0EBE3] text-sm mb-1">
+                  I&apos;m a Tailor
+                </h3>
+                <p className="text-white/40 text-[11px] leading-tight">
+                  Showcase your work, get orders & manage clients
+                </p>
               </button>
             </div>
 
@@ -211,9 +248,20 @@ export default function UsernameOnboarding() {
               onClick={handleRoleSubmit}
               disabled={!selectedRole || isSubmitting}
               className="w-full py-4 rounded-xl transition-all disabled:opacity-40 flex items-center justify-center gap-2 font-bold text-sm text-white"
-              style={{ background: selectedRole ? "linear-gradient(135deg, #4F46E5, #3730A3)" : "rgba(255,255,255,0.1)" }}
+              style={{
+                background: selectedRole
+                  ? "linear-gradient(135deg, #4F46E5, #3730A3)"
+                  : "rgba(255,255,255,0.1)",
+              }}
             >
-              {isSubmitting ? "Setting up your workspace..." : <><span>Get Started</span><ArrowRight className="w-4 h-4" /></>}
+              {isSubmitting ? (
+                "Setting up your workspace..."
+              ) : (
+                <>
+                  <span>Get Started</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </motion.div>
         )}
@@ -221,4 +269,3 @@ export default function UsernameOnboarding() {
     </div>
   );
 }
-

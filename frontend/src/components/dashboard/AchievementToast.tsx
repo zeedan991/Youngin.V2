@@ -10,7 +10,10 @@ interface AchievementToastProps {
   onClose: () => void;
 }
 
-export default function AchievementToast({ achievement, onClose }: AchievementToastProps) {
+export default function AchievementToast({
+  achievement,
+  onClose,
+}: AchievementToastProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -39,12 +42,16 @@ export default function AchievementToast({ achievement, onClose }: AchievementTo
 
           <div className="relative rounded-3xl bg-[#0F0E0E] border border-[#4F46E5]/30 shadow-2xl overflow-hidden">
             {/* Top shimmer bar */}
-            <div className={`h-1 w-full bg-gradient-to-r ${RARITY_COLORS[achievement.rarity]}`} />
+            <div
+              className={`h-1 w-full bg-gradient-to-r ${RARITY_COLORS[achievement.rarity]}`}
+            />
 
             <div className="p-5">
               <div className="flex items-start gap-4">
                 {/* Icon */}
-                <div className={`h-14 w-14 shrink-0 rounded-2xl bg-gradient-to-br ${RARITY_COLORS[achievement.rarity]} flex items-center justify-center text-2xl shadow-lg`}>
+                <div
+                  className={`h-14 w-14 shrink-0 rounded-2xl bg-gradient-to-br ${RARITY_COLORS[achievement.rarity]} flex items-center justify-center text-2xl shadow-lg`}
+                >
                   {achievement.icon}
                 </div>
 
@@ -60,12 +67,20 @@ export default function AchievementToast({ achievement, onClose }: AchievementTo
                     {achievement.description}
                   </p>
                   <div className="mt-2 inline-flex items-center gap-1.5 bg-[#4F46E5]/10 border border-[#4F46E5]/20 rounded-full px-3 py-1">
-                    <span className="text-[10px] font-black text-[#4F46E5]">+{achievement.xpReward} XP</span>
+                    <span className="text-[10px] font-black text-[#4F46E5]">
+                      +{achievement.xpReward} XP
+                    </span>
                   </div>
                 </div>
 
                 {/* Close */}
-                <button onClick={() => { setVisible(false); setTimeout(onClose, 400); }} className="text-white/30 hover:text-white transition-colors shrink-0">
+                <button
+                  onClick={() => {
+                    setVisible(false);
+                    setTimeout(onClose, 400);
+                  }}
+                  className="text-white/30 hover:text-white transition-colors shrink-0"
+                >
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -84,4 +99,3 @@ export default function AchievementToast({ achievement, onClose }: AchievementTo
     </AnimatePresence>
   );
 }
-

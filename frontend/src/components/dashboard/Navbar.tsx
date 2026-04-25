@@ -37,16 +37,27 @@ const NAV_ITEMS = [
   { label: "Virtual Try-On", href: "/vton", icon: Shirt },
 ];
 
-export default function Navbar({ initialProfile }: { initialProfile?: { name: string; level: number; avatar_url: string | null; role: string } }) {
+export default function Navbar({
+  initialProfile,
+}: {
+  initialProfile?: {
+    name: string;
+    level: number;
+    avatar_url: string | null;
+    role: string;
+  };
+}) {
   const pathname = usePathname();
   const router = useRouter();
-  
-  const [profile, setProfile] = useState(initialProfile || {
-    name: "Creator",
-    level: 1,
-    avatar_url: null,
-    role: "user",
-  });
+
+  const [profile, setProfile] = useState(
+    initialProfile || {
+      name: "Creator",
+      level: 1,
+      avatar_url: null,
+      role: "user",
+    },
+  );
 
   const [isOpen, setIsOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -74,23 +85,42 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
         .then((res) => {
           if (res.success && res.data) {
             setProfile({
-              name: (res.data as any).username || (res.data as any).full_name || "Creator",
+              name:
+                (res.data as any).username ||
+                (res.data as any).full_name ||
+                "Creator",
               level: (res.data as any).level || 1,
               avatar_url: (res.data as any).avatar_url || null,
               role: (res.data as any).role || "user",
             });
-            const isTailorRoute = window.location.pathname.startsWith("/tailor");
-            if ((res.data as any).role === "tailor" && !isTailorRoute && window.location.pathname === "/dashboard") {
+            const isTailorRoute =
+              window.location.pathname.startsWith("/tailor");
+            if (
+              (res.data as any).role === "tailor" &&
+              !isTailorRoute &&
+              window.location.pathname === "/dashboard"
+            ) {
               router.replace("/tailor/dashboard");
             }
           }
         })
-        .catch(() => setProfile({ name: "Creator", level: 1, avatar_url: null, role: "user" }));
+        .catch(() =>
+          setProfile({
+            name: "Creator",
+            level: 1,
+            avatar_url: null,
+            role: "user",
+          }),
+        );
     } else {
-        const isTailorRoute = window.location.pathname.startsWith("/tailor");
-        if (initialProfile.role === "tailor" && !isTailorRoute && window.location.pathname === "/dashboard") {
-            router.replace("/tailor/dashboard");
-        }
+      const isTailorRoute = window.location.pathname.startsWith("/tailor");
+      if (
+        initialProfile.role === "tailor" &&
+        !isTailorRoute &&
+        window.location.pathname === "/dashboard"
+      ) {
+        router.replace("/tailor/dashboard");
+      }
     }
   }, [initialProfile, router]);
 
@@ -100,12 +130,13 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
     router.push("/login");
   };
 
-  const initials = profile.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .substring(0, 2)
-    .toUpperCase() || "YU";
+  const initials =
+    profile.name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase() || "YU";
 
   const accentColor = "#4F46E5";
   const sidebarBg = "#0A0909"; // Pure black menu exactly as requested
@@ -154,20 +185,38 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
             exit={{ x: "-100%", boxShadow: "none" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed top-0 left-0 bottom-0 w-[280px] xl:w-[320px] flex flex-col z-50 overflow-hidden"
-            style={{ background: sidebarBg, borderRight: `1px solid ${borderColor}` }}
+            style={{
+              background: sidebarBg,
+              borderRight: `1px solid ${borderColor}`,
+            }}
           >
             {/* 1. Header (Logo/Close) */}
-            <div className="h-[80px] flex items-center justify-between px-6 border-b shrink-0" style={{ borderColor }}>
-              <span className="font-extrabold tracking-[2px] uppercase text-white" style={{ fontFamily: "var(--font-syne), sans-serif", fontSize: "16px" }}>
+            <div
+              className="h-[80px] flex items-center justify-between px-6 border-b shrink-0"
+              style={{ borderColor }}
+            >
+              <span
+                className="font-extrabold tracking-[2px] uppercase text-white"
+                style={{
+                  fontFamily: "var(--font-syne), sans-serif",
+                  fontSize: "16px",
+                }}
+              >
                 YOUNGIN
               </span>
-              <button onClick={() => setIsOpen(false)} className="p-2 rounded-full hover:bg-white/10 transition-colors text-white/50 hover:text-white">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 rounded-full hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* 2. Global Search */}
-            <div className="px-6 py-6 border-b shrink-0 relative" style={{ borderColor }}>
+            <div
+              className="px-6 py-6 border-b shrink-0 relative"
+              style={{ borderColor }}
+            >
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                 <input
@@ -176,29 +225,68 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-11 pr-4 py-3.5 rounded-2xl text-xs font-bold outline-none transition-all placeholder:text-white/30"
-                  style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${borderColor}`, color: textActive }}
-                  onFocus={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.2)"; setIsSearching(true); }}
-                  onBlur={(e) => { e.target.style.borderColor = borderColor; setTimeout(() => setIsSearching(false), 200); }}
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    border: `1px solid ${borderColor}`,
+                    color: textActive,
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "rgba(255,255,255,0.2)";
+                    setIsSearching(true);
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = borderColor;
+                    setTimeout(() => setIsSearching(false), 200);
+                  }}
                 />
               </div>
 
               {/* Search Results Dropdown */}
               {isSearching && searchResults.length > 0 && (
-                <div className="absolute left-6 right-6 top-[80px] mt-2 rounded-2xl border overflow-hidden shadow-2xl" style={{ background: "#0F0F12", border: `1px solid ${borderColor}`, zIndex: 60 }}>
+                <div
+                  className="absolute left-6 right-6 top-[80px] mt-2 rounded-2xl border overflow-hidden shadow-2xl"
+                  style={{
+                    background: "#0F0F12",
+                    border: `1px solid ${borderColor}`,
+                    zIndex: 60,
+                  }}
+                >
                   {searchResults.map((user: any) => (
                     <button
                       key={user.id}
-                      onClick={() => { router.push(`/creator/${user.username}`); setIsSearching(false); setSearchQuery(''); setIsOpen(false); }}
+                      onClick={() => {
+                        router.push(`/creator/${user.username}`);
+                        setIsSearching(false);
+                        setSearchQuery("");
+                        setIsOpen(false);
+                      }}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left"
                     >
-                      <div className="w-8 h-8 rounded-full overflow-hidden" style={{ background: accentColor }}>
-                        {user.avatar_url
-                          ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
-                          : <span className="flex items-center justify-center w-full h-full text-[10px] font-black text-white">{(user.username || 'YU').substring(0,2).toUpperCase()}</span>}
+                      <div
+                        className="w-8 h-8 rounded-full overflow-hidden"
+                        style={{ background: accentColor }}
+                      >
+                        {user.avatar_url ? (
+                          <img
+                            src={user.avatar_url}
+                            className="w-full h-full object-cover"
+                            alt=""
+                          />
+                        ) : (
+                          <span className="flex items-center justify-center w-full h-full text-[10px] font-black text-white">
+                            {(user.username || "YU")
+                              .substring(0, 2)
+                              .toUpperCase()}
+                          </span>
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold truncate leading-none text-white">{user.full_name || user.username}</p>
-                        <p className="text-[10px] truncate text-white/40 pt-1">@{user.username}</p>
+                        <p className="text-xs font-bold truncate leading-none text-white">
+                          {user.full_name || user.username}
+                        </p>
+                        <p className="text-[10px] truncate text-white/40 pt-1">
+                          @{user.username}
+                        </p>
                       </div>
                     </button>
                   ))}
@@ -209,7 +297,10 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
             {/* 3. Navigation Links */}
             <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1 custom-scrollbar">
               {profile.role === "tailor" && (
-                <Link href="/tailor/dashboard" className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-[#4F46E5] bg-[#4F46E5]/10 hover:bg-[#4F46E5]/20 transition-all mb-4">
+                <Link
+                  href="/tailor/dashboard"
+                  className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-[#4F46E5] bg-[#4F46E5]/10 hover:bg-[#4F46E5]/20 transition-all mb-4"
+                >
                   <Scissors className="w-4 h-4" /> Tailor Portal
                 </Link>
               )}
@@ -226,8 +317,14 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
                         background: isActive ? accentColor : "transparent",
                       }}
                     >
-                      <Icon className="w-4 h-4 xl:w-5 xl:h-5 transition-colors" style={{ color: isActive ? "#FFFFFF" : textMuted }} />
-                      <span className="text-xs xl:text-xs font-bold tracking-wide transition-colors" style={{ color: isActive ? "#FFFFFF" : textMuted }}>
+                      <Icon
+                        className="w-4 h-4 xl:w-5 xl:h-5 transition-colors"
+                        style={{ color: isActive ? "#FFFFFF" : textMuted }}
+                      />
+                      <span
+                        className="text-xs xl:text-xs font-bold tracking-wide transition-colors"
+                        style={{ color: isActive ? "#FFFFFF" : textMuted }}
+                      >
                         {item.label}
                       </span>
                     </div>
@@ -237,7 +334,10 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
             </nav>
 
             {/* 4. Very Bottom Left Profile */}
-            <div className="px-4 pb-6 pt-2 border-t mt-auto" style={{ borderColor }}>
+            <div
+              className="px-4 pb-6 pt-2 border-t mt-auto"
+              style={{ borderColor }}
+            >
               <div className="flex gap-2 w-full mb-3">
                 <button
                   onClick={handleLogout}
@@ -247,7 +347,10 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
                 </button>
               </div>
 
-              <Link href="/profile" className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all group border border-transparent hover:border-white/10">
+              <Link
+                href="/profile"
+                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all group border border-transparent hover:border-white/10"
+              >
                 <div
                   className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center overflow-hidden shadow-lg"
                   style={{
@@ -263,14 +366,19 @@ export default function Navbar({ initialProfile }: { initialProfile?: { name: st
                       onError={() => setImageError(true)}
                     />
                   ) : (
-                    <span className="text-[13px] font-black text-white">{initials}</span>
+                    <span className="text-[13px] font-black text-white">
+                      {initials}
+                    </span>
                   )}
                 </div>
                 <div className="flex flex-col flex-1 min-w-0">
                   <span className="text-[12px] font-bold truncate text-white">
                     {profile.name}
                   </span>
-                  <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: accentColor }}>
+                  <span
+                    className="text-[9px] font-black uppercase tracking-widest"
+                    style={{ color: accentColor }}
+                  >
                     Level {profile.level} Creator
                   </span>
                 </div>

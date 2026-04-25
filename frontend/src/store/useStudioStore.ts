@@ -11,21 +11,15 @@ export type GarmentType =
   | "totebag"
   | "cap";
 
-export type ActiveTool =
-  | "select"
-  | "text"
-  | "shape"
-  | "draw"
-  | "image"
-  | "ai";
+export type ActiveTool = "select" | "text" | "shape" | "draw" | "image" | "ai";
 
 export interface GarmentConfig {
   id: GarmentType;
   label: string;
   emoji: string;
-  canvasWidth: number;   // px at 72dpi — multiplied x4 for print
+  canvasWidth: number; // px at 72dpi — multiplied x4 for print
   canvasHeight: number;
-  printWidth: string;    // Real-world cm
+  printWidth: string; // Real-world cm
   printHeight: string;
   printZone: string;
   bgColor: string;
@@ -33,14 +27,102 @@ export interface GarmentConfig {
 }
 
 export const GARMENTS: GarmentConfig[] = [
-  { id: "tshirt",   label: "Classic T-Shirt",   emoji: "👕", canvasWidth: 520, canvasHeight: 640, printWidth: "28cm", printHeight: "36cm", printZone: "front-chest",   bgColor: "#FFFFFF", has3D: true  },
-  { id: "hoodie",   label: "Hoodie",             emoji: "🧥", canvasWidth: 560, canvasHeight: 680, printWidth: "30cm", printHeight: "38cm", printZone: "front-pocket",  bgColor: "#CCCCCC", has3D: true  },
-  { id: "crewneck", label: "Crewneck",            emoji: "🧣", canvasWidth: 540, canvasHeight: 650, printWidth: "29cm", printHeight: "37cm", printZone: "front-chest",   bgColor: "#F5F5F5", has3D: true  },
-  { id: "jacket",   label: "Bomber Jacket",       emoji: "🧣", canvasWidth: 580, canvasHeight: 700, printWidth: "32cm", printHeight: "40cm", printZone: "back-panel",    bgColor: "#111111", has3D: true  },
-  { id: "pants",    label: "Cargo Pants",         emoji: "👖", canvasWidth: 480, canvasHeight: 720, printWidth: "26cm", printHeight: "56cm", printZone: "front-left",    bgColor: "#4A4A4A", has3D: false },
-  { id: "sneakers", label: "Sneakers",            emoji: "👟", canvasWidth: 600, canvasHeight: 400, printWidth: "34cm", printHeight: "22cm", printZone: "side-panel",    bgColor: "#FFFFFF", has3D: false },
-  { id: "totebag",  label: "Tote Bag",            emoji: "👜", canvasWidth: 500, canvasHeight: 500, printWidth: "28cm", printHeight: "28cm", printZone: "front-panel",   bgColor: "#F5C842", has3D: false },
-  { id: "cap",      label: "Cap / Hat",           emoji: "🧢", canvasWidth: 480, canvasHeight: 320, printWidth: "20cm", printHeight: "14cm", printZone: "front-panel",   bgColor: "#1A1A1A", has3D: false },
+  {
+    id: "tshirt",
+    label: "Classic T-Shirt",
+    emoji: "👕",
+    canvasWidth: 520,
+    canvasHeight: 640,
+    printWidth: "28cm",
+    printHeight: "36cm",
+    printZone: "front-chest",
+    bgColor: "#FFFFFF",
+    has3D: true,
+  },
+  {
+    id: "hoodie",
+    label: "Hoodie",
+    emoji: "🧥",
+    canvasWidth: 560,
+    canvasHeight: 680,
+    printWidth: "30cm",
+    printHeight: "38cm",
+    printZone: "front-pocket",
+    bgColor: "#CCCCCC",
+    has3D: true,
+  },
+  {
+    id: "crewneck",
+    label: "Crewneck",
+    emoji: "🧣",
+    canvasWidth: 540,
+    canvasHeight: 650,
+    printWidth: "29cm",
+    printHeight: "37cm",
+    printZone: "front-chest",
+    bgColor: "#F5F5F5",
+    has3D: true,
+  },
+  {
+    id: "jacket",
+    label: "Bomber Jacket",
+    emoji: "🧣",
+    canvasWidth: 580,
+    canvasHeight: 700,
+    printWidth: "32cm",
+    printHeight: "40cm",
+    printZone: "back-panel",
+    bgColor: "#111111",
+    has3D: true,
+  },
+  {
+    id: "pants",
+    label: "Cargo Pants",
+    emoji: "👖",
+    canvasWidth: 480,
+    canvasHeight: 720,
+    printWidth: "26cm",
+    printHeight: "56cm",
+    printZone: "front-left",
+    bgColor: "#4A4A4A",
+    has3D: false,
+  },
+  {
+    id: "sneakers",
+    label: "Sneakers",
+    emoji: "👟",
+    canvasWidth: 600,
+    canvasHeight: 400,
+    printWidth: "34cm",
+    printHeight: "22cm",
+    printZone: "side-panel",
+    bgColor: "#FFFFFF",
+    has3D: false,
+  },
+  {
+    id: "totebag",
+    label: "Tote Bag",
+    emoji: "👜",
+    canvasWidth: 500,
+    canvasHeight: 500,
+    printWidth: "28cm",
+    printHeight: "28cm",
+    printZone: "front-panel",
+    bgColor: "#F5C842",
+    has3D: false,
+  },
+  {
+    id: "cap",
+    label: "Cap / Hat",
+    emoji: "🧢",
+    canvasWidth: 480,
+    canvasHeight: 320,
+    printWidth: "20cm",
+    printHeight: "14cm",
+    printZone: "front-panel",
+    bgColor: "#1A1A1A",
+    has3D: false,
+  },
 ];
 
 export interface StudioState {

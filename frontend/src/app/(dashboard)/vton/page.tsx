@@ -3,8 +3,15 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  UploadCloud, Shirt, Sparkles, RefreshCcw, CheckCircle2, Download,
-  ChevronRight, Loader2, X
+  UploadCloud,
+  Shirt,
+  Sparkles,
+  RefreshCcw,
+  CheckCircle2,
+  Download,
+  ChevronRight,
+  Loader2,
+  X,
 } from "lucide-react";
 import { processVirtualTryOn } from "./actions";
 
@@ -35,7 +42,11 @@ async function generateLowerBodyMask(humanBase64: string): Promise<string> {
 }
 
 // ── Client-side image resize & compress ─────────────────────────
-function compressImage(file: File, maxDim = 1536, quality = 0.98): Promise<string> {
+function compressImage(
+  file: File,
+  maxDim = 1536,
+  quality = 0.98,
+): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -43,9 +54,15 @@ function compressImage(file: File, maxDim = 1536, quality = 0.98): Promise<strin
       img.onload = () => {
         let { width, height } = img;
         if (width > height) {
-          if (width > maxDim) { height = Math.round(height * maxDim / width); width = maxDim; }
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
         } else {
-          if (height > maxDim) { width = Math.round(width * maxDim / height); height = maxDim; }
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
         }
         const canvas = document.createElement("canvas");
         canvas.width = width;
@@ -61,21 +78,34 @@ function compressImage(file: File, maxDim = 1536, quality = 0.98): Promise<strin
 
 // ── Upload Zone Sub-component ────────────────────────────────────
 function UploadZone({
-  label, sublabel, icon: Icon, value, onChange, accent,
+  label,
+  sublabel,
+  icon: Icon,
+  value,
+  onChange,
+  accent,
 }: {
-  label: string; sublabel: string; icon: any; value: string | null;
-  onChange: (v: string) => void; accent: string;
+  label: string;
+  sublabel: string;
+  icon: any;
+  value: string | null;
+  onChange: (v: string) => void;
+  accent: string;
 }) {
   const id = `upload-${label.replace(/\s+/g, "-").toLowerCase()}`;
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+        {label}
+      </p>
       <label
         htmlFor={id}
         className="relative flex flex-col items-center justify-center rounded-2xl cursor-pointer transition-all overflow-hidden group"
         style={{
           height: 200,
-          border: value ? `2px solid ${accent}` : "2px dashed rgba(255,255,255,0.12)",
+          border: value
+            ? `2px solid ${accent}`
+            : "2px dashed rgba(255,255,255,0.12)",
           background: value ? "transparent" : "rgba(255,255,255,0.03)",
         }}
       >
@@ -92,7 +122,11 @@ function UploadZone({
         />
         {value ? (
           <>
-            <img src={value} alt={label} className="w-full h-full object-contain" />
+            <img
+              src={value}
+              alt={label}
+              className="w-full h-full object-contain"
+            />
             <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center gap-2">
               <RefreshCcw className="w-6 h-6 text-white" />
               <span className="text-white text-xs font-bold">Change</span>
@@ -114,7 +148,9 @@ function UploadZone({
             </div>
             <div>
               <p className="font-bold text-sm text-slate-300">{sublabel}</p>
-              <p className="text-xs text-slate-500 mt-0.5">JPG, PNG — Max 10MB</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                JPG, PNG — Max 10MB
+              </p>
             </div>
             <div
               className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
@@ -152,7 +188,12 @@ export default function VirtualTryOnPage() {
       maskBase64 = await generateLowerBodyMask(humanImg);
     }
 
-    const res = await processVirtualTryOn(humanImg, garmentImg, garmentType, maskBase64);
+    const res = await processVirtualTryOn(
+      humanImg,
+      garmentImg,
+      garmentType,
+      maskBase64,
+    );
 
     if (res.success && res.imageUrl) {
       setResultImg(res.imageUrl);
@@ -171,60 +212,89 @@ export default function VirtualTryOnPage() {
   };
 
   return (
-    <div
-      className="min-h-screen w-full bg-slate-900 text-slate-100"
-    >
+    <div className="min-h-screen w-full bg-slate-900 text-slate-100">
       <div className="max-w-[1300px] mx-auto px-4 py-10">
-
         {/* ── Header ── */}
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #4F46E5, #3730A3)" }}>
+            <div
+              className="w-10 h-10 rounded-2xl flex items-center justify-center"
+              style={{
+                background: "linear-gradient(135deg, #4F46E5, #3730A3)",
+              }}
+            >
               <Shirt className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-black tracking-tight text-white">Virtual Try-On</h1>
-              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Powered by IDM-VTON · AI Diffusion</p>
+              <h1 className="text-2xl font-black tracking-tight text-white">
+                Virtual Try-On
+              </h1>
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+                Powered by IDM-VTON · AI Diffusion
+              </p>
             </div>
           </div>
           <p className="max-w-xl leading-relaxed text-slate-300">
-            Upload your photo and a garment. Choose whether it's a shirt or pants, and watch AI seamlessly dress you in it.
+            Upload your photo and a garment. Choose whether it's a shirt or
+            pants, and watch AI seamlessly dress you in it.
           </p>
         </div>
 
         {/* ── Two-column layout ── */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-
           {/* LEFT: Inputs */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            
             {/* Step 1: Garment Type */}
-            <div
-              className="rounded-3xl p-6 bg-white shadow-xl text-slate-900"
-            >
+            <div className="rounded-3xl p-6 bg-white shadow-xl text-slate-900">
               <p className="text-xs font-bold uppercase tracking-[0.12em] mb-4 text-slate-400">
                 Step 1 — What are you trying on?
               </p>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { id: "shirt", label: "Shirt / Top", emoji: "👕", desc: "T-shirts, jackets, hoodies, tops", accent: "#6366f1" },
-                  { id: "pant", label: "Pants / Bottoms", emoji: "👖", desc: "Jeans, trousers, shorts, skirts", accent: "#4F46E5" },
+                  {
+                    id: "shirt",
+                    label: "Shirt / Top",
+                    emoji: "👕",
+                    desc: "T-shirts, jackets, hoodies, tops",
+                    accent: "#6366f1",
+                  },
+                  {
+                    id: "pant",
+                    label: "Pants / Bottoms",
+                    emoji: "👖",
+                    desc: "Jeans, trousers, shorts, skirts",
+                    accent: "#4F46E5",
+                  },
                 ].map((g) => (
                   <button
                     key={g.id}
                     onClick={() => setGarmentType(g.id as GarmentType)}
                     className="flex flex-col items-start p-4 rounded-2xl text-left transition-all"
                     style={{
-                      background: garmentType === g.id ? g.accent + "22" : "#f8fafc",
-                      border: garmentType === g.id ? `2px solid ${g.accent}` : `2px solid #e2e8f0`,
-                      boxShadow: garmentType === g.id ? `0 0 20px ${g.accent}33` : "none",
+                      background:
+                        garmentType === g.id ? g.accent + "22" : "#f8fafc",
+                      border:
+                        garmentType === g.id
+                          ? `2px solid ${g.accent}`
+                          : `2px solid #e2e8f0`,
+                      boxShadow:
+                        garmentType === g.id
+                          ? `0 0 20px ${g.accent}33`
+                          : "none",
                     }}
                   >
                     <span className="text-2xl mb-2">{g.emoji}</span>
-                    <p className="font-bold text-sm mb-0.5 text-slate-900">{g.label}</p>
-                    <p className="text-xs leading-tight text-slate-500">{g.desc}</p>
+                    <p className="font-bold text-sm mb-0.5 text-slate-900">
+                      {g.label}
+                    </p>
+                    <p className="text-xs leading-tight text-slate-500">
+                      {g.desc}
+                    </p>
                     {garmentType === g.id && (
-                      <div className="mt-2 flex items-center gap-1" style={{ color: g.accent }}>
+                      <div
+                        className="mt-2 flex items-center gap-1"
+                        style={{ color: g.accent }}
+                      >
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span className="text-xs font-bold">Selected</span>
                       </div>
@@ -235,9 +305,7 @@ export default function VirtualTryOnPage() {
             </div>
 
             {/* Step 2: Upload Images */}
-            <div
-              className="rounded-3xl p-6 flex flex-col gap-5 bg-white shadow-xl text-slate-900"
-            >
+            <div className="rounded-3xl p-6 flex flex-col gap-5 bg-white shadow-xl text-slate-900">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
                 Step 2 — Upload Photos
               </p>
@@ -272,18 +340,31 @@ export default function VirtualTryOnPage() {
                   : "rgba(255,255,255,0.07)",
                 color: canGenerate ? "white" : "rgba(255,255,255,0.25)",
                 cursor: canGenerate ? "pointer" : "not-allowed",
-                boxShadow: canGenerate ? "0 8px 40px rgba(255,77,148,0.35)" : "none",
+                boxShadow: canGenerate
+                  ? "0 8px 40px rgba(255,77,148,0.35)"
+                  : "none",
               }}
             >
               {loading ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> Generating…</>
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" /> Generating…
+                </>
               ) : (
-                <><Sparkles className="w-5 h-5" /> Generate Try-On<ChevronRight className="w-4 h-4" /></>
+                <>
+                  <Sparkles className="w-5 h-5" /> Generate Try-On
+                  <ChevronRight className="w-4 h-4" />
+                </>
               )}
             </motion.button>
 
             {error && (
-              <div className="rounded-2xl p-4 flex items-start gap-3" style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)" }}>
+              <div
+                className="rounded-2xl p-4 flex items-start gap-3"
+                style={{
+                  background: "rgba(239,68,68,0.12)",
+                  border: "1px solid rgba(239,68,68,0.3)",
+                }}
+              >
                 <X className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
                 <p className="text-red-400 text-sm font-medium">{error}</p>
               </div>
@@ -297,8 +378,20 @@ export default function VirtualTryOnPage() {
               style={{ minHeight: 620 }}
             >
               {/* Ambient glows */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(255,77,148,0.15), transparent 70%)" }} />
-              <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(99,102,241,0.15), transparent 70%)" }} />
+              <div
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 rounded-full blur-3xl pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(ellipse, rgba(255,77,148,0.15), transparent 70%)",
+                }}
+              />
+              <div
+                className="absolute bottom-0 right-0 w-72 h-72 rounded-full blur-3xl pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(ellipse, rgba(99,102,241,0.15), transparent 70%)",
+                }}
+              />
 
               <AnimatePresence mode="wait">
                 {loading ? (
@@ -317,10 +410,16 @@ export default function VirtualTryOnPage() {
                       </div>
                     </div>
                     <div>
-                      <h3 className="font-bold text-xl mb-2 text-slate-900">AI is styling you…</h3>
+                      <h3 className="font-bold text-xl mb-2 text-slate-900">
+                        AI is styling you…
+                      </h3>
                       <p className="text-sm max-w-xs text-slate-500">
-                        IDM-VTON is analyzing garment physics &amp; drape mapping.<br />
-                        <span className="text-[#4F46E5] font-semibold">Usually takes 20–40 seconds.</span>
+                        IDM-VTON is analyzing garment physics &amp; drape
+                        mapping.
+                        <br />
+                        <span className="text-[#4F46E5] font-semibold">
+                          Usually takes 20–40 seconds.
+                        </span>
                       </p>
                     </div>
                     <div className="flex gap-1.5 mt-2">
@@ -329,7 +428,11 @@ export default function VirtualTryOnPage() {
                           key={i}
                           className="w-2 h-2 rounded-full bg-[#4F46E5]"
                           animate={{ opacity: [0.3, 1, 0.3] }}
-                          transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 1.2,
+                            delay: i * 0.2,
+                          }}
                         />
                       ))}
                     </div>
@@ -351,7 +454,15 @@ export default function VirtualTryOnPage() {
                     />
 
                     {/* Overlay badges */}
-                    <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-1.5" style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", color: "#4F46E5", border: "1px solid rgba(255,77,148,0.3)" }}>
+                    <div
+                      className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-1.5"
+                      style={{
+                        background: "rgba(0,0,0,0.6)",
+                        backdropFilter: "blur(8px)",
+                        color: "#4F46E5",
+                        border: "1px solid rgba(255,77,148,0.3)",
+                      }}
+                    >
                       <CheckCircle2 className="w-3 h-3" /> Try-On Complete
                     </div>
 
@@ -361,16 +472,27 @@ export default function VirtualTryOnPage() {
                         onClick={handleDownload}
                         className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider text-white transition-all hover:scale-105"
                         style={{
-                          background: "linear-gradient(135deg, #4F46E5, #3730A3)",
+                          background:
+                            "linear-gradient(135deg, #4F46E5, #3730A3)",
                           boxShadow: "0 8px 20px rgba(255,77,148,0.4)",
                         }}
                       >
                         <Download className="w-4 h-4" /> Download
                       </button>
                       <button
-                        onClick={() => { setResultImg(null); setHumanImg(null); setGarmentImg(null); setGarmentType(null); }}
+                        onClick={() => {
+                          setResultImg(null);
+                          setHumanImg(null);
+                          setGarmentImg(null);
+                          setGarmentType(null);
+                        }}
                         className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider transition-all hover:scale-105"
-                        style={{ background: "rgba(255,255,255,0.8)", backdropFilter: "blur(8px)", color: "#111827", border: "1px solid rgba(0,0,0,0.1)" }}
+                        style={{
+                          background: "rgba(255,255,255,0.8)",
+                          backdropFilter: "blur(8px)",
+                          color: "#111827",
+                          border: "1px solid rgba(0,0,0,0.1)",
+                        }}
                       >
                         <RefreshCcw className="w-4 h-4" /> Try Another
                       </button>
@@ -383,33 +505,68 @@ export default function VirtualTryOnPage() {
                     animate={{ opacity: 1 }}
                     className="flex flex-col items-center gap-5 text-center px-10 z-10"
                   >
-                    <div className="w-24 h-24 rounded-3xl flex items-center justify-center mb-2" style={{ background: "rgba(255,77,148,0.1)", border: "2px dashed rgba(255,77,148,0.25)" }}>
+                    <div
+                      className="w-24 h-24 rounded-3xl flex items-center justify-center mb-2"
+                      style={{
+                        background: "rgba(255,77,148,0.1)",
+                        border: "2px dashed rgba(255,77,148,0.25)",
+                      }}
+                    >
                       <Shirt className="w-10 h-10 text-[#4F46E5] opacity-60" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-black mb-2 text-slate-900">Your studio is ready</h3>
+                      <h3 className="text-xl font-black mb-2 text-slate-900">
+                        Your studio is ready
+                      </h3>
                       <p className="text-sm max-w-xs leading-relaxed text-slate-500">
-                        Choose a garment type, upload your photos, and hit generate. The AI will dress you in seconds.
+                        Choose a garment type, upload your photos, and hit
+                        generate. The AI will dress you in seconds.
                       </p>
                     </div>
                     {/* Step indicators */}
                     {[
-                      { n: "1", t: garmentType ? `${garmentType === "shirt" ? "👕 Shirt" : "👖 Pants"} selected` : "Choose garment type", done: !!garmentType },
-                      { n: "2", t: humanImg ? "Your photo uploaded ✓" : "Upload your photo", done: !!humanImg },
-                      { n: "3", t: garmentImg ? "Garment photo uploaded ✓" : "Upload garment photo", done: !!garmentImg },
+                      {
+                        n: "1",
+                        t: garmentType
+                          ? `${garmentType === "shirt" ? "👕 Shirt" : "👖 Pants"} selected`
+                          : "Choose garment type",
+                        done: !!garmentType,
+                      },
+                      {
+                        n: "2",
+                        t: humanImg
+                          ? "Your photo uploaded ✓"
+                          : "Upload your photo",
+                        done: !!humanImg,
+                      },
+                      {
+                        n: "3",
+                        t: garmentImg
+                          ? "Garment photo uploaded ✓"
+                          : "Upload garment photo",
+                        done: !!garmentImg,
+                      },
                     ].map((step) => (
-                      <div key={step.n} className="flex items-center gap-3 mt-3">
+                      <div
+                        key={step.n}
+                        className="flex items-center gap-3 mt-3"
+                      >
                         <div
                           className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0"
                           style={{
-                            background: step.done ? "linear-gradient(135deg, #4F46E5, #3730A3)" : "#f8fafc",
+                            background: step.done
+                              ? "linear-gradient(135deg, #4F46E5, #3730A3)"
+                              : "#f8fafc",
                             border: `1px solid #e2e8f0`,
                             color: step.done ? "white" : "#94a3b8",
                           }}
                         >
                           {step.done ? "✓" : step.n}
                         </div>
-                        <p className="text-sm font-medium" style={{ color: step.done ? "#0f172a" : "#94a3b8" }}>
+                        <p
+                          className="text-sm font-medium"
+                          style={{ color: step.done ? "#0f172a" : "#94a3b8" }}
+                        >
                           {step.t}
                         </p>
                       </div>
@@ -424,4 +581,3 @@ export default function VirtualTryOnPage() {
     </div>
   );
 }
-

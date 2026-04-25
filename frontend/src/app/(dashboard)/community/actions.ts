@@ -16,7 +16,10 @@ export async function getUserProfile(username: string) {
 
     if (profileError || !profile) {
       console.error("Profile fetch error:", profileError);
-      return { success: false, error: profileError?.message || "Creator not found" };
+      return {
+        success: false,
+        error: profileError?.message || "Creator not found",
+      };
     }
 
     // 2. Fetch their public designs (ONLY necessary fields, to avoid HUGE base64 strings crashing the server action)
@@ -25,26 +28,28 @@ export async function getUserProfile(username: string) {
       .select("id, title, type, storage_url, created_at")
       .eq("user_id", profile.id)
       .order("created_at", { ascending: false });
-      
+
     if (designsError) {
-       console.error("Designs fetch error:", designsError);
+      console.error("Designs fetch error:", designsError);
     }
 
     // 3. Get follow stats
     const { count: followersCount } = await supabase
       .from("follows")
-      .select("*", { count: 'exact', head: true })
+      .select("*", { count: "exact", head: true })
       .eq("following_id", profile.id);
 
     const { count: followingCount } = await supabase
       .from("follows")
-      .select("*", { count: 'exact', head: true })
+      .select("*", { count: "exact", head: true })
       .eq("follower_id", profile.id);
 
     // 4. Check if current user is following them
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     let isFollowing = false;
-    
+
     if (user && user.id !== profile.id) {
       const { data: followRecord } = await supabase
         .from("follows")
@@ -52,35 +57,41 @@ export async function getUserProfile(username: string) {
         .eq("follower_id", user.id)
         .eq("following_id", profile.id)
         .single();
-        
+
       if (followRecord) {
         isFollowing = true;
       }
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: {
         profile,
         designs: designs || [],
         followers: followersCount || 0,
         following: followingCount || 0,
         isFollowing,
-        isSelf: user?.id === profile.id
-      }
+        isSelf: user?.id === profile.id,
+      },
     };
   } catch (err: any) {
     console.error("Critical Profile Fetch Error:", err);
-    return { success: false, error: "Failed to load creator: " + (err.message || "Unknown error") };
+    return {
+      success: false,
+      error: "Failed to load creator: " + (err.message || "Unknown error"),
+    };
   }
 }
 
 export async function toggleFollow(targetUserId: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return { success: false, error: "Not authenticated" };
-  if (user.id === targetUserId) return { success: false, error: "Cannot follow yourself" };
+  if (user.id === targetUserId)
+    return { success: false, error: "Cannot follow yourself" };
 
   // Check if following
   const { data: existing } = await supabase
@@ -96,18 +107,20 @@ export async function toggleFollow(targetUserId: string) {
     return { success: true, isFollowing: false };
   } else {
     // Follow
-    await supabase.from("follows").insert({ follower_id: user.id, following_id: targetUserId });
+    await supabase
+      .from("follows")
+      .insert({ follower_id: user.id, following_id: targetUserId });
     return { success: true, isFollowing: true };
   }
 }
 
 export async function searchCreators(query: string) {
-  const cleanQuery = query.replace('@', '');
-  
+  const cleanQuery = query.replace("@", "");
+
   if (!cleanQuery || cleanQuery.length < 2) return { success: true, data: [] };
-  
+
   const supabase = await createClient();
-  
+
   // Search for matching usernames or full names
   // REMOVED 'level' column to fix DB validation crash
   const { data, error } = await supabase
@@ -115,11 +128,11 @@ export async function searchCreators(query: string) {
     .select("id, username, full_name, avatar_url, role, tailor_specialty")
     .or(`username.ilike.%${cleanQuery}%,full_name.ilike.%${cleanQuery}%`)
     .limit(5);
-    
+
   if (error) {
     console.error("Search error:", error);
     return { success: false, error: error.message };
   }
-  
+
   return { success: true, data };
 }

@@ -17,12 +17,15 @@ export default function LoadingScreen() {
         <motion.div
           key="loader"
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.6, ease: "easeInOut" } }}
+          exit={{
+            opacity: 0,
+            transition: { duration: 0.6, ease: "easeInOut" },
+          }}
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 bg-white"
         >
           {/* Ambient glow behind logo */}
           <div className="absolute w-[300px] h-[300px] rounded-full bg-[#4F46E5]/10 blur-[100px] pointer-events-none" />
-          
+
           {/* Logo — enlarged and premium */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -30,7 +33,13 @@ export default function LoadingScreen() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="relative h-40 w-96 md:h-48 md:w-[28rem]"
           >
-            <Image src="/youngin_whitebg.png" alt="YOUNGIN" fill className="object-contain scale-[2.0] origin-center" priority />
+            <Image
+              src="/youngin_whitebg.png"
+              alt="YOUNGIN"
+              fill
+              className="object-contain scale-[2.0] origin-center"
+              priority
+            />
           </motion.div>
 
           {/* Tagline */}
@@ -57,4 +66,3 @@ export default function LoadingScreen() {
     </AnimatePresence>
   );
 }
-

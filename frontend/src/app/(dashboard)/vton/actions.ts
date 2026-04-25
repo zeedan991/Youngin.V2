@@ -6,13 +6,16 @@ export async function processVirtualTryOn(
   humanImageBase64: string,
   garmentImageBase64: string,
   garmentType: "shirt" | "pant",
-  lowerBodyMaskBase64?: string // Only provided for pants
+  lowerBodyMaskBase64?: string, // Only provided for pants
 ) {
   try {
     const hfToken = process.env.HF_TOKEN;
 
     if (!hfToken) {
-      return { success: false, error: "Hugging Face Token is missing on the server." };
+      return {
+        success: false,
+        error: "Hugging Face Token is missing on the server.",
+      };
     }
 
     // Convert Base64 Data URLs to Blob for Gradio Client
@@ -21,7 +24,9 @@ export async function processVirtualTryOn(
 
     // For shirts: use auto-mask (true). For pants: supply mask layer, disable auto-mask.
     const isShirt = garmentType === "shirt";
-    const garmentDescription = isShirt ? "upper body shirt garment" : "lower body pants garment";
+    const garmentDescription = isShirt
+      ? "upper body shirt garment"
+      : "lower body pants garment";
 
     const humanDict: any = {
       background: humanBlob,
@@ -44,10 +49,10 @@ export async function processVirtualTryOn(
       humanDict,
       garmentBlob,
       garmentDescription,
-      isShirt,   // is_checked: auto-mask ON for shirts, OFF for pants (use our supplied mask)
-      true,      // is_checked_crop: Enabled to allow IDM-VTON to auto-crop and focus resolution on the garment area, preventing blurry faces/full-body downscaling
-      30,        // denoise_steps
-      42,        // seed
+      isShirt, // is_checked: auto-mask ON for shirts, OFF for pants (use our supplied mask)
+      true, // is_checked_crop: Enabled to allow IDM-VTON to auto-crop and focus resolution on the garment area, preventing blurry faces/full-body downscaling
+      30, // denoise_steps
+      42, // seed
     ]);
 
     console.log("IDM-VTON response received!");
@@ -65,14 +70,22 @@ export async function processVirtualTryOn(
     }
 
     if (!imageUrl) {
-      console.error("Unexpected IDM-VTON output format:", JSON.stringify(outputData, null, 2));
-      return { success: false, error: "Failed to parse output from IDM-VTON model." };
+      console.error(
+        "Unexpected IDM-VTON output format:",
+        JSON.stringify(outputData, null, 2),
+      );
+      return {
+        success: false,
+        error: "Failed to parse output from IDM-VTON model.",
+      };
     }
 
     return { success: true, imageUrl };
-
   } catch (error: any) {
     console.error("VTON Server Action Error:", error);
-    return { success: false, error: error.message || "Unknown IDM-VTON error." };
+    return {
+      success: false,
+      error: error.message || "Unknown IDM-VTON error.",
+    };
   }
 }

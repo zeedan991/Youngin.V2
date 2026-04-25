@@ -8,7 +8,10 @@ export async function POST(request: NextRequest) {
     const { prompt } = await request.json();
 
     if (!prompt?.trim()) {
-      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Prompt is required" },
+        { status: 400 },
+      );
     }
 
     const fashionPrompt = `Create a high-quality fashion graphic design suitable for printing on clothing. 
@@ -27,7 +30,10 @@ No text overlays unless specifically requested. High contrast, print-ready quali
     // Extract image from response
     const candidates = response.candidates;
     if (!candidates || candidates.length === 0) {
-      return NextResponse.json({ error: "No response from AI model" }, { status: 422 });
+      return NextResponse.json(
+        { error: "No response from AI model" },
+        { status: 422 },
+      );
     }
 
     for (const part of candidates[0]?.content?.parts ?? []) {
@@ -36,9 +42,15 @@ No text overlays unless specifically requested. High contrast, print-ready quali
       }
     }
 
-    return NextResponse.json({ error: "No image generated. Try a different prompt." }, { status: 422 });
+    return NextResponse.json(
+      { error: "No image generated. Try a different prompt." },
+      { status: 422 },
+    );
   } catch (error: any) {
     console.error("AI generation error:", error?.message || error);
-    return NextResponse.json({ error: "AI generation failed. Check API key." }, { status: 500 });
+    return NextResponse.json(
+      { error: "AI generation failed. Check API key." },
+      { status: 500 },
+    );
   }
 }

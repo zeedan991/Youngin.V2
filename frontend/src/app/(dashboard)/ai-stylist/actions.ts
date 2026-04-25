@@ -50,7 +50,7 @@ The user will provide a budget limit (per month or per shopping trip) and descri
 Your responsibilities:
 - **Audit the existing wardrobe first**: identify what's already strong, what's underused, and what's creating dead-end combinations (pieces that can only be worn one way).
 - Recommend **specific new purchases** that act as "connectors" — versatile gap-fillers that unlock 3–5 new outfit combinations from items the user already owns.
-- Provide a **Cost-Per-Wear (CPW) breakdown** for every recommended purchase: \`CPW = Item Price / Estimated Wears Per Year\`. Flag any item with a CPW under $1 as a high-value investment.
+- Provide a **Cost-Per-Wear (CPW) breakdown** for every recommended purchase: \`CPW = Item Price / Estimated Wears Per Year\`. Flag any item with a CPW under ₹1 as a high-value investment.
 - Rank all recommendations by **Priority Tier**: Tier 1 (Buy immediately — maximum versatility), Tier 2 (Buy next month), Tier 3 (Nice to have, not essential).
 - Suggest **where to buy** each item — fast fashion options (H&M, Zara, Myntra), mid-range, thrift/resale, or luxury investment pieces — based on how frequently it will be worn.
 - Include a **"Wardrobe ROI Summary"** — a short paragraph explaining how many new outfit combinations the recommended purchases will unlock.
@@ -106,7 +106,8 @@ Format: Rich Markdown with bold section headers, numbered DNA Rules, two clearly
 function processBase64Image(base64String: string) {
   // Strip out the data URL prefix if present
   const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
-  const mimeType = base64String.match(/^data:(image\/\w+);base64,/)?.[1] || "image/jpeg";
+  const mimeType =
+    base64String.match(/^data:(image\/\w+);base64,/)?.[1] || "image/jpeg";
   return {
     inlineData: {
       data: base64Data,
@@ -118,11 +119,15 @@ function processBase64Image(base64String: string) {
 export async function generateStylistResponse(
   toolType: keyof typeof SYSTEM_INSTRUCTIONS,
   userInput: string,
-  base64Image?: string
+  base64Image?: string,
 ) {
   try {
     if (!process.env.GEMINI_API_KEY) {
-      return { success: false, error: "Gemini API Key is missing. Please add GEMINI_API_KEY to your .env file." };
+      return {
+        success: false,
+        error:
+          "Gemini API Key is missing. Please add GEMINI_API_KEY to your .env file.",
+      };
     }
 
     const contents: any[] = [{ text: userInput }];
@@ -148,7 +153,9 @@ export async function generateStylistResponse(
     console.error(`Gemini API Error [${toolType}]:`, error);
     return {
       success: false,
-      error: error.message || "Failed to generate AI response. Plrease check your API limits and network.",
+      error:
+        error.message ||
+        "Failed to generate AI response. Plrease check your API limits and network.",
     };
   }
 }

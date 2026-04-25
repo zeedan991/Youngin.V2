@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
-import { 
-  Sparkles, 
-  ArrowRight, 
-  ArrowLeft, 
-  Check, 
-  Palette, 
-  Shirt, 
+import {
+  Sparkles,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  Palette,
+  Shirt,
   Ruler,
-  PartyPopper
+  PartyPopper,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -42,7 +42,8 @@ const QUESTIONS: QuizQuestion[] = [
   {
     id: 2,
     question: "How do you like your fit?",
-    subtitle: "This calibrates how we match garment sizing to your body profile.",
+    subtitle:
+      "This calibrates how we match garment sizing to your body profile.",
     type: "grid",
     options: [
       { label: "Oversized", emoji: "📦", value: "oversized" },
@@ -54,7 +55,8 @@ const QUESTIONS: QuizQuestion[] = [
   {
     id: 3,
     question: "Pick your color palette",
-    subtitle: "We'll use this to curate brand recommendations and thrift picks.",
+    subtitle:
+      "We'll use this to curate brand recommendations and thrift picks.",
     type: "multi",
     options: [
       { label: "Earth Tones", emoji: "🤎", value: "earth" },
@@ -68,7 +70,8 @@ const QUESTIONS: QuizQuestion[] = [
   {
     id: 4,
     question: "What matters most to you?",
-    subtitle: "This shapes your credibility score and platform recommendations.",
+    subtitle:
+      "This shapes your credibility score and platform recommendations.",
     type: "grid",
     options: [
       { label: "Sustainability", emoji: "♻️", value: "sustainability" },
@@ -254,4 +257,3 @@ export default function StyleQuizPage() {
     </div>
   );
 }
-
